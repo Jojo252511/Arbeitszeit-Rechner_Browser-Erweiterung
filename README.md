@@ -1,3 +1,17 @@
+# Arbeitszeit-Rechner_Browser-Erweiterung
+
+## Installation als Chrome-Erweiterung
+
+1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`.
+2.  Aktiviere oben rechts den **Entwicklermodus** (Developer mode).
+3.  Klicke auf den Button **"Entpackte Erweiterung laden"** (Load unpacked).
+4.  Wähle den **kompletten Hauptordner** dieses Projekts aus.
+5.  Die Erweiterung erscheint nun in deiner Liste und das Icon in der Browser-Leiste.
+
+Eine detaillierte Video-Anleitung findest du hier: [Video-Tutorial auf YouTube](https://www.youtube.com/watch?v=yNZqK4d9E_c&t=340s).
+
+---
+
 # Info & FAQ
 
 ### Wie funktioniert der Arbeitszeit-Rechner?
