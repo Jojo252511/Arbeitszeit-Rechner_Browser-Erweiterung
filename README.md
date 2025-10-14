@@ -2,7 +2,8 @@
 
 ## Installation als Chrome-Erweiterung
 
-1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`. | Öffne Microsoft Edge und navigiere zur Seite `edge://extensions`.
+1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`.  
+    Öffne Microsoft Edge und navigiere zur Seite `edge://extensions`.
 2.  Aktiviere oben rechts den **Entwicklermodus** (Developer mode).
 3.  Klicke auf den Button **"Entpackte Erweiterung laden"** (Load unpacked).
 4.  Wähle den **kompletten Hauptordner** dieses Projekts aus.
@@ -35,4 +36,4 @@ Stelle sicher, dass du alle erforderlichen Felder korrekt ausgefüllt hast. Übe
 ### Was ist mit der Kernzeit?
 Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Standart Gleitzeit (die Zeit, ab der Arbeitszeit gezählt wird) beginnt um 06:45 Uhr. Die Kernzeit, in der Anwesenheitspflicht besteht, ist von 08:45 Uhr bis 15:30 Uhr (Freitags bis 15:00 Uhr).  
 
-*Über "Optionen" anpassbar*
+*Kernzeiten über "Optionen" anpassbar*

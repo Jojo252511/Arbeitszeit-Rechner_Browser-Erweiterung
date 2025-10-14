@@ -1,31 +1,42 @@
-// scripts/countdown.js
+// scripts/countdown.ts
+
+import { timeStringToMinutes } from './utils.js';
+
+// Mache TypeScript die globale Variable aus calculator1.ts bekannt
+declare global {
+    interface Window {
+        feierabendZeit?: number;
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    // DOM-Elemente holen
-    const startPlus0Btn = document.getElementById('start-countdown-plus0');
-    const startWunschBtn = document.getElementById('start-countdown-wunsch');
-    const countdownModal = document.getElementById('countdown-modal');
-    const closeCountdownBtn = document.getElementById('close-countdown');
-    const countdownTitleEl = document.getElementById('countdown-title');
-    const countdownTimerEl = document.getElementById('countdown-timer');
+    // DOM-Elemente holen und typisieren
+    const startPlus0Btn = document.getElementById('start-countdown-plus0') as HTMLButtonElement;
+    const startWunschBtn = document.getElementById('start-countdown-wunsch') as HTMLButtonElement;
+    const countdownModal = document.getElementById('countdown-modal') as HTMLDivElement;
+    const closeCountdownBtn = document.getElementById('close-countdown') as HTMLSpanElement;
+    const countdownTitleEl = document.getElementById('countdown-title') as HTMLHeadingElement;
+    const countdownTimerEl = document.getElementById('countdown-timer') as HTMLDivElement;
+    const wunschGehzeitInput = document.getElementById('wunsch-gehzeit') as HTMLInputElement;
 
-    let countdownInterval; // Globale Variable für das Intervall
+    // Gib der Intervall-Variable den korrekten Typ
+    let countdownInterval: number | undefined;
 
     /**
      * Startet den Countdown zu einer Zielzeit.
      * @param {number} zielzeitInMinuten - Die Zielzeit in Minuten seit Mitternacht.
      * @param {string} titel - Der Titel, der über dem Countdown angezeigt wird.
      */
-    function startCountdown(zielzeitInMinuten, titel) {
+    function startCountdown(zielzeitInMinuten: number, titel: string): void {
+        if (!countdownModal || !countdownTitleEl) return;
         countdownModal.style.display = 'flex';
         countdownTitleEl.textContent = titel;
 
-        // Altes Intervall löschen, falls eines läuft
         if (countdownInterval) {
             clearInterval(countdownInterval);
         }
 
-        countdownInterval = setInterval(() => {
+        countdownInterval = window.setInterval(() => {
             const jetzt = new Date();
             const jetztInSekunden = (jetzt.getHours() * 3600) + (jetzt.getMinutes() * 60) + jetzt.getSeconds();
             const zielInSekunden = zielzeitInMinuten * 60;
@@ -34,14 +45,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (restSekunden <= 0) {
                 clearInterval(countdownInterval);
                 countdownTimerEl.textContent = "00:00:00";
-                // Optional: Sound abspielen oder Farbe ändern
                 countdownTimerEl.style.color = 'var(--success-color)';
                 return;
             }
 
-            // Reset color in case it was changed
             countdownTimerEl.style.color = 'var(--primary-color)';
-
             const stunden = Math.floor(restSekunden / 3600);
             const minuten = Math.floor((restSekunden % 3600) / 60);
             const sekunden = restSekunden % 60;
@@ -54,22 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Schließt das Countdown-Fenster und stoppt den Timer.
      */
-    function closeCountdown() {
+    function closeCountdown(): void {
+        if (!countdownModal) return;
         countdownModal.style.display = 'none';
         clearInterval(countdownInterval);
-        countdownTimerEl.style.color = 'var(--primary-color)'; // Farbe zurücksetzen
+        countdownTimerEl.style.color = 'var(--primary-color)';
     }
 
     // Event Listeners
-    closeCountdownBtn.addEventListener('click', closeCountdown);
-    countdownModal.addEventListener('click', (event) => {
+    if (closeCountdownBtn) closeCountdownBtn.addEventListener('click', closeCountdown);
+    if (countdownModal) countdownModal.addEventListener('click', (event: MouseEvent) => {
         if (event.target === countdownModal) {
             closeCountdown();
         }
     });
 
-    startPlus0Btn.addEventListener('click', () => {
-        // Prüfen, ob eine Feierabendzeit vom ersten Rechner berechnet wurde.
+    if (startPlus0Btn) startPlus0Btn.addEventListener('click', () => {
         if (window.feierabendZeit) {
             startCountdown(window.feierabendZeit, "Restzeit bis Feierabend");
         } else {
@@ -77,10 +85,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    startWunschBtn.addEventListener('click', () => {
-        const wunschGehzeit = document.getElementById('wunsch-gehzeit').value;
-        if (wunschGehzeit) {
-            const wunschInMinuten = timeStringToMinutes(wunschGehzeit);
+    if (startWunschBtn) startWunschBtn.addEventListener('click', () => {
+        if (wunschGehzeitInput && wunschGehzeitInput.value) {
+            const wunschInMinuten = timeStringToMinutes(wunschGehzeitInput.value);
             startCountdown(wunschInMinuten, "Restzeit bis zur Wunsch-Gehzeit");
         } else {
             alert("Bitte gib zuerst im 'Plus / Minus'-Rechner eine Wunsch-Gehzeit ein.");
