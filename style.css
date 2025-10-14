@@ -67,7 +67,7 @@ body {
 
 #menu-toggle {
     position: fixed;
-    top: 2.45rem;
+    top: 2rem;
     left: 1.75rem;
     width: 3rem;
     height: 3rem;
@@ -216,6 +216,7 @@ h1 {
     grid-column: 1 / -1;
     text-align: center;
     color: var(--primary-color);
+    font-size: 1.25rem;
 }
 
 .hochgestellt {
@@ -601,7 +602,7 @@ body.dark-mode .ergebnis.error {
 
 #dark-mode-toggle {
     position: fixed;
-    top: 2.45rem;
+    top: 2rem;
     right: 1.75rem;
     width: 3rem;
     height: 3rem;
@@ -652,7 +653,7 @@ body.dark-mode .sun-icon {
         gap: 1.5rem;
         margin: 1rem 0;
         width: 100%;
-        margin-top: 4.5rem;
+        margin-top: 2rem;
     }
 
     .card {
