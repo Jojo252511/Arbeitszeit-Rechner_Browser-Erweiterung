@@ -8,6 +8,7 @@
     "storage",
     "sidePanel" 
   ],
+  "options_page": "options.html",
   "action": {
     "default_title": "Arbeitszeit-Rechner öffnen"
   },

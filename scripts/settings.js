@@ -159,4 +159,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Lädt die gespeicherten Einstellungen direkt beim Start der Seite.
     loadSettings();
+
+    /**
+     * Aktualisiert die Zeitangaben im FAQ-Bereich dynamisch
+     * basierend auf den im Local Storage gespeicherten Werten.
+     */
+    function updateFaqTimes() {
+        // Lese die gespeicherten Zeiten oder nutze die Standardwerte
+        const gleitzeitStart = localStorage.getItem('userGleitzeitStart') || '06:45';
+        const kernzeitStart = localStorage.getItem('userKernzeitStart') || '08:45';
+        const kernzeitEnde = localStorage.getItem('userKernzeitEnde') || '15:30';
+        const kernzeitEndeFr = localStorage.getItem('userKernzeitEndeFr') || '15:00';
+
+        // Hole die HTML-Elemente über ihre neuen IDs
+        const faqGleitzeitStartEl = document.getElementById('faq-gleitzeit-start');
+        const faqKernzeitStartEl = document.getElementById('faq-kernzeit-start');
+        const faqKernzeitEndeEl = document.getElementById('faq-kernzeit-ende');
+        const faqKernzeitEndeFrEl = document.getElementById('faq-kernzeit-ende-fr');
+
+        // Aktualisiere den Text der Elemente, falls sie gefunden wurden
+        if (faqGleitzeitStartEl) faqGleitzeitStartEl.textContent = gleitzeitStart;
+        if (faqKernzeitStartEl) faqKernzeitStartEl.textContent = kernzeitStart;
+        if (faqKernzeitEndeEl) faqKernzeitEndeEl.textContent = kernzeitEnde;
+        if (faqKernzeitEndeFrEl) faqKernzeitEndeFrEl.textContent = kernzeitEndeFr;
+    }
+
+    updateFaqTimes();
 });

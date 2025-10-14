@@ -9,29 +9,29 @@
 
 /**
  * Ermittelt die geltenden Kern- und Gleitzeiten für den aktuellen Tag in Minuten seit Mitternacht.
- * Berücksichtigt, dass die Kernzeit am Freitag früher endet.
- * @returns {object} Ein Objekt mit den Zeitangaben.
- * @property {number} gleitzeitStart - Beginn der Gleitzeit (in Minuten).
- * @property {number} kernzeitStart - Beginn der Kernzeit (in Minuten).
- * @property {number} kernzeitEnde - Ende der Kernzeit (in Minuten), variiert für Freitage.
- * @property {number} gleitzeitEnde - Ende der Gleitzeit (in Minuten).
+ * Liest die Zeitdefinitionen aus dem Local Storage oder greift auf Standardwerte zurück.
+ * @returns {object} Ein Objekt mit den Zeitangaben in Minuten.
  */
 const getKernzeitUndGleitzeit = () => {
+    const gleitzeitStart = localStorage.getItem('userGleitzeitStart') || '06:45';
+    const kernzeitStart = localStorage.getItem('userKernzeitStart') || '08:45';
+    const kernzeitEndeMoDo = localStorage.getItem('userKernzeitEnde') || '15:30';
+    const kernzeitEndeFr = localStorage.getItem('userKernzeitEndeFr') || '15:00';
+    const gleitzeitEnde = localStorage.getItem('userGleitzeitEnde') || '19:00';
+
     const heute = new Date();
-    const wochentag = heute.getDay();
-    const gleitzeitStartMinuten = 6 * 60 + 45;
-    const kernzeitStartMinuten = 8 * 60 + 45;
-    const gleitzeitEndeMinuten = 19 * 60;
-    let kernzeitEndeMinuten;
-    if (wochentag === 5) { kernzeitEndeMinuten = 15 * 60; } 
-    else { kernzeitEndeMinuten = 15 * 60 + 30; }
+    const wochentag = heute.getDay(); // 5 = Freitag
+
+    const aktuellesKernzeitEnde = (wochentag === 5) ? kernzeitEndeFr : kernzeitEndeMoDo;
+    
     return {
-        gleitzeitStart: gleitzeitStartMinuten,
-        kernzeitStart: kernzeitStartMinuten,
-        kernzeitEnde: kernzeitEndeMinuten,
-        gleitzeitEnde: gleitzeitEndeMinuten
+        gleitzeitStart: timeStringToMinutes(gleitzeitStart),
+        kernzeitStart: timeStringToMinutes(kernzeitStart),
+        kernzeitEnde: timeStringToMinutes(aktuellesKernzeitEnde),
+        gleitzeitEnde: timeStringToMinutes(gleitzeitEnde)
     };
 };
+
 
 /**
  * Wandelt einen Zeit-String im Format "HH:MM" in die Gesamtminuten seit Mitternacht um.
