@@ -33,6 +33,6 @@ Der Überstunden-Planer bietet zwei Funktionen: Du kannst berechnen lassen, wie 
 Stelle sicher, dass du alle erforderlichen Felder korrekt ausgefüllt hast. Überprüfe auch, ob deine Eingaben im richtigen Format sind (z.B. Zeitangaben im 24-Stunden-Format). Wenn das Problem weiterhin besteht, versuche die Seite neu zu laden.
 
 ### Was ist mit der Kernzeit?
-Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Gleitzeit (die Zeit, ab der Arbeitszeit gezählt wird) beginnt um 06:45 Uhr. Die Kernzeit, in der Anwesenheitspflicht besteht, ist von 08:45 Uhr bis 15:30 Uhr (Freitags bis 15:00 Uhr).  
+Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Standart Gleitzeit (die Zeit, ab der Arbeitszeit gezählt wird) beginnt um 06:45 Uhr. Die Kernzeit, in der Anwesenheitspflicht besteht, ist von 08:45 Uhr bis 15:30 Uhr (Freitags bis 15:00 Uhr).  
 
 *Über "Optionen" anpassbar*
