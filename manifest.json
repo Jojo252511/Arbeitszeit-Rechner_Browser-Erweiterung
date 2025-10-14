@@ -1,13 +1,14 @@
 {
   "manifest_version": 3,
   "name": "Arbeitszeit-Rechner",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "author": "Joern Unverzagt",
   "description": "Ein persönlicher Arbeitszeit-Rechner als Browser Side Panel.",
   "permissions": [
     "storage",
     "sidePanel" 
   ],
+  "options_page": "options.html",
   "action": {
     "default_title": "Arbeitszeit-Rechner öffnen"
   },
