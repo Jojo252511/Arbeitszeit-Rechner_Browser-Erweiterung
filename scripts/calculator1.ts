@@ -1,21 +1,36 @@
-// scripts/calculator1.js
+// scripts/calculator1.ts
+
+// NEU: Importiere alle benötigten Hilfsfunktionen und Typen
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis } from './utils.js';
+import { type LogEntry } from './logbook.js'; // Importiert die Struktur eines Log-Eintrags
+
+// NEU: Mache TypeScript die globale Variable bekannt
+declare global {
+    interface Window {
+        feierabendZeit?: number; // Das '?' bedeutet, die Eigenschaft ist optional
+    }
+}
 
 /**
  * @file Enthält die Logik für den ersten Rechner "Wann kann ich gehen?".
- * @description Berechnet die frühestmögliche Gehzeit, die verbleibende Arbeitszeit und den Tagessaldo unter Berücksichtigung aller Zeitregeln (Gleitzeit, Kernzeit etc.).
- * @author Jörn Unverzagt
- * @date 2025-10-13
  */
 document.addEventListener('DOMContentLoaded', () => {
-    const berechneGehzeitBtn = document.getElementById('berechne-gehzeit');
-    const ergebnisGehzeitEl = document.getElementById('ergebnis-gehzeit');
-    const hauptSollzeitSelect = document.getElementById('sollzeit');
-    const hauptMinderjaehrigCheckbox = document.getElementById('pause-minderjaehrig');
-    const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden');
-    const nowAnkunftBtn = document.getElementById('now-ankunft');
-    const ankunftszeitInput = document.getElementById('ankunftszeit');
+    // NEU: Weise den Konstanten die korrekten HTML-Typen zu
+    const berechneGehzeitBtn = document.getElementById('berechne-gehzeit') as HTMLButtonElement;
+    const ergebnisGehzeitEl = document.getElementById('ergebnis-gehzeit') as HTMLDivElement;
+    const hauptSollzeitSelect = document.getElementById('sollzeit') as HTMLSelectElement;
+    const hauptMinderjaehrigCheckbox = document.getElementById('pause-minderjaehrig') as HTMLInputElement;
+    const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
+    const nowAnkunftBtn = document.getElementById('now-ankunft') as HTMLButtonElement;
+    const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
 
-    if(nowAnkunftBtn) {
+    // NEU: Sicherheitsprüfung, ob die Elemente wirklich existieren
+    if (!berechneGehzeitBtn || !ergebnisGehzeitEl) {
+        console.error("Haupt-Elemente für Rechner 1 konnten nicht gefunden werden.");
+        return;
+    }
+    
+    if (nowAnkunftBtn && ankunftszeitInput) {
         nowAnkunftBtn.addEventListener('click', () => {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -24,27 +39,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (!berechneGehzeitBtn) return;
-
-    /**
-     * Event Listener für den "Berechnen"-Button des ersten Rechners.
-     * Berechnet die frühestmögliche Gehzeit, die verbleibende Arbeitszeit und den Tagessaldo
-     * unter Berücksichtigung aller Zeitregeln (Gleitzeit, Kernzeit etc.).
-     */
     berechneGehzeitBtn.addEventListener('click', () => {
-        // 1. Alle relevanten Werte aus den Eingabefeldern auslesen.
         const sollzeit = parseFloat(hauptSollzeitSelect.value);
-        const ankunftszeit = document.getElementById('ankunftszeit').value;
+        const ankunftszeit = ankunftszeitInput.value;
         const isMinderjaehrig = hauptMinderjaehrigCheckbox.checked;
         const aktuelleUeberstunden = parseFloat(hauptUeberstundenInput.value) || 0;
 
-        // 2. Eingaben validieren.
         if (!ankunftszeit) {
             showResult(ergebnisGehzeitEl, "Bitte gib eine Ankunftszeit ein.", 'error');
             return;
         }
 
-        // 3. Zeitberechnungen durchführen.
         const zeiten = getKernzeitUndGleitzeit();
         const ankunftInMinutenTotal = timeStringToMinutes(ankunftszeit);
         const kalkulationsStartMinuten = Math.max(ankunftInMinutenTotal, zeiten.gleitzeitStart);
@@ -52,29 +57,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const sollzeitInMinuten = sollzeit * 60;
         const rechnerischeGehzeitInMinuten = kalkulationsStartMinuten + sollzeitInMinuten + pausenDauer;
 
-        let finaleGehzeitInMinuten;
-        let gehzeitNachricht;
+        let finaleGehzeitInMinuten: number;
+        let gehzeitNachricht: string;
 
-        // 4. Prüfen, ob das Gleitzeitende überschritten wird und Ergebnis ggf. kappen.
         if (rechnerischeGehzeitInMinuten > zeiten.gleitzeitEnde) {
             finaleGehzeitInMinuten = zeiten.gleitzeitEnde;
             gehzeitNachricht = `Du musst spätestens um <strong>${minutesToTimeString(zeiten.gleitzeitEnde)} Uhr</strong> gehen (Gleitzeitende).`;
         } else {
-            // Sicherstellen, dass die Gehzeit nicht vor dem Kernzeitende liegt.
             finaleGehzeitInMinuten = Math.max(rechnerischeGehzeitInMinuten, zeiten.kernzeitEnde);
             gehzeitNachricht = `Du kannst frühestens um <strong>${minutesToTimeString(finaleGehzeitInMinuten)} Uhr</strong> gehen.`;
         }
 
-        // 5. Salden und Restzeit berechnen.
-        window.feierabendZeit = finaleGehzeitInMinuten; // Für den Countdown speichern
+        window.feierabendZeit = finaleGehzeitInMinuten;
         const anwesenheitsMinuten = finaleGehzeitInMinuten - kalkulationsStartMinuten;
         const gearbeiteteMinuten = anwesenheitsMinuten - pausenDauer;
         const tagesDifferenz = gearbeiteteMinuten - sollzeitInMinuten;
         const aktuellerSaldoInMin = aktuelleUeberstunden * 60;
         const neuerGesamtSaldo = aktuellerSaldoInMin + tagesDifferenz;
         const formatierteRestzeit = berechneRestzeitBis(minutesToTimeString(finaleGehzeitInMinuten));
-
-        // 6. Ergebnisnachricht inklusive aller Hinweise zusammenbauen.
+        
         let kernzeitHinweis = '';
         if (ankunftInMinutenTotal > zeiten.kernzeitStart) {
             kernzeitHinweis = `<small class="error-text">Hinweis: Kernzeit verletzt!</small><hr class="result-hr">`;
@@ -102,11 +103,11 @@ document.addEventListener('DOMContentLoaded', () => {
             nachricht += `<br><small>(Berechnung ab Gleitzeitbeginn 06:45 Uhr)</small>`;
         }
 
-        // 7. Ergebnis anzeigen.
         showResult(ergebnisGehzeitEl, nachricht);
 
-        const logEntry = {
-            id: new Date().setHours(0, 0, 0, 0), // Eindeutige ID pro Tag
+        // NEU: Expliziter Typ für das logEntry-Objekt
+        const logEntry: LogEntry = {
+            id: new Date().setHours(0, 0, 0, 0),
             date: new Date().toLocaleDateString('de-DE'),
             arrival: ankunftszeit,
             leaving: minutesToTimeString(finaleGehzeitInMinuten),
@@ -116,15 +117,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const saveLogButton = document.createElement('button');
         saveLogButton.textContent = 'Tag im Logbuch speichern';
-        saveLogButton.className = 'save-saldo-btn'; // Wiederverwendet den Stil des anderen Buttons
+        saveLogButton.className = 'save-saldo-btn';
 
         saveLogButton.addEventListener('click', () => {
-            // Sendet ein "Custom Event" mit den Tagesdaten. logbook.js wird darauf hören.
             document.dispatchEvent(new CustomEvent('saveLogEntry', { detail: logEntry }));
         });
 
         ergebnisGehzeitEl.appendChild(saveLogButton);
     });
-
-
 });

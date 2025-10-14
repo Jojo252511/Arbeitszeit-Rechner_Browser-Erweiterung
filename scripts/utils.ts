@@ -1,29 +1,42 @@
-// scripts/utils.js
+// scripts/utils.ts
 
 /**
  * @file Utility-Funktionen für den Arbeitszeit-Rechner.
- * @description Diese Datei enthält wiederverwendbare Hilfsfunktionen für Zeitberechnungen, Formatierungen und die Anzeige von Ergebnissen, die von mehreren Skripten der Anwendung genutzt werden.
- * @author Jörn Unverzagt
- * @date 2025-10-13
-*/
+ * @description Diese Datei enthält wiederverwendbare Hilfsfunktionen für Zeitberechnungen, Formatierungen und die Anzeige von Ergebnissen.
+ */
+
+// --- Typ-Definitionen ---
+
+// NUR EINE, exportierte Definition.
+export interface ZeitPunkte {
+    gleitzeitStart: number;
+    kernzeitStart: number;
+    kernzeitEnde: number;
+    gleitzeitEnde: number;
+}
+
+// Diese globale Erweiterung bleibt unverändert.
+declare global {
+    interface Window {
+        saveUeberH: (time: number) => void;
+    }
+}
+
+// --- GLOBALE HILFSFUNKTIONEN ---
 
 /**
  * Ermittelt die geltenden Kern- und Gleitzeiten für den aktuellen Tag in Minuten seit Mitternacht.
- * Liest die Zeitdefinitionen aus dem Local Storage oder greift auf Standardwerte zurück.
- * @returns {object} Ein Objekt mit den Zeitangaben in Minuten.
+ * @returns {ZeitPunkte} Ein Objekt mit den Zeitangaben in Minuten.
  */
-const getKernzeitUndGleitzeit = () => {
+export const getKernzeitUndGleitzeit = (): ZeitPunkte => {
+    const heute = new Date();
+    const wochentag = heute.getDay();
     const gleitzeitStart = localStorage.getItem('userGleitzeitStart') || '06:45';
     const kernzeitStart = localStorage.getItem('userKernzeitStart') || '08:45';
     const kernzeitEndeMoDo = localStorage.getItem('userKernzeitEnde') || '15:30';
     const kernzeitEndeFr = localStorage.getItem('userKernzeitEndeFr') || '15:00';
     const gleitzeitEnde = localStorage.getItem('userGleitzeitEnde') || '19:00';
-
-    const heute = new Date();
-    const wochentag = heute.getDay(); // 5 = Freitag
-
     const aktuellesKernzeitEnde = (wochentag === 5) ? kernzeitEndeFr : kernzeitEndeMoDo;
-    
     return {
         gleitzeitStart: timeStringToMinutes(gleitzeitStart),
         kernzeitStart: timeStringToMinutes(kernzeitStart),
@@ -32,13 +45,12 @@ const getKernzeitUndGleitzeit = () => {
     };
 };
 
-
 /**
  * Wandelt einen Zeit-String im Format "HH:MM" in die Gesamtminuten seit Mitternacht um.
- * @param {string} timeString - Der Zeit-String, der umgewandelt werden soll (z.B. "08:30").
- * @returns {number} Die Gesamtanzahl der Minuten seit Mitternacht.
+ * @param {string} timeString - Der Zeit-String (z.B. "08:30").
+ * @returns {number} Die Gesamtanzahl der Minuten.
  */
-const timeStringToMinutes = (timeString) => {
+export const timeStringToMinutes = (timeString: string): number => {
     if (!timeString) return 0;
     const [hours, minutes] = timeString.split(':').map(Number);
     return hours * 60 + minutes;
@@ -49,7 +61,7 @@ const timeStringToMinutes = (timeString) => {
  * @param {number} totalMinutes - Die Gesamtminuten seit Mitternacht.
  * @returns {string} Der formatierte Zeit-String (z.B. "16:45").
  */
-const minutesToTimeString = (totalMinutes) => {
+export const minutesToTimeString = (totalMinutes: number): string => {
     const hours = Math.floor(totalMinutes / 60) % 24;
     const minutes = totalMinutes % 60;
     return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
@@ -57,11 +69,10 @@ const minutesToTimeString = (totalMinutes) => {
 
 /**
  * Formatiert eine Gesamtminutenzahl in einen lesbaren String (z.B. "-1 Std. 30 Min.").
- * Berücksichtigt positive und negative Werte und passt das Format an (nur Stunden, nur Minuten, oder beides).
  * @param {number} totalMinutes - Die zu formatierende Minutenzahl.
  * @returns {string} Der formatierte String für die Anzeige.
  */
-const formatMinutesToString = (totalMinutes) => {
+export const formatMinutesToString = (totalMinutes: number): string => {
     if (isNaN(totalMinutes)) return "Ungültige Eingabe";
     const sign = totalMinutes < 0 ? "-" : "";
     const absMinutes = Math.abs(totalMinutes);
@@ -73,13 +84,12 @@ const formatMinutesToString = (totalMinutes) => {
 };
 
 /**
- * Zeigt eine formatierte Nachricht in einem dafür vorgesehenen Ergebnis-Container an.
- * Steuert auch die Einblende-Animation und die farbliche Gestaltung.
- * @param {HTMLElement} element - Das DOM-Element, in dem die Nachricht angezeigt werden soll.
+ * Zeigt eine formatierte Nachricht in einem Ergebnis-Container an.
+ * @param {HTMLElement} element - Das DOM-Element für die Anzeige.
  * @param {string} message - Die anzuzeigende Nachricht (kann HTML enthalten).
- * @param {string} [type='success'] - Der Typ der Nachricht ('success' oder 'error'), steuert die Farbe.
+ * @param {string} [type='success'] - Der Typ der Nachricht ('success' oder 'error').
  */
-const showResult = (element, message, type = 'success') => {
+export const showResult = (element: HTMLElement, message: string, type: string = 'success'): void => {
     element.innerHTML = message;
     element.className = 'ergebnis';
     element.classList.add(type);
@@ -89,9 +99,9 @@ const showResult = (element, message, type = 'success') => {
 /**
  * Berechnet die verbleibende Zeit von der aktuellen Uhrzeit bis zu einer Ziel-Uhrzeit.
  * @param {string} zielZeitString - Die Ziel-Uhrzeit im Format "HH:MM".
- * @returns {string|null} Die formatierte Restzeit (z.B. "2 Std. und 15 Min.") oder `null`, wenn die Ziel-Uhrzeit bereits vergangen ist.
+ * @returns {string|null} Die formatierte Restzeit oder `null`, wenn die Zeit vergangen ist.
  */
-const berechneRestzeitBis = (zielZeitString) => {
+export const berechneRestzeitBis = (zielZeitString: string): string | null => {
     if (!zielZeitString) return null;
     const jetzt = new Date();
     const jetztInMinuten = jetzt.getHours() * 60 + jetzt.getMinutes();
@@ -107,15 +117,14 @@ const berechneRestzeitBis = (zielZeitString) => {
 
 /**
  * Speichert den neuen Überstundensaldo im Local Storage und lädt die Seite neu.
- * Diese Funktion wird global verfügbar gemacht, um von `onclick`-Attributen im HTML aufgerufen werden zu können.
- * @param {number} time - Der neue Überstundensaldo als Dezimalzahl (z.B. 8.75 für 8h 45min).
+ * @param {number} time - Der neue Überstundensaldo als Dezimalzahl.
  * @global
  */
-function saveUeberH(time) {
-    localStorage.setItem('userUeberstunden', time);
+export function saveUeberH(time: number): void {
+    localStorage.setItem('userUeberstunden', String(time));
     alert(`Überstunden erfolgreich auf ${time} h gesetzt! Die Seite wird neu geladen, um die Werte zu übernehmen.`);
     window.location.reload(); 
 }
 
-// Macht die Funktion global verfügbar, damit `onclick` sie finden kann.
+// Macht die Funktion global verfügbar.
 window.saveUeberH = saveUeberH;

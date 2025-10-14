@@ -1,23 +1,39 @@
-// scripts/logbook.js
+// scripts/logbook.ts
+
+import { formatMinutesToString } from './utils.js';
+
+// Wir verwenden jetzt den einfachen 'auto'-Import.
+// Dieser sollte dank der geänderten tsconfig.json jetzt gefunden werden.
+import Chart, { type TooltipItem } from 'chart.js/auto';
+
+// Definiere die Struktur eines Logbuch-Eintrags.
+export interface LogEntry {
+    id: number;
+    date: string;
+    arrival: string;
+    leaving: string;
+    targetHours: number;
+    dailySaldoMinutes: number;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    const logbookBody = document.getElementById('logbook-body');
-    const clearLogbookBtn = document.getElementById('clear-logbook-btn');
+    const logbookBody = document.getElementById('logbook-body') as HTMLTableSectionElement;
+    const clearLogbookBtn = document.getElementById('clear-logbook-btn') as HTMLButtonElement;
     const LOGBOOK_KEY = 'workLogbook';
 
-    let logbookChart = null;
+    let logbookChart: Chart | null = null;
 
-    function getLog() {
+    function getLog(): LogEntry[] {
         const log = localStorage.getItem(LOGBOOK_KEY);
         return log ? JSON.parse(log) : [];
     }
 
-    function saveLog(logData) {
+    function saveLog(logData: LogEntry[]): void {
         localStorage.setItem(LOGBOOK_KEY, JSON.stringify(logData));
     }
 
-    function renderChart(logData) {
-        const chartContainer = document.querySelector('.chart-container');
+    function renderChart(logData: LogEntry[]): void {
+        const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
         if (!chartContainer) return;
 
         if (logData.length === 0) {
@@ -30,9 +46,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         chartContainer.style.display = 'block';
 
-        const ctx = document.getElementById('logbook-chart').getContext('2d');
-        const labels = [];
-        const dataPoints = [];
+        const canvas = document.getElementById('logbook-chart') as HTMLCanvasElement;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const labels: string[] = [];
+        const dataPoints: number[] = [];
         const today = new Date();
         today.setHours(0, 0, 0, 0);
 
@@ -69,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
+                            label: function(context: TooltipItem<'bar'>) {
                                 let label = context.dataset.label || '';
                                 if (label) { label += ': '; }
                                 if (context.parsed.y !== null) {
@@ -83,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 },
                 scales: {
+                    x: {},
                     y: {
                         title: { display: true, text: 'Saldo in Minuten' },
                         suggestedMax: 60,
@@ -94,23 +114,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderLog() {
+    // --- Der Rest der Datei bleibt unverändert ---
+    function renderLog(): void {
+        if (!logbookBody) return;
         logbookBody.innerHTML = '';
         const logData = getLog();
         logData.sort((a, b) => b.id - a.id);
-        
         renderChart(logData);
-
         if (logData.length === 0) {
             logbookBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Noch keine Einträge vorhanden.</td></tr>';
             return;
         }
-
         logData.forEach(entry => {
             const row = document.createElement('tr');
             const saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
             const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
-            
             row.innerHTML = `
                 <td>${entry.date}</td>
                 <td>${entry.arrival} Uhr</td>
@@ -120,14 +138,11 @@ document.addEventListener('DOMContentLoaded', () => {
             logbookBody.appendChild(row);
         });
     }
-
-    function addLogEntry(newEntry) {
+    function addLogEntry(newEntry: LogEntry): void {
         const logData = getLog();
         const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
         if (existingEntryIndex > -1) {
-            if (!confirm(`Es existiert bereits ein Eintrag für heute. Möchtest du ihn überschreiben?`)) {
-                return;
-            }
+            if (!confirm(`Es existiert bereits ein Eintrag für heute. Möchtest du ihn überschreiben?`)) { return; }
             logData[existingEntryIndex] = newEntry;
         } else {
             logData.push(newEntry);
@@ -135,41 +150,29 @@ document.addEventListener('DOMContentLoaded', () => {
         saveLog(logData);
         renderLog();
     }
-
-    clearLogbookBtn.addEventListener('click', () => {
-        if (confirm('Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?')) {
-            localStorage.removeItem(LOGBOOK_KEY);
-            renderLog();
-        }
-    });
-
-    document.addEventListener('saveLogEntry', (event) => {
-        addLogEntry(event.detail);
-    });
-
-    /**
-     * Prüft beim Laden der Seite, ob für den heutigen Tag bereits ein Eintrag im Logbuch existiert.
-     * Wenn ja, wird das "Ankunftszeit"-Feld automatisch mit dem gespeicherten Wert befüllt.
-     */
-    function prefillArrivalFromLog() {
+    function prefillArrivalFromLog(): void {
         const logData = getLog();
         const todayDateString = new Date().toLocaleDateString('de-DE');
-        
         const todayEntry = logData.find(entry => entry.date === todayDateString);
-        
         if (todayEntry) {
-            const ankunftszeitInput = document.getElementById('ankunftszeit');
-            // Nur befüllen, wenn das Feld auch existiert und noch leer ist.
+            const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
             if (ankunftszeitInput && !ankunftszeitInput.value) {
                 ankunftszeitInput.value = todayEntry.arrival;
             }
         }
     }
-
-
-    // Initiales Rendern des Logbuchs beim Seitenaufruf
+    if (clearLogbookBtn) {
+        clearLogbookBtn.addEventListener('click', () => {
+            if (confirm('Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?')) {
+                localStorage.removeItem('workLogbook');
+                renderLog();
+            }
+        });
+    }
+    document.addEventListener('saveLogEntry', (event: Event) => {
+        const customEvent = event as CustomEvent<LogEntry>;
+        addLogEntry(customEvent.detail);
+    });
     renderLog();
-
-    // Rufe die neue Funktion direkt nach dem ersten Rendern auf.
     prefillArrivalFromLog();
 });

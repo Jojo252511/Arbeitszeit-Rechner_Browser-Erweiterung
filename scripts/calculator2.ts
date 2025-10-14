@@ -1,21 +1,23 @@
-// scripts/calculator2.js
+// scripts/calculator2.ts
+
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis } from './utils.js';
+import { type LogEntry } from './logbook.js';
 
 /**
  * @file Enthält die Logik für den zweiten Rechner "Plus / Minus bei Wunsch-Gehzeit".
- * @description Berechnet den Tagessaldo für eine vom Benutzer festgelegte Gehzeit und führt dabei umfangreiche Validierungen durch.
- * @author Jörn Unverzagt
- * @date 2025-10-13
  */
 document.addEventListener('DOMContentLoaded', () => {
-    const berechnePlusMinusBtn = document.getElementById('berechne-plusminus');
-    const ergebnisPlusMinusEl = document.getElementById('ergebnis-plusminus');
-    const wunschGehzeitInput = document.getElementById('wunsch-gehzeit');
-    const hauptSollzeitSelect = document.getElementById('sollzeit');
-    const hauptMinderjaehrigCheckbox = document.getElementById('pause-minderjaehrig');
-    const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden');
-    const nowWunschBtn = document.getElementById('now-wunsch');
+    const berechnePlusMinusBtn = document.getElementById('berechne-plusminus') as HTMLButtonElement;
+    const ergebnisPlusMinusEl = document.getElementById('ergebnis-plusminus') as HTMLDivElement;
+    const wunschGehzeitInput = document.getElementById('wunsch-gehzeit') as HTMLInputElement;
+    const hauptSollzeitSelect = document.getElementById('sollzeit') as HTMLSelectElement;
+    const hauptMinderjaehrigCheckbox = document.getElementById('pause-minderjaehrig') as HTMLInputElement;
+    const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
+    const nowWunschBtn = document.getElementById('now-wunsch') as HTMLButtonElement;
+    const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
 
-    if(nowWunschBtn) {
+
+    if (nowWunschBtn && wunschGehzeitInput) {
         nowWunschBtn.addEventListener('click', () => {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -24,20 +26,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (!berechnePlusMinusBtn) return;
+    if (!berechnePlusMinusBtn || !ergebnisPlusMinusEl) return;
 
-    /**
-     * Füllt das Feld "Wunsch-Gehzeit" basierend auf den gespeicherten Einstellungen vor.
-     * Entweder mit einer festen Zeit oder dem automatischen Kernzeitende.
-     */
-    function loadWunschGehzeit() {
+    function loadWunschGehzeit(): void {
         const wunschGehzeitMode = localStorage.getItem('userWunschGehzeitMode') === 'true';
         const customWunschGehzeit = localStorage.getItem('userCustomWunschGehzeit');
 
         if (wunschGehzeitMode && customWunschGehzeit) {
             wunschGehzeitInput.value = customWunschGehzeit;
         } else {
-            // Nur füllen, wenn das Feld leer ist, um manuelle Eingaben nicht zu überschreiben.
             if (!wunschGehzeitInput.value) {
                 wunschGehzeitInput.value = minutesToTimeString(getKernzeitUndGleitzeit().kernzeitEnde);
             }
@@ -45,45 +42,51 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     loadWunschGehzeit();
 
-    /**
-     * Event Listener für den "Zeitdifferenz berechnen"-Button.
-     * Berechnet den Tagessaldo für eine vom Benutzer festgelegte Gehzeit und führt
-     * dabei umfangreiche Validierungen durch.
-     */
     berechnePlusMinusBtn.addEventListener('click', () => {
-        // 1. Werte auslesen.
         const sollzeit = parseFloat(hauptSollzeitSelect.value);
-        const ankunftszeit = document.getElementById('ankunftszeit').value;
+        const ankunftszeit = ankunftszeitInput.value;
         const wunschGehzeit = wunschGehzeitInput.value;
         const isMinderjaehrig = hauptMinderjaehrigCheckbox.checked;
         const aktuelleUeberstunden = parseFloat(hauptUeberstundenInput.value) || 0;
 
-        // 2. Eingaben validieren (leere Felder, Gehzeit vor Ankunftszeit, Zeitgrenzen).
-        if (!ankunftszeit || !wunschGehzeit) { /* ... */ return; }
-        if (wunschGehzeit < ankunftszeit) { /* ... */ return; }
+        if (!ankunftszeit || !wunschGehzeit) {
+            showResult(ergebnisPlusMinusEl, "Bitte fülle Ankunfts- und Wunsch-Gehzeit aus.", 'error');
+            return;
+        }
+        if (wunschGehzeit < ankunftszeit) {
+            showResult(ergebnisPlusMinusEl, 'Fehler: Die Gehzeit kann nicht vor der Ankunftszeit liegen.', 'error');
+            return;
+        }
 
         const zeiten = getKernzeitUndGleitzeit();
         const wunschGehzeitInMinuten = timeStringToMinutes(wunschGehzeit);
 
-        if (wunschGehzeitInMinuten < zeiten.kernzeitEnde) { /* ... */ return; }
-        if (wunschGehzeitInMinuten > zeiten.gleitzeitEnde) { /* ... */ return; }
+        if (wunschGehzeitInMinuten < zeiten.kernzeitEnde) {
+             showResult(ergebnisPlusMinusEl, `Gehen nicht möglich. Die Kernzeit endet erst um ${minutesToTimeString(zeiten.kernzeitEnde)} Uhr.`, 'error');
+             return;
+        }
+        if (wunschGehzeitInMinuten > zeiten.gleitzeitEnde) {
+             showResult(ergebnisPlusMinusEl, `Fehler: Die Gehzeit liegt außerhalb der Gleitzeit (nach ${minutesToTimeString(zeiten.gleitzeitEnde)} Uhr).`, 'error');
+             return;
+        }
 
-        // 3. Arbeitszeit berechnen und auf Höchstarbeitszeit prüfen.
         const kalkulationsStartMinuten = Math.max(timeStringToMinutes(ankunftszeit), zeiten.gleitzeitStart);
         const pausenDauer = isMinderjaehrig ? 60 : 45;
         const gearbeiteteMinuten = wunschGehzeitInMinuten - kalkulationsStartMinuten - pausenDauer;
 
         const maxArbeitszeitMinuten = isMinderjaehrig ? (8 * 60) : (10 * 60);
-        if (gearbeiteteMinuten > maxArbeitszeitMinuten) { /* ... */ return; }
+        if (gearbeiteteMinuten > maxArbeitszeitMinuten) {
+             showResult(ergebnisPlusMinusEl, `Fehler: Die Höchstarbeitszeit von ${isMinderjaehrig ? 8 : 10} Stunden wird überschritten.`, 'error');
+             return;
+        }
 
-        // 4. Salden berechnen.
         const sollzeitInMinuten = sollzeit * 60;
         const tagesDifferenz = gearbeiteteMinuten - sollzeitInMinuten;
         const aktuellerSaldoInMin = aktuelleUeberstunden * 60;
         const neuerGesamtSaldo = aktuellerSaldoInMin + tagesDifferenz;
         const saldoDezimalFuerFunktion = (neuerGesamtSaldo / 60).toFixed(2);
+        const neuerGesamtSaldoDezimal = saldoDezimalFuerFunktion.replace('.', ',');
 
-        // 5. Ergebnisnachricht zusammenbauen.
         let nachricht = '';
         const restzeit = berechneRestzeitBis(wunschGehzeit);
         if (restzeit === null) {
@@ -99,16 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (hauptUeberstundenInput.value) {
             const gesamtSaldoStyle = (neuerGesamtSaldo < 0) ? ' class="negative-saldo"' : '';
-            nachricht += `<br>Neuer Gesamt-Saldo: <strong${gesamtSaldoStyle}>${(neuerGesamtSaldo >= 0 ? "+" : "") + formatMinutesToString(neuerGesamtSaldo)} (${(neuerGesamtSaldo / 60).toFixed(2).replace('.', ',')} h)</strong>`;
+            nachricht += `<br>Neuer Gesamt-Saldo: <strong${gesamtSaldoStyle}>${(neuerGesamtSaldo >= 0 ? "+" : "") + formatMinutesToString(neuerGesamtSaldo)} (${neuerGesamtSaldoDezimal} h)</strong>`;
         }
 
-        // 6. Ergebnis anzeigen und "Speichern"-Button hinzufügen.
         showResult(ergebnisPlusMinusEl, nachricht);
         if (hauptUeberstundenInput.value) {
             ergebnisPlusMinusEl.insertAdjacentHTML('beforeend', savedUeberstunden);
         }
 
-        const logEntry = {
+        const logEntry: LogEntry = {
             id: new Date().setHours(0, 0, 0, 0),
             date: new Date().toLocaleDateString('de-DE'),
             arrival: ankunftszeit,
@@ -125,9 +127,6 @@ document.addEventListener('DOMContentLoaded', () => {
             document.dispatchEvent(new CustomEvent('saveLogEntry', { detail: logEntry }));
         });
 
-        // Füge den neuen Button nach dem "Saldo speichern"-Button hinzu
         ergebnisPlusMinusEl.appendChild(saveLogButton);
     });
-
-
 });

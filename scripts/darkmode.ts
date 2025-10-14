@@ -1,21 +1,17 @@
-// scripts/darkmode.js
+// scripts/darkmode.ts
 
 /**
  * @file Steuert die Dark-Mode-Funktionalität.
- * @description Enthält die Logik zum Umschalten des Themes, zum Speichern der
- * Benutzereinstellung im Local Storage und zum Auslesen der Systempräferenz.
- * @author Jörn Unverzagt
- * @date 2025-10-13
  */
 document.addEventListener('DOMContentLoaded', () => {
-    const toggleButton = document.getElementById('dark-mode-toggle');
+    const toggleButton = document.getElementById('dark-mode-toggle') as HTMLButtonElement;
     const body = document.body;
 
     /**
-     * Wendet ein Theme an, indem die 'dark-mode'-Klasse zum Body hinzugefügt oder entfernt wird.
-     * @param {string} theme - Das anzuwendende Theme ('dark' oder 'light').
+     * Wendet ein Theme an.
+     * @param {string} theme - 'dark' oder 'light'.
      */
-    const applyTheme = (theme) => {
+    const applyTheme = (theme: string): void => {
         if (theme === 'dark') {
             body.classList.add('dark-mode');
         } else {
@@ -23,10 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /**
-     * Event Listener für den Umschalt-Button.
-     * Wechselt das Theme und speichert die neue Einstellung im Local Storage.
-     */
+    if (!toggleButton) return;
+
     toggleButton.addEventListener('click', () => {
         const isDarkMode = body.classList.contains('dark-mode');
         if (isDarkMode) {
@@ -38,9 +32,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- Initiales Laden des Themes ---
-    // Prüft beim Seitenstart, ob ein Theme im Local Storage gespeichert ist.
-    // Falls nicht, wird die Systemeinstellung des Benutzers ('prefers-color-scheme') geprüft.
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         applyTheme(savedTheme);
