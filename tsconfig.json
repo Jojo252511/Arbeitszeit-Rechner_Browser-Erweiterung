@@ -4,8 +4,8 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
 
     /* Modernisierte Modul-Einstellungen, die die alten Optionen ersetzen */
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ES2022", 
+    "moduleResolution": "bundler",
 
     /* Projekt-Struktur */
     "rootDir": "./scripts",
