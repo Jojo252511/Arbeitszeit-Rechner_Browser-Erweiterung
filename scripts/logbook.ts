@@ -4,7 +4,7 @@ import { formatMinutesToString } from './utils.js';
 
 // Wir verwenden jetzt den einfachen 'auto'-Import.
 // Dieser sollte dank der geänderten tsconfig.json jetzt gefunden werden.
-import Chart, { type TooltipItem } from 'chart.js/auto';
+declare const Chart: any;
 
 // Definiere die Struktur eines Logbuch-Eintrags.
 export interface LogEntry {
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderChart(logData: LogEntry[]): void {
         const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
-        if (!chartContainer) return;
+        if (!chartContainer || !Chart) return;
 
         if (logData.length === 0) {
             chartContainer.style.display = 'none';
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(context: TooltipItem<'bar'>) {
+                            label: function(context: any) {
                                 let label = context.dataset.label || '';
                                 if (label) { label += ': '; }
                                 if (context.parsed.y !== null) {
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- Der Rest der Datei bleibt unverändert ---
+   
     function renderLog(): void {
         if (!logbookBody) return;
         logbookBody.innerHTML = '';
