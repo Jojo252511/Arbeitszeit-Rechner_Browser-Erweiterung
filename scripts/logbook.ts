@@ -1,9 +1,7 @@
 // scripts/logbook.ts
 
-import { formatMinutesToString } from './utils.js';
+import { formatMinutesToString, timeStringToMinutes, getKernzeitUndGleitzeit } from './utils.js';
 
-// Wir verwenden jetzt den einfachen 'auto'-Import.
-// Dieser sollte dank der geänderten tsconfig.json jetzt gefunden werden.
 declare const Chart: any;
 
 // Definiere die Struktur eines Logbuch-Eintrags.
@@ -19,6 +17,10 @@ export interface LogEntry {
 document.addEventListener('DOMContentLoaded', () => {
     const logbookBody = document.getElementById('logbook-body') as HTMLTableSectionElement;
     const clearLogbookBtn = document.getElementById('clear-logbook-btn') as HTMLButtonElement;
+    const exportLogbookBtn = document.getElementById('export-logbook-btn') as HTMLButtonElement;
+    const importLogbookBtn = document.getElementById('import-logbook-btn') as HTMLButtonElement;
+    const editLogbookBtn = document.getElementById('edit-logbook-btn') as HTMLButtonElement;
+
     const LOGBOOK_KEY = 'workLogbook';
 
     let logbookChart: Chart | null = null;
@@ -115,29 +117,41 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
    
-    function renderLog(): void {
+    function renderLog(editMode = false): void {
         if (!logbookBody) return;
         logbookBody.innerHTML = '';
         const logData = getLog();
         logData.sort((a, b) => b.id - a.id);
         renderChart(logData);
+
         if (logData.length === 0) {
-            logbookBody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Noch keine Einträge vorhanden.</td></tr>';
+            logbookBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Noch keine Einträge vorhanden.</td></tr>';
             return;
         }
-        logData.forEach(entry => {
+
+        logData.forEach((entry, index) => {
             const row = document.createElement('tr');
+            row.dataset.entryId = entry.id.toString();
             const saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
             const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
+            const actionsHtml = editMode
+                ? `
+                <button type="button" class="small-btn save-edit-btn" data-entry-id="${entry.id}">Speichern</button>
+                <button type="button" class="small-btn cancel-edit-btn">Abbrechen</button>
+            `
+                : '';
+
             row.innerHTML = `
                 <td>${entry.date}</td>
-                <td>${entry.arrival} Uhr</td>
-                <td>${entry.leaving} Uhr</td>
+                <td><span class="time-display">${entry.arrival}</span><input type="time" class="time-input" value="${entry.arrival}" style="display: none;"> Uhr</td>
+                <td><span class="time-display">${entry.leaving}</span><input type="time" class="time-input" value="${entry.leaving}" style="display: none;"> Uhr</td>
                 <td${saldoStyle}>${saldoPrefix}${formatMinutesToString(entry.dailySaldoMinutes)}</td>
+                <td class="logbook-actions">${actionsHtml}</td>
             `;
             logbookBody.appendChild(row);
         });
     }
+
     function addLogEntry(newEntry: LogEntry): void {
         const logData = getLog();
         const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
@@ -161,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
+
     if (clearLogbookBtn) {
         clearLogbookBtn.addEventListener('click', () => {
             if (confirm('Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?')) {
@@ -169,10 +184,113 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    if (exportLogbookBtn) {
+        exportLogbookBtn.addEventListener('click', () => {
+            const logData = getLog();
+            if (logData.length === 0) {
+                alert('Das Logbuch ist leer. Es gibt nichts zu exportieren.');
+                return;
+            }
+            const jsonString = JSON.stringify(logData, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'arbeitszeit-logbuch.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    }
+
+    if (importLogbookBtn) {
+        importLogbookBtn.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = (event) => {
+                const file = (event.target as HTMLInputElement).files?.[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const importedLog = JSON.parse(e.target?.result as string);
+                            if (Array.isArray(importedLog) && importedLog.every(entry => 'id' in entry && 'date' in entry)) {
+                                if (confirm('Möchtest du das aktuelle Logbuch mit den importierten Daten überschreiben?')) {
+                                    saveLog(importedLog);
+                                    renderLog();
+                                    alert('Logbuch erfolgreich importiert.');
+                                }
+                            } else {
+                                alert('Die ausgewählte Datei hat kein gültiges Logbuch-Format.');
+                            }
+                        } catch (error) {
+                            alert('Fehler beim Lesen oder Parsen der Datei.');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        });
+    }
+
+    if (editLogbookBtn) {
+        editLogbookBtn.addEventListener('click', () => {
+            logbookBody.classList.toggle('edit-mode');
+            const isEditMode = logbookBody.classList.contains('edit-mode');
+            renderLog(isEditMode);
+        });
+    }
+
+    logbookBody.addEventListener('click', (event) => {
+        const target = event.target as HTMLElement;
+
+        if (target.classList.contains('save-edit-btn')) {
+            const row = target.closest('tr');
+            if (row) {
+                const entryId = parseInt(row.dataset.entryId || '0', 10);
+                const logData = getLog();
+                const entryIndex = logData.findIndex(e => e.id === entryId);
+                if (entryIndex > -1) {
+                    const arrivalInput = row.querySelector('input[type="time"]') as HTMLInputElement;
+                    const leavingInput = row.querySelectorAll('input[type="time"]')[1] as HTMLInputElement;
+
+                    const newArrival = arrivalInput.value;
+                    const newLeaving = leavingInput.value;
+                    
+                    const arrivalMinutes = timeStringToMinutes(newArrival);
+                    const leavingMinutes = timeStringToMinutes(newLeaving);
+                    const targetHours = logData[entryIndex].targetHours;
+
+                    const isMinderjaehrig = (localStorage.getItem('userIsMinderjaehrig') === 'true');
+                    const pausenDauer = isMinderjaehrig ? 60 : 45;
+                    const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
+                    const sollzeitInMinuten = targetHours * 60;
+                    const tagesDifferenz = gearbeiteteMinuten - sollzeitInMinuten;
+
+                    logData[entryIndex].arrival = newArrival;
+                    logData[entryIndex].leaving = newLeaving;
+                    logData[entryIndex].dailySaldoMinutes = Math.round(tagesDifferenz);
+
+                    saveLog(logData);
+                    renderLog(true);
+                }
+            }
+        }
+
+        if (target.classList.contains('cancel-edit-btn')) {
+            renderLog(true); 
+        }
+    });
+
     document.addEventListener('saveLogEntry', (event: Event) => {
         const customEvent = event as CustomEvent<LogEntry>;
         addLogEntry(customEvent.detail);
     });
+
     renderLog();
     prefillArrivalFromLog();
 });

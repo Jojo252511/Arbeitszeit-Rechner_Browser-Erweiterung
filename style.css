@@ -516,7 +516,7 @@ input[type="time"] {
     letter-spacing: -2px;
 }
 
-/* In style.css einfügen */
+
 
 /* --- Stile für das Logbuch --- */
 #logbook-controls {
@@ -572,6 +572,25 @@ input[type="time"] {
     width: 100%;
     margin-bottom: 2rem;
 }
+
+
+#logbook-table td.logbook-actions {
+    width: 120px;
+    text-align: right;
+}
+
+.logbook-container .time-input {
+    width: 100px;
+}
+
+.edit-mode .time-display {
+    display: none;
+}
+
+.edit-mode .time-input {
+    display: inline-block !important;
+}
+
 
 /**/
 
