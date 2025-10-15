@@ -1,6 +1,12 @@
 // scripts/darkmode.ts
 
 /**
+ * @module darkmode
+ * @description Steuert die Dark-Mode-Funktionalität.
+ * @author Joern Unverzagt
+ */
+
+/**
  * @file Steuert die Dark-Mode-Funktionalität.
  */
 document.addEventListener('DOMContentLoaded', () => {

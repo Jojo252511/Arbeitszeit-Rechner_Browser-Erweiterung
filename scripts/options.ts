@@ -1,6 +1,11 @@
 // scripts/options.ts
 
-// Importiere die benötigten Funktionen
+/**
+ * @module options
+ * @description Verwaltung der Optionen-Seite für den Arbeitszeit-Rechner.
+ * @author Joern Unverzagt
+ */
+
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString } from './utils.js';
 
 /**

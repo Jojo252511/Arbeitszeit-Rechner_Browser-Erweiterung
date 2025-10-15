@@ -1,5 +1,11 @@
 // scripts/calculator3.ts
 
+/**
+ * @module calculator3
+ * @author Joern Unverzagt
+ * @description Logik für den dritten Rechner "Überstunden-Planer".
+ */
+
 import { formatMinutesToString, showResult } from './utils.js';
 
 /**

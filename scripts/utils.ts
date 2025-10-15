@@ -3,11 +3,10 @@
 /**
  * @file Utility-Funktionen für den Arbeitszeit-Rechner.
  * @description Diese Datei enthält wiederverwendbare Hilfsfunktionen für Zeitberechnungen, Formatierungen und die Anzeige von Ergebnissen.
+ * @author Joern Unverzagt
  */
 
-// --- Typ-Definitionen ---
 
-// NUR EINE, exportierte Definition.
 export interface ZeitPunkte {
     gleitzeitStart: number;
     kernzeitStart: number;
@@ -15,7 +14,6 @@ export interface ZeitPunkte {
     gleitzeitEnde: number;
 }
 
-// Diese globale Erweiterung bleibt unverändert.
 declare global {
     interface Window {
         saveUeberH: (time: number) => void;
@@ -126,5 +124,4 @@ export function saveUeberH(time: number): void {
     window.location.reload(); 
 }
 
-// Macht die Funktion global verfügbar.
 window.saveUeberH = saveUeberH;
