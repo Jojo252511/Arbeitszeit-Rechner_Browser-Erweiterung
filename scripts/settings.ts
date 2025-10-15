@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
     const calculatorCard = document.getElementById('calculator-card') as HTMLDivElement;
     const calculatorIframe = document.getElementById('calculator-iframe') as HTMLIFrameElement;
+    const countdownWindowToggle = document.getElementById('countdown-window-toggle') as HTMLInputElement;
 
     /**
      * Steuert die Sichtbarkeit des Taschenrechner-iFrames.
@@ -59,6 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
      * Lädt alle gespeicherten Benutzereinstellungen aus dem Local Storage.
      */
     const loadSettings = (): void => {
+        countdownWindowToggle.checked = localStorage.getItem('userCountdownWindow') === 'true';
+
         hauptSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
         standardSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
 
@@ -116,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedUeberstunden = standardUeberstundenInput.value;
         const selectedWunschGehzeitMode = wunschGehzeitModeToggle.checked;
         const selectedCustomWunschGehzeit = customWunschGehzeitInput.value;
-        const selectedRechnerState = rechnerToggle.checked; 
+        const selectedRechnerState = rechnerToggle.checked;
+        const selectedCountdownWindowState = countdownWindowToggle.checked;
 
         if (selectedWunschGehzeitMode && selectedCustomWunschGehzeit) {
             const zeiten = getKernzeitUndGleitzeit();
@@ -134,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('userWunschGehzeitMode', String(selectedWunschGehzeitMode));
         localStorage.setItem('userCustomWunschGehzeit', selectedCustomWunschGehzeit);
         localStorage.setItem('userRechnerAnzeigen', String(selectedRechnerState));
+        localStorage.setItem('userCountdownWindow', String(selectedCountdownWindowState));
 
         window.location.reload();
     });
