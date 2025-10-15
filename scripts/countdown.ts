@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownTimerEl = document.getElementById('countdown-timer') as HTMLDivElement;
     const wunschGehzeitInput = document.getElementById('wunsch-gehzeit') as HTMLInputElement;
 
+
     // Gib der Intervall-Variable den korrekten Typ
     let countdownInterval: number | undefined;
 
@@ -74,6 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function closeCountdown(): void {
         if (!countdownModal) return;
         countdownModal.style.display = 'none';
+        document.body.style.overflowY = 'auto';
         clearInterval(countdownInterval);
         countdownTimerEl.style.color = 'var(--primary-color)';
     }
@@ -88,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (startPlus0Btn) startPlus0Btn.addEventListener('click', () => {
         if (window.feierabendZeit) {
+            document.body.style.overflowY = 'hidden';
             startCountdown(window.feierabendZeit, "Restzeit bis Feierabend");
         } else {
             alert("Bitte berechne zuerst im 'Wann kann ich gehen?'-Rechner deinen Feierabend.");
@@ -97,6 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (startWunschBtn) startWunschBtn.addEventListener('click', () => {
         if (wunschGehzeitInput && wunschGehzeitInput.value) {
             const wunschInMinuten = timeStringToMinutes(wunschGehzeitInput.value);
+            document.body.style.overflowY = 'hidden';
             startCountdown(wunschInMinuten, "Restzeit bis zur Wunsch-Gehzeit");
         } else {
             alert("Bitte gib zuerst im 'Plus / Minus'-Rechner eine Wunsch-Gehzeit ein.");
