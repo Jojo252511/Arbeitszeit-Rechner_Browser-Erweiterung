@@ -102,10 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (faqKernzeitEndeFrEl) faqKernzeitEndeFrEl.textContent = kernzeitEndeFr;
     }
 
-    menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; });
-    closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; });
+    menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; document.body.style.overflowY = 'hidden';});
+    closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto';});
     settingsModal.addEventListener('click', (event: MouseEvent) => {
-        if (event.target === settingsModal) { settingsModal.style.display = 'none'; }
+        if (event.target === settingsModal) { settingsModal.style.display = 'none';  document.body.style.overflowY = 'auto';}
     });
     wunschGehzeitModeToggle.addEventListener('change', toggleCustomWunschGehzeit);
     rechnerToggle.addEventListener('change', applyRechnerVisibility);
