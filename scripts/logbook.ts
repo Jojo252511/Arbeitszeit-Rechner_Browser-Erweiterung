@@ -2,8 +2,6 @@
 
 import { formatMinutesToString, timeStringToMinutes, getKernzeitUndGleitzeit } from './utils.js';
 
-// Wir verwenden jetzt den einfachen 'auto'-Import.
-// Dieser sollte dank der geänderten tsconfig.json jetzt gefunden werden.
 declare const Chart: any;
 
 // Definiere die Struktur eines Logbuch-Eintrags.
