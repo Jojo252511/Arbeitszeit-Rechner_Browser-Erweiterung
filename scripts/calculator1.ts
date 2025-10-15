@@ -1,10 +1,16 @@
 // scripts/calculator1.ts
 
-// NEU: Importiere alle benötigten Hilfsfunktionen und Typen
+/**
+ * @module calculator1
+ * @description Logik für den ersten Rechner "Wann kann ich gehen?".
+ * @requires utils
+ * @requires logbook
+ * @author Joern Unverzagt
+ */
+
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis } from './utils.js';
 import { type LogEntry } from './logbook.js'; // Importiert die Struktur eines Log-Eintrags
 
-// NEU: Mache TypeScript die globale Variable bekannt
 declare global {
     interface Window {
         feierabendZeit?: number; // Das '?' bedeutet, die Eigenschaft ist optional
@@ -24,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const nowAnkunftBtn = document.getElementById('now-ankunft') as HTMLButtonElement;
     const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
 
-    // NEU: Sicherheitsprüfung, ob die Elemente wirklich existieren
     if (!berechneGehzeitBtn || !ergebnisGehzeitEl) {
         console.error("Haupt-Elemente für Rechner 1 konnten nicht gefunden werden.");
         return;
@@ -105,7 +110,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showResult(ergebnisGehzeitEl, nachricht);
 
-        // NEU: Expliziter Typ für das logEntry-Objekt
         const logEntry: LogEntry = {
             id: new Date().setHours(0, 0, 0, 0),
             date: new Date().toLocaleDateString('de-DE'),

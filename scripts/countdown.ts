@@ -1,5 +1,14 @@
 // scripts/countdown.ts
 
+/**
+ * @module countdown
+ * @description Dieses Modul implementiert einen Countdown-Timer, der die verbleibende Zeit bis zu einer bestimmten Zielzeit anzeigt.
+ *              Der Timer kann entweder auf die berechnete Feierabendzeit oder auf eine benutzerdefinierte Wunsch-Gehzeit gesetzt werden.
+ *              Der Countdown wird in einem modalen Fenster angezeigt und aktualisiert sich jede Sekunde.
+ *             Der Timer ändert die Farbe der Anzeige, wenn die Zeit abgelaufen ist.
+ * @author Jörn Unverzagt
+ */
+
 import { timeStringToMinutes } from './utils.js';
 
 // Mache TypeScript die globale Variable aus calculator1.ts bekannt

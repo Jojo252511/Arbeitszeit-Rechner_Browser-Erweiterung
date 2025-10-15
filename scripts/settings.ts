@@ -1,6 +1,11 @@
 // scripts/settings.ts
 
-// NEU: Importiere die benötigten Funktionen aus der utils-Datei
+/**
+ * @module settings
+ * @description Verwaltung des Einstellungs-Modals für den Arbeitszeit-Rechner.
+ * @author Joern Unverzagt
+ */
+
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString } from './utils.js';
 
 /**
@@ -8,14 +13,10 @@ import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString } fro
  * @description Steuert das Öffnen, Schließen, Speichern und Laden von Benutzereinstellungen.
  */
 document.addEventListener('DOMContentLoaded', () => {
-
-    // --- DOM-Elemente für die Einstellungs-Logik ---
     const menuToggleBtn = document.getElementById('menu-toggle') as HTMLButtonElement;
     const settingsModal = document.getElementById('settings-modal') as HTMLDivElement;
     const closeSettingsBtn = document.getElementById('close-settings') as HTMLSpanElement;
     const saveSettingsBtn = document.getElementById('save-settings') as HTMLButtonElement;
-
-    // Elemente aus dem Einstellungs-Modal
     const standardSollzeitSelect = document.getElementById('standard-sollzeit') as HTMLSelectElement;
     const standardMinderjaehrigCheckbox = document.getElementById('standard-pause-minderjaehrig') as HTMLInputElement;
     const standardUeberstundenInput = document.getElementById('standard-ueberstunden') as HTMLInputElement;
@@ -23,8 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const customWunschGehzeitContainer = document.getElementById('custom-wunsch-gehzeit-container') as HTMLDivElement;
     const customWunschGehzeitInput = document.getElementById('custom-wunsch-gehzeit') as HTMLInputElement;
     const rechnerToggle = document.getElementById('rechner-toggle') as HTMLInputElement;
-
-    // Elemente aus den Hauptrechnern, die von den Einstellungen beeinflusst werden
     const hauptSollzeitSelect = document.getElementById('sollzeit') as HTMLSelectElement;
     const hauptMinderjaehrigCheckbox = document.getElementById('pause-minderjaehrig') as HTMLInputElement;
     const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
@@ -103,7 +102,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (faqKernzeitEndeFrEl) faqKernzeitEndeFrEl.textContent = kernzeitEndeFr;
     }
 
-    // --- Event Listeners ---
     menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; });
     closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; });
     settingsModal.addEventListener('click', (event: MouseEvent) => {
@@ -140,6 +138,5 @@ document.addEventListener('DOMContentLoaded', () => {
         window.location.reload();
     });
 
-    // Initiales Laden der Einstellungen
     loadSettings();
 });

@@ -1,5 +1,13 @@
 // scripts/calculator2.ts
 
+/**
+ * @module calculator2
+ * @description Enthält die Logik für den zweiten Rechner "Plus / Minus bei Wunsch-Gehzeit".
+ * @requires utils
+ * @requires logbook
+ * @author Joern Unverzagt
+ */
+
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis } from './utils.js';
 import { type LogEntry } from './logbook.js';
 
