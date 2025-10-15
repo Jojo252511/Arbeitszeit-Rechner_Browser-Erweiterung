@@ -1,3 +1,6 @@
+/* ===================================================================
+   1. Globale Stile & Variablen
+   =================================================================== */
 :root {
     --primary-color: #007bff;
     --primary-hover-color: #0056b3;
@@ -16,8 +19,6 @@
     padding: 0;
 }
 
-/*---------------------------------------------*/
-
 body {
     font-family: 'Poppins', sans-serif;
     background-color: var(--background-color);
@@ -29,9 +30,13 @@ body {
     min-width: 385px;
     max-width: calc(100% - 50px);
     padding: 2rem;
+    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
-/* Für Chrome, Safari, Edge und andere WebKit-Browser */
+
+/* ===================================================================
+   2. Scrollbar-Styling
+   =================================================================== */
 body::-webkit-scrollbar {
     width: 15px;
 }
@@ -42,14 +47,205 @@ body::-webkit-scrollbar-track {
 
 body::-webkit-scrollbar-thumb {
     background-color: var(--primary-color);
-    border-radius: 15px; 
-    border: 2px solid var(--background-color); 
+    border-radius: 15px;
+    border: 2px solid var(--background-color);
 }
 
 body::-webkit-scrollbar-thumb:hover {
-    background-color: var(--primary-hover-color); 
+    background-color: var(--primary-hover-color);
 }
 
+.settings-content::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* ===================================================================
+   3. Basis-Layout & Typografie
+   =================================================================== */
+.container {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 2rem;
+    margin: 1.5rem;
+}
+
+.card {
+    background-color: var(--card-background-color);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.4s ease, color 0.4s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px var(--shadow-color);
+}
+
+h1 {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 1.25rem;
+}
+
+h2 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.sub-heading {
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--primary-color);
+}
+
+hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 1rem 0;
+}
+
+.hochgestellt {
+    font-size: 0.5em;
+    vertical-align: super;
+    margin-left: 0.2rem;
+}
+
+
+/* ===================================================================
+   4. Formularelemente & Buttons
+   =================================================================== */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 400;
+    font-size: 0.9rem;
+}
+
+input[type="time"],
+input[type="number"],
+select {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus,
+select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: 1.25em;
+    height: 1.25em;
+    accent-color: var(--primary-color);
+}
+
+button {
+    width: 100%;
+    padding: 0.85rem;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--primary-color);
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover {
+    background-color: var(--primary-hover-color);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.save-saldo-btn {
+    background-color: var(--success-color);
+    margin-top: 1rem;
+}
+
+.save-saldo-btn:hover {
+    background-color: #218838;
+}
+
+.small-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+    width: auto;
+    background-color: #6c757d;
+}
+
+.small-btn:hover {
+    background-color: #5a6268;
+}
+
+#clear-logbook-btn {
+    background-color: var(--error-color);
+}
+
+.time-input-wrapper {
+    position: relative;
+}
+
+input[type="time"] {
+    padding-right: 3rem !important;
+}
+
+.now-btn {
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #999;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    width: auto;
+    height: auto;
+    line-height: 1;
+}
+
+.now-btn:hover {
+    color: var(--primary-color);
+    background: none;
+}
+
+
+/* ===================================================================
+   5. UI-Komponenten
+   =================================================================== */
+
+/* --- Banner & Header --- */
 .top-banner {
     position: fixed;
     width: 100%;
@@ -113,7 +309,9 @@ body::-webkit-scrollbar-thumb:hover {
     position: absolute;
 }
 
-.settings-modal {
+/* --- Modals (Settings & Countdown) --- */
+.settings-modal,
+.countdown-modal {
     position: fixed;
     top: 0;
     left: 0;
@@ -124,17 +322,6 @@ body::-webkit-scrollbar-thumb:hover {
     justify-content: center;
     align-items: center;
     z-index: 1001;
-}
-
-.close-button {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--text-color);
-    cursor: pointer;
 }
 
 .settings-content {
@@ -148,11 +335,51 @@ body::-webkit-scrollbar-thumb:hover {
     position: relative;
 }
 
-/* Für Chrome, Safari, Edge und andere WebKit-Browser */
-.settings-content::-webkit-scrollbar {
-    display: none;
+.close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--text-color);
+    cursor: pointer;
 }
 
+.countdown-modal {
+    background-color: rgba(0, 0, 0, 0.7);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    z-index: 1002;
+}
+
+.countdown-content {
+    background-color: var(--card-background-color);
+    padding: 2rem 3rem;
+    border-radius: 16px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    width: 90%;
+}
+
+#countdown-title {
+    margin-bottom: 1.5rem;
+    font-weight: 400;
+    font-size: 1.2rem;
+    color: var(--text-color);
+}
+
+.timer-display {
+    font-size: 3rem;
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace;
+    color: var(--primary-color);
+    letter-spacing: -2px;
+}
+
+
+/* --- Switch Toggle --- */
 .switch-container {
     display: flex;
     align-items: center;
@@ -212,128 +439,8 @@ input:checked+.slider:before {
     border-radius: 50%;
 }
 
-#custom-wunsch-gehzeit-container {
-    display: none;
-}
 
-#standard-pause-minderjaehrig-label {
-    margin-bottom: 0;
-}
-
-#copyright {
-    display: block;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #6c757d;
-    margin-top: 1rem;
-}
-
-.container {
-    width: 100%;
-    max-width: 900px;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 2rem;
-    margin: 1.5rem;
-}
-
-
-h1 {
-    grid-column: 1 / -1;
-    text-align: center;
-    color: var(--primary-color);
-    font-size: 1.25rem;
-}
-
-.hochgestellt {
-    font-size: 0.5em;
-    vertical-align: super;
-    margin-left: 0.2rem;
-}
-
-h2 {
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    grid-column: 1 / -1;
-    text-align: center;
-}
-
-.card {
-    background-color: var(--card-background-color);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: 0 4px 15px var(--shadow-color);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px var(--shadow-color);
-}
-
-h2,
-.sub-heading {
-    margin-bottom: 1.5rem;
-    font-weight: 600;
-}
-
-.sub-heading {
-    font-size: 1rem;
-    color: var(--primary-color);
-}
-
-hr {
-    border: none;
-    border-top: 1px solid var(--border-color);
-    margin: 1rem 0;
-}
-
-.form-group {
-    margin-bottom: 1.25rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 400;
-    font-size: 0.9rem;
-}
-
-#pause-minderjaehrig-label {
-    margin-bottom: 0;
-}
-
-input[type="time"],
-input[type="number"],
-select {
-    width: 100%;
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-input:focus,
-select:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.checkbox-group input[type="checkbox"] {
-    width: 1.25em;
-    height: 1.25em;
-    accent-color: var(--primary-color);
-}
-
+/* --- Info-Texte & Ergebnisse --- */
 .info-text {
     font-size: 0.8rem;
     color: #6c757d;
@@ -341,34 +448,35 @@ select:focus {
     margin-bottom: 1.5rem;
 }
 
-button {
-    width: 100%;
-    padding: 0.85rem;
-    border: none;
-    border-radius: 8px;
-    background-color: var(--primary-color);
+.info-icon {
+    display: inline-block;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background-color: #ccc;
     color: white;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-align: center;
+    font-size: 0.8rem;
+    line-height: 1.1rem;
+    cursor: help;
+    position: relative;
+    margin-left: 0.3rem;
 }
 
-button:hover {
-    background-color: var(--primary-hover-color);
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
-.save-saldo-btn {
-    background-color: var(--success-color);
-    margin-top: 1rem;
-}
-
-.save-saldo-btn:hover {
-    background-color: #218838;
+.info-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #333;
+    color: white;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 10;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .ergebnis {
@@ -404,46 +512,37 @@ button:active {
     color: var(--success-color);
 }
 
-.ergebnis.error {
-    background-color: #fbebed;
+.ergebnis.error,
+.ergebnis .error-text,
+.negative-saldo {
     color: var(--error-color);
 }
 
-/* NEUE STILE FÜR INFO-ICON */
-.info-icon {
-    display: inline-block;
-    width: 1.1rem;
-    height: 1.1rem;
-    border-radius: 50%;
-    background-color: #ccc;
-    color: white;
-    text-align: center;
-    font-size: 0.8rem;
-    line-height: 1.1rem;
-    cursor: help;
-    position: relative;
-    margin-left: 0.3rem;
-}
-
-.info-icon:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 125%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #333;
-    color: white;
-    padding: 0.5rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    white-space: nowrap;
-    z-index: 10;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.ergebnis.error {
+    background-color: #fbebed;
 }
 
 .ergebnis .error-text {
-    color: var(--error-color);
     font-weight: 600;
+}
+
+#copyright {
+    display: block;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-top: 1rem;
+}
+
+
+/* --- Spezifische Komponenten-Stile --- */
+#custom-wunsch-gehzeit-container {
+    display: none;
+}
+
+#pause-minderjaehrig-label,
+#standard-pause-minderjaehrig-label {
+    margin-bottom: 0;
 }
 
 .fullwidth {
@@ -463,104 +562,13 @@ button:active {
     display: none;
 }
 
-.negative-saldo {
-    color: var(--error-color);
-}
 
-/* In style.css einfügen, z.B. nach den anderen input-Stilen */
-
-.time-input-wrapper {
+/* --- Logbuch & Chart --- */
+.chart-container {
     position: relative;
-}
-
-.now-btn {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: #999;
-    font-size: 1.2rem;
-    cursor: pointer;
-    padding: 0.5rem;
-    width: auto;
-    height: auto;
-    line-height: 1;
-}
-
-.now-btn:hover {
-    color: var(--primary-color);
-    background: none;
-    /* Wichtig, um den Standard-Hover-Effekt zu überschreiben */
-}
-
-/* Fügt dem Zeit-Input etwas Platz auf der rechten Seite hinzu, damit der Text nicht unter den Button läuft */
-input[type="time"] {
-    padding-right: 3rem !important;
-}
-
-/* In style.css einfügen */
-
-/* --- Stile für das Countdown-Modal --- */
-.countdown-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
+    height: 250px;
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    display: none;
-    /* Wird per JS auf 'flex' gesetzt */
-    justify-content: center;
-    align-items: center;
-    z-index: 1002;
-}
-
-.countdown-content {
-    background-color: var(--card-background-color);
-    padding: 2rem 3rem;
-    border-radius: 16px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    width: 90%;
-}
-
-#countdown-title {
-    margin-bottom: 1.5rem;
-    font-weight: 400;
-    font-size: 1.2rem;
-    color: var(--text-color);
-}
-
-.timer-display {
-    font-size: 3rem;
-    font-weight: 600;
-    font-family: 'Courier New', Courier, monospace;
-    color: var(--primary-color);
-    letter-spacing: -2px;
-}
-
-
-
-/* --- Stile für das Logbuch --- */
-#logbook-controls {
-    text-align: right;
-    margin-bottom: 1rem;
-}
-
-.small-btn {
-    padding: 0.4rem 0.8rem;
-    font-size: 0.8rem;
-    width: auto;
-    background-color: #6c757d;
-}
-
-.small-btn:hover {
-    background-color: #5a6268;
+    margin-bottom: 2rem;
 }
 
 .logbook-container {
@@ -568,6 +576,11 @@ input[type="time"] {
     overflow-y: auto;
     border: 1px solid var(--border-color);
     border-radius: 8px;
+}
+
+#logbook-controls {
+    text-align: right;
+    margin-bottom: 1rem;
 }
 
 #logbook-table {
@@ -592,18 +605,6 @@ input[type="time"] {
     border-bottom: none;
 }
 
-#clear-logbook-btn {
-    background-color: var(--error-color);
-}
-
-.chart-container {
-    position: relative;
-    height: 250px;
-    width: 100%;
-    margin-bottom: 2rem;
-}
-
-
 #logbook-table td.logbook-actions {
     width: 120px;
     text-align: right;
@@ -622,13 +623,9 @@ input[type="time"] {
 }
 
 
-/**/
-
-body,
-.card {
-    transition: background-color 0.4s ease, color 0.4s ease;
-}
-
+/* ===================================================================
+   6. Dark Mode
+   =================================================================== */
 body.dark-mode {
     --background-color: #121212;
     --card-background-color: #1e1e1e;
@@ -691,44 +688,10 @@ body.dark-mode .sun-icon {
     display: block;
 }
 
-@media (max-width: 1025px) {
-    body {
-        padding: 1rem;
-        flex-direction: column;
-        align-items: center;
-    }
 
-    .container {
-        gap: 1.5rem;
-        margin: 1rem 0;
-        width: 100%;
-        margin-top: 6rem;
-    }
-
-    #faq-container {
-        margin-top: 10px;
-    }
-
-    .card {
-        padding: 1.5rem;
-    }
-
-    .fullwidth {
-        padding: 0;
-    }
-
-    .fullwidth iframe {
-        height: 600px;
-    }
-
-}
-
-
-/* options.html styles */
-
-/* In style.css hinzufügen */
-
-/* Layout für die eigenständige Optionsseite */
+/* ===================================================================
+   7. Optionsseite (options.html)
+   =================================================================== */
 .options-page-body {
     padding: 2rem;
     display: flex;
@@ -753,7 +716,6 @@ body.dark-mode .sun-icon {
     transition: opacity 0.5s ease;
 }
 
-/* Stil für den neuen Button im Banner */
 #open-options-btn {
     width: auto;
     background: none;
@@ -767,4 +729,39 @@ body.dark-mode .sun-icon {
 #open-options-btn:hover {
     color: var(--primary-color);
     background: none;
+}
+
+
+/* ===================================================================
+   8. Responsive Design (Media Queries)
+   =================================================================== */
+@media (max-width: 1025px) {
+    body {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .container {
+        gap: 1.5rem;
+        margin: 1rem 0;
+        width: 100%;
+        margin-top: 6rem;
+    }
+
+    .card {
+        padding: 1.5rem;
+    }
+
+    #faq-container {
+        margin-top: 10px;
+    }
+
+    .fullwidth {
+        padding: 0;
+    }
+
+    .fullwidth iframe {
+        height: 600px;
+    }
 }
