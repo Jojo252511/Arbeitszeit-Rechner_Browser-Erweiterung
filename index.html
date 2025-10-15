@@ -20,15 +20,15 @@
     <link rel="stylesheet" href="style.css">
 
     <!-- JavaScript-Dateien -->
-    <script src="./dist/utils.js" defer></script>
-    <script src="./dist/calculator1.js" defer></script>
-    <script src="./dist/calculator2.js" defer></script>
-    <script src="./dist/calculator3.js" defer></script>
-    <script src="./dist/settings.js" defer></script>
-    <script src="./dist/darkmode.js" defer></script>
-    <script src="./dist/countdown.js" defer></script>
-    <script src="./dist/logbook.js" defer></script>
-    <script src="./dist/chart.umd.js" defer></script>
+    <script type="module" src="./dist/utils.js" defer></script>
+    <script type="module" src="./dist/calculator1.js" defer></script>
+    <script type="module" src="./dist/calculator2.js" defer></script>
+    <script type="module" src="./dist/calculator3.js" defer></script>
+    <script type="module" src="./dist/settings.js" defer></script>
+    <script type="module" src="./dist/darkmode.js" defer></script>
+    <script type="module" src="./dist/countdown.js" defer></script>
+    <script type="module" src="./dist/logbook.js" defer></script>
+    <script src="./scripts/chart.umd.js" defer></script>
 </head>
 
 <body>
@@ -229,8 +229,18 @@
                 <canvas id="logbook-chart"></canvas>
             </div>
             <div id="logbook-controls">
-                <button type="button" id="clear-logbook-btn" class="small-btn"><i class="fa-solid fa-trash"
-                        title="Logbuch leeren"></i></button>
+                <button type="button" id="edit-logbook-btn" class="small-btn" title="Logbuch bearbeiten">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                </button>
+                <button type="button" id="export-logbook-btn" class="small-btn" title="Logbuch exportieren">
+                    <i class="fa-solid fa-file-export"></i>
+                </button>
+                <button type="button" id="import-logbook-btn" class="small-btn" title="Logbuch importieren">
+                    <i class="fa-solid fa-file-import"></i>
+                </button>
+                <button type="button" id="clear-logbook-btn" class="small-btn" title="Logbuch leeren">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
             </div>
             <div class="logbook-container">
                 <table id="logbook-table">
