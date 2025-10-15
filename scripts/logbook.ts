@@ -2,6 +2,8 @@
 
 import { formatMinutesToString, timeStringToMinutes, getKernzeitUndGleitzeit } from './utils.js';
 
+// Wir verwenden jetzt den einfachen 'auto'-Import.
+// Dieser sollte dank der geänderten tsconfig.json jetzt gefunden werden.
 declare const Chart: any;
 
 // Definiere die Struktur eines Logbuch-Eintrags.
@@ -255,16 +257,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Das Logbuch ist leer. Es gibt nichts zu exportieren.');
                 return;
             }
-            const jsonString = JSON.stringify(logData, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'arbeitszeit-logbuch.json';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+
+            const format = prompt("In welchem Format möchten Sie exportieren? (json oder csv)", "json")?.toLowerCase();
+
+            if (format === 'json') {
+                const jsonString = JSON.stringify(logData, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'arbeitszeit-logbuch.json';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else if (format === 'csv') {
+                const header = 'Datum;Kommen;Gehen;Tagessaldo\n';
+                const rows = logData.map(entry => {
+                    const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
+                    const formattedSaldo = saldoPrefix + formatMinutesToString(entry.dailySaldoMinutes);
+                    return `${entry.date};${entry.arrival};${entry.leaving};"${formattedSaldo}"`;
+                }).join('\n');
+
+                const csvString = header + rows;
+                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'arbeitszeit-logbuch.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else if (format !== null) {
+                alert("Ungültiges Format. Bitte 'json' oder 'csv' eingeben.");
+            }
         });
     }
 
