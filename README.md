@@ -1,7 +1,23 @@
 # Arbeitszeit-Rechner_Browser-Erweiterung
 
-## Installation als Chrome-Erweiterung
+## Vorbereitung für Installation
+Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen Pakete installiert und der TypeScript-Code kompiliert werden.
 
+1. Repository klonen oder ZIP-Datei entpacken
+Lade das Projekt herunter und öffne den Ordner in einem Terminal deiner Wahl.
+
+2. Abhängigkeiten installieren
+Führe den folgenden Befehl aus, um alle für das Projekt notwendigen Pakete (wie z.B. Chart.js) zu installieren:
+    ```bash
+    npm install
+    ```
+3. TypeScript kompilieren
+Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, damit der Browser ihn ausführen kann. Die fertigen Dateien werden im dist-Ordner abgelegt.
+    ```bash
+    npx tsc
+    ```
+
+## Installation als Chrome-Erweiterung
 1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`.  
     Öffne Microsoft Edge und navigiere zur Seite `edge://extensions`.
 2.  Aktiviere oben rechts den **Entwicklermodus** (Developer mode).
@@ -37,3 +53,9 @@ Stelle sicher, dass du alle erforderlichen Felder korrekt ausgefüllt hast. Übe
 Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Standart Gleitzeit (die Zeit, ab der Arbeitszeit gezählt wird) beginnt um 06:45 Uhr. Die Kernzeit, in der Anwesenheitspflicht besteht, ist von 08:45 Uhr bis 15:30 Uhr (Freitags bis 15:00 Uhr).  
 
 *Kernzeiten über "Optionen" anpassbar*
+
+### Wie funktioniert die Import/Export Funktion des Logbuches?
+Du kannst dein Logbuch als CSV-Datei oder JSON exportieren, um eine Sicherungskopie zu erstellen oder die Daten
+in anderen Anwendungen zu verwenden. Beim Import kannst du eine CSV-Datei oder JSON auswählen, um deine
+Logbuch-Einträge wiederherzustellen oder zu aktualisieren. Achte darauf, dass die Datei das richtige
+Format hat.
