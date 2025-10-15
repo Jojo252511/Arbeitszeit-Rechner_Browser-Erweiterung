@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-   
+
     function renderLog(editMode = false): void {
         if (!logbookBody) return;
         logbookBody.innerHTML = '';
@@ -164,6 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveLog(logData);
         renderLog();
     }
+
     function prefillArrivalFromLog(): void {
         const logData = getLog();
         const todayDateString = new Date().toLocaleDateString('de-DE');
@@ -174,6 +175,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 ankunftszeitInput.value = todayEntry.arrival;
             }
         }
+    }
+
+    function parseCsvAndGenerateLog(csvText: string): LogEntry[] {
+        const lines = csvText.trim().split('\n');
+        const header = lines[0].split(';').map(h => h.trim());
+        const dateIndex = header.indexOf('Datum');
+        const timeIndex = header.indexOf('Uhrzeit');
+        const typeIndex = header.indexOf('Typ');
+
+        if (dateIndex === -1 || timeIndex === -1 || typeIndex === -1) {
+            alert('CSV-Datei konnte nicht verarbeitet werden. Benötigte Spalten: Datum, Uhrzeit, Typ');
+            return [];
+        }
+
+        const dailyData: { [key: string]: { Kommen?: string, Gehen?: string } } = {};
+
+        for (let i = 1; i < lines.length; i++) {
+            const values = lines[i].split(';');
+            const date = values[dateIndex].trim();
+            const time = values[timeIndex].trim();
+            const type = values[typeIndex].trim();
+
+            if (!dailyData[date]) {
+                dailyData[date] = {};
+            }
+
+            if (type === 'Kommen') {
+                dailyData[date].Kommen = time;
+            } else if (type === 'Gehen') {
+                dailyData[date].Gehen = time;
+            }
+        }
+
+        const newLogEntries: LogEntry[] = [];
+        const targetHours = parseFloat(localStorage.getItem('userSollzeit') || '8');
+        const isMinderjaehrig = localStorage.getItem('userIsMinderjaehrig') === 'true';
+        const pausenDauer = isMinderjaehrig ? 60 : 45;
+
+        for (const dateStr in dailyData) {
+            const data = dailyData[dateStr];
+            if (data.Kommen && data.Gehen) {
+                const [day, month, year] = dateStr.split('.').map(Number);
+                const dateObj = new Date(year, month - 1, day);
+                dateObj.setHours(0, 0, 0, 0);
+
+                const arrivalMinutes = timeStringToMinutes(data.Kommen);
+                const leavingMinutes = timeStringToMinutes(data.Gehen);
+                const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
+                const sollzeitInMinuten = targetHours * 60;
+                const dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
+
+                newLogEntries.push({
+                    id: dateObj.getTime(),
+                    date: dateStr,
+                    arrival: data.Kommen,
+                    leaving: data.Gehen,
+                    targetHours: targetHours,
+                    dailySaldoMinutes: Math.round(dailySaldoMinutes)
+                });
+            }
+        }
+        return newLogEntries;
     }
 
     if (clearLogbookBtn) {
@@ -209,19 +272,33 @@ document.addEventListener('DOMContentLoaded', () => {
         importLogbookBtn.addEventListener('click', () => {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.json';
+            input.accept = '.json,.csv';
             input.onchange = (event) => {
                 const file = (event.target as HTMLInputElement).files?.[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         try {
-                            const importedLog = JSON.parse(e.target?.result as string);
+                            let importedLog: LogEntry[] = [];
+                            if (file.name.endsWith('.json')) {
+                                importedLog = JSON.parse(e.target?.result as string);
+                            } else if (file.name.endsWith('.csv')) {
+                                importedLog = parseCsvAndGenerateLog(e.target?.result as string);
+                            }
+
                             if (Array.isArray(importedLog) && importedLog.every(entry => 'id' in entry && 'date' in entry)) {
-                                if (confirm('Möchtest du das aktuelle Logbuch mit den importierten Daten überschreiben?')) {
-                                    saveLog(importedLog);
+                                if (confirm('Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen? Bestehende Tage werden überschrieben.')) {
+                                    const currentLog = getLog();
+                                    const logMap = new Map<number, LogEntry>();
+
+                                    currentLog.forEach(entry => logMap.set(entry.id, entry));
+                                    importedLog.forEach(entry => logMap.set(entry.id, entry));
+
+                                    const mergedLog = Array.from(logMap.values());
+                                    
+                                    saveLog(mergedLog);
                                     renderLog();
-                                    alert('Logbuch erfolgreich importiert.');
+                                    alert('Logbuch erfolgreich importiert und zusammengeführt.');
                                 }
                             } else {
                                 alert('Die ausgewählte Datei hat kein gültiges Logbuch-Format.');
