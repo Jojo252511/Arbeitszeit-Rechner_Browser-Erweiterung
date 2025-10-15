@@ -1,7 +1,23 @@
 # Arbeitszeit-Rechner_Browser-Erweiterung
 
-## Installation als Chrome-Erweiterung
+## Vorbereitung für Installation
+Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen Pakete installiert und der TypeScript-Code kompiliert werden.
 
+1. Repository klonen oder ZIP-Datei entpacken
+Lade das Projekt herunter und öffne den Ordner in einem Terminal deiner Wahl.
+
+2. Abhängigkeiten installieren
+Führe den folgenden Befehl aus, um alle für das Projekt notwendigen Pakete (wie z.B. Chart.js) zu installieren:
+    ```bash
+    npm install
+    ```
+3. TypeScript kompilieren
+Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, damit der Browser ihn ausführen kann. Die fertigen Dateien werden im dist-Ordner abgelegt.
+    ```bash
+    npx tsc
+    ```
+
+## Installation als Chrome-Erweiterung
 1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`.  
     Öffne Microsoft Edge und navigiere zur Seite `edge://extensions`.
 2.  Aktiviere oben rechts den **Entwicklermodus** (Developer mode).
