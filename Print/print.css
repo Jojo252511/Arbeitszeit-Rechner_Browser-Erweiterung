@@ -1,6 +1,10 @@
 /* print.css */
 
-label{
+/* ======================================================================
+   Stile für die Druckansicht
+   ====================================================================== 
+*/
+   label{
     margin-bottom: 0;
 }
 
@@ -69,14 +73,6 @@ label{
     border: none;
     width: 100%;
     max-width: 100%;
-    /* WICHTIG: Verhindert, dass der Container auf eine neue Seite rutscht */
-
-
-}
-
-/* Grundlegendes Seitenlayout für den Druck */
-@page {
-    margin: 1.5cm;
 }
 
 body.print-page-body {
@@ -97,6 +93,14 @@ h1 {
 }
 
 
+/* ======================================================================
+   Stile Beim Drucken
+   ====================================================================== 
+*/
+@page {
+    margin: 1.5cm;
+}
+
 /* Stile, die nur beim Drucken angewendet werden */
 @media print {
 
@@ -106,6 +110,7 @@ h1 {
     }
 }
 
+/* Querformat für A4-Seiten */
 @page{
     size: A4 landscape;
     margin: 1cm;
