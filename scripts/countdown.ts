@@ -10,7 +10,7 @@
  */
 
 import { timeStringToMinutes } from './utils.js';
-import { getTodayLogEntry } from './logbook.js';
+import { getTodayLogEntry } from './logbook-data.js';
 
 // Mache TypeScript die globale Variable aus calculator1.ts bekannt
 declare global {

@@ -9,7 +9,7 @@
  */
 
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis, saveUeberH } from './utils.js';
-import { type LogEntry } from './logbook.js';
+import { type LogEntry } from './logbook-data.js'; // Importiert die Struktur eines Log-Eintrags
 
 /**
  * @file Enthält die Logik für den zweiten Rechner "Plus / Minus bei Wunsch-Gehzeit".
