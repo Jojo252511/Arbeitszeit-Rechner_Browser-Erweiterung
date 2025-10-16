@@ -43,6 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (useWindow) {
             const url = `countdown.html?zielzeit=${zielzeitInMinuten}&titel=${encodeURIComponent(titel)}`;
             window.open(url, 'Countdown', 'width=400,height=200,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=no,status=no');
+            document.body.style.overflowY = 'auto';
             return;
         } else {
             if (!countdownModal || !countdownTitleEl) return;
