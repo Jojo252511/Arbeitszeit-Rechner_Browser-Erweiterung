@@ -106,6 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             normalButtons.style.display = 'none';
             logbookButtonContainer.style.display = 'block';
             startLogbookCountdownBtn.onclick = () => {
+                document.body.style.overflowY = 'hidden';
                 const zielzeitInMinuten = timeStringToMinutes(todayEntry.leaving);
                 startCountdown(zielzeitInMinuten, "Restzeit bis Feierabend");
             };
