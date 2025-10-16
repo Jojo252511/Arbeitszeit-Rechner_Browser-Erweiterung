@@ -1,37 +1,50 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+    <!-- Metadaten -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Joern Unverzagt">
+
+    <!-- Titel der Seite -->
     <title>Logbuch Druckvorschau</title>
-    <link rel="stylesheet" href="style.css">
+
+    <!-- CSS-Dateien -->
+    <link rel="stylesheet" href="../style.css">
     <link rel="stylesheet" href="print.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <script src="./scripts/chart.umd.js" defer></script>
-    <script type="module" src="./dist/printLog.js" defer></script>
+
+    <!-- JavaScript-Dateien -->
+    <script src="../scripts/chart.umd.js" defer></script>
+    <script type="module" src="../dist/printLog.js" defer></script>
 </head>
+
 <body class="print-page-body">
 
+    <!----------------- Print Control ----------------->
     <div class="print-controls">
         <div class="print-options">
             <div class="form-group checkbox-group">
                 <input type="checkbox" id="toggle-chart" checked>
                 <label for="toggle-chart">Diagramm anzeigen</label>
             </div>
-            <div class="form-group">
-                <label for="orientation-select">Ausrichtung:</label>
-                <select id="orientation-select">
-                    <option value="portrait">Hochformat</option>
-                    <option value="landscape" selected>Querformat</option>
-                </select>
-                 <p>*eventuell muss in der Browser Druckvorschau die Ausrichtung angepasst werden, da in der Vorschau nur passend optimiert wird</p>
-            </div>
+            <!--
+                <div class="form-group">
+                    <label for="orientation-select">Ausrichtung:</label>
+                    <select id="orientation-select">
+                        <option value="portrait">Hochformat</option>
+                        <option value="landscape" selected>Querformat</option>
+                    </select>
+                    <p>*eventuell muss in der Browser Druckvorschau die Ausrichtung angepasst werden, da in der Vorschau nur passend optimiert wird</p>
+                </div>
+            -->
         </div>
         <button type="button" id="execute-print-btn">Drucken</button>
     </div>
 
+    <!----------------- Print Content ----------------->
     <div id="print-content" class="landscape">
         <h1>Arbeitszeit-Logbuch</h1>
         <div class="chart-container" id="print-chart-container">
