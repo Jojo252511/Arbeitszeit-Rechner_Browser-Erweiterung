@@ -114,14 +114,17 @@ export const berechneRestzeitBis = (zielZeitString: string): string | null => {
 };
 
 /**
- * Speichert den neuen Überstundensaldo im Local Storage und lädt die Seite neu.
+ * Speichert den neuen Überstundensaldo im Local Storage und löst ein Event aus.
  * @param {number} time - Der neue Überstundensaldo als Dezimalzahl.
- * @global
  */
 export function saveUeberH(time: number): void {
-    localStorage.setItem('userUeberstunden', String(time));
-    alert(`Überstunden erfolgreich auf ${time} h gesetzt! Die Seite wird neu geladen, um die Werte zu übernehmen.`);
-    window.location.reload(); 
+    const timeAsString = String(time.toFixed(2));
+    localStorage.setItem('userUeberstunden', timeAsString);
+    const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
+    const savedUeberstunden = localStorage.getItem('userUeberstunden');
+        if (savedUeberstunden !== null) {
+            hauptUeberstundenInput.value = savedUeberstunden;
+        }
+    // Löst ein Event aus, damit andere Teile der Anwendung reagieren können.
+    document.dispatchEvent(new CustomEvent('ueberstundenUpdated', { detail: { newSaldo: timeAsString } }));
 }
-
-window.saveUeberH = saveUeberH;

@@ -8,7 +8,7 @@
  * @author Joern Unverzagt
  */
 
-import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis } from './utils.js';
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis, saveUeberH } from './utils.js';
 import { type LogEntry } from './logbook.js';
 
 /**
@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tagesSaldoStyle = (tagesDifferenz < 0) ? ' class="negative-saldo"' : '';
         nachricht += `Tages-Saldo: <strong${tagesSaldoStyle}>${(tagesDifferenz >= 0 ? "+" : "") + formatMinutesToString(tagesDifferenz)}</strong>`;
 
-        const savedUeberstunden = `<button type="button" onclick="saveUeberH(${saldoDezimalFuerFunktion})" class="save-saldo-btn">Neuen Saldo speichern</button>`;
+        const savedUeberstunden = `<button type="button" data-saldo="${saldoDezimalFuerFunktion}" class="save-saldo-btn">Neuen Saldo speichern</button>`;
 
         if (hauptUeberstundenInput.value) {
             const gesamtSaldoStyle = (neuerGesamtSaldo < 0) ? ' class="negative-saldo"' : '';
@@ -133,8 +133,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveLogButton.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('saveLogEntry', { detail: logEntry }));
+            saveLogButton.disabled = true;
+            saveLogButton.textContent = 'Gespeichert!';
+            saveUeberH(parseFloat(saldoDezimalFuerFunktion));
         });
 
         ergebnisPlusMinusEl.appendChild(saveLogButton);
+    });
+
+    ergebnisPlusMinusEl.addEventListener('click', (event) => {
+        const target = event.target as HTMLButtonElement;
+        if (target && target.classList.contains('save-saldo-btn') && target.dataset.saldo) {
+            const saldo = parseFloat(target.dataset.saldo);
+            saveUeberH(saldo);
+        }
     });
 });
