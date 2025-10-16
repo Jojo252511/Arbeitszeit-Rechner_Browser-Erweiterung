@@ -24,20 +24,20 @@ document.addEventListener('DOMContentLoaded', () => {
             body.classList.remove('dark-mode');
         }
     };
-
-    if (!toggleButton) return;
-
-    toggleButton.addEventListener('click', () => {
-        const isDarkMode = body.classList.contains('dark-mode');
-        if (isDarkMode) {
-            applyTheme('light');
-            localStorage.setItem('theme', 'light');
-        } else {
-            applyTheme('dark');
-            localStorage.setItem('theme', 'dark');
-        }
-    });
-
+    
+    if (toggleButton) {
+        toggleButton.addEventListener('click', () => {
+            const isDarkMode = body.classList.contains('dark-mode');
+            if (isDarkMode) {
+                applyTheme('light');
+                localStorage.setItem('theme', 'light');
+            } else {
+                applyTheme('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+    }
+    
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
         applyTheme(savedTheme);

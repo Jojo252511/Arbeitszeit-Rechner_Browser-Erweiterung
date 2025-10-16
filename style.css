@@ -648,7 +648,50 @@ input:checked+.slider:before {
 
 
 /* ===================================================================
-   6. Dark Mode
+   6. Optionsseite (options.html)
+   =================================================================== */
+.options-page-body {
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.settings-content-standalone {
+    background-color: var(--card-background-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    width: 100%;
+    max-width: 600px;
+}
+
+.save-feedback {
+    text-align: center;
+    color: var(--success-color);
+    margin-top: 1rem;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+#open-options-btn {
+    width: auto;
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: var(--text-color);
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+#open-options-btn:hover {
+    color: var(--primary-color);
+    background: none;
+}
+
+
+/* ===================================================================
+   7. Dark Mode
    =================================================================== */
 body.dark-mode {
     --background-color: #121212;
@@ -710,49 +753,6 @@ body.dark-mode .moon-icon {
 
 body.dark-mode .sun-icon {
     display: block;
-}
-
-
-/* ===================================================================
-   7. Optionsseite (options.html)
-   =================================================================== */
-.options-page-body {
-    padding: 2rem;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.settings-content-standalone {
-    background-color: var(--card-background-color);
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px var(--shadow-color);
-    width: 100%;
-    max-width: 600px;
-}
-
-.save-feedback {
-    text-align: center;
-    color: var(--success-color);
-    margin-top: 1rem;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-}
-
-#open-options-btn {
-    width: auto;
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: var(--text-color);
-    padding: 0.5rem;
-    cursor: pointer;
-}
-
-#open-options-btn:hover {
-    color: var(--primary-color);
-    background: none;
 }
 
 
