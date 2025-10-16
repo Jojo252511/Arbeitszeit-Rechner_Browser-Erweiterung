@@ -7,39 +7,9 @@
  */
 
 import { formatMinutesToString, timeStringToMinutes } from './utils.js';
+import { LOGBOOK_KEY, type LogEntry, getLog, getTodayLogEntry } from './logbook-data.js';
 
 declare const Chart: any;
-
-export const LOGBOOK_KEY = 'workLogbook';
-
-export interface LogEntry {
-    id: number;
-    date: string;
-    arrival: string;
-    leaving: string;
-    targetHours: number;
-    dailySaldoMinutes: number;
-}
-
-/**
- * Gibt das Logbuch aus dem Local Storage zurück.
- * @returns {LogEntry[]}
- */
-export function getLog(): LogEntry[] {
-    const log = localStorage.getItem(LOGBOOK_KEY);
-    return log ? JSON.parse(log) : [];
-}
-
-/**
- * Prüft, ob für den heutigen Tag ein Eintrag im Logbuch existiert.
- * @returns {LogEntry | undefined} Den heutigen Eintrag oder undefined.
- */
-export function getTodayLogEntry(): LogEntry | undefined {
-    const logData = getLog();
-    const todayDateString = new Date().toLocaleDateString('de-DE');
-    return logData.find(entry => entry.date === todayDateString);
-}
-
 
 document.addEventListener('DOMContentLoaded', () => {
     const logbookBody = document.getElementById('logbook-body') as HTMLTableSectionElement;

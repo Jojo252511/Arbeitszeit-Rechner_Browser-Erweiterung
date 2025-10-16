@@ -1,7 +1,7 @@
 // scripts/printLog.ts
 
 import { formatMinutesToString } from './utils.js';
-import { type LogEntry } from './logbook.js';
+import { type LogEntry, getLog } from './logbook-data.js';
 
 declare const Chart: any;
 
@@ -13,10 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const executePrintBtn = document.getElementById('execute-print-btn') as HTMLButtonElement;
     const chartContainer = document.getElementById('print-chart-container') as HTMLDivElement;
 
-    // Daten aus dem Local Storage holen
-    const logData: LogEntry[] = JSON.parse(localStorage.getItem('printLogData') || '[]');
-    // Daten direkt wieder entfernen, um sie nicht unnötig zu speichern
-    localStorage.removeItem('printLogData');
+    // Lade Logbuchdaten
+    const logData: LogEntry[] = getLog();
 
     /**
      * Rendert die Logbuch-Tabelle

@@ -9,7 +9,7 @@
  */
 
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis, saveUeberH } from './utils.js';
-import { type LogEntry } from './logbook.js'; // Importiert die Struktur eines Log-Eintrags
+import { type LogEntry } from './logbook-data.js'; // Importiert die Struktur eines Log-Eintrags
 
 declare global {
     interface Window {
