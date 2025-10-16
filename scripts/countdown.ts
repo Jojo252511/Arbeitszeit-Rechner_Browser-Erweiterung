@@ -10,6 +10,7 @@
  */
 
 import { timeStringToMinutes } from './utils.js';
+import { getTodayLogEntry } from './logbook.js';
 
 // Mache TypeScript die globale Variable aus calculator1.ts bekannt
 declare global {
@@ -27,7 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const countdownTitleEl = document.getElementById('countdown-title') as HTMLHeadingElement;
     const countdownTimerEl = document.getElementById('countdown-timer') as HTMLDivElement;
     const wunschGehzeitInput = document.getElementById('wunsch-gehzeit') as HTMLInputElement;
-
+    const normalButtons = document.getElementById('countdown-buttons-normal') as HTMLDivElement;
+    const logbookButtonContainer = document.getElementById('countdown-buttons-logbook') as HTMLDivElement;
+    const startLogbookCountdownBtn = document.getElementById('start-countdown-logbook') as HTMLButtonElement;
 
     // Gib der Intervall-Variable den korrekten Typ
     let countdownInterval: number | undefined;
@@ -43,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (useWindow) {
             const url = `countdown.html?zielzeit=${zielzeitInMinuten}&titel=${encodeURIComponent(titel)}`;
             window.open(url, 'Countdown', 'width=400,height=200,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=no,status=no');
+            document.body.style.overflowY = 'auto';
             return;
         } else {
             if (!countdownModal || !countdownTitleEl) return;
@@ -92,6 +96,25 @@ document.addEventListener('DOMContentLoaded', () => {
         countdownTimerEl.style.color = 'var(--primary-color)';
     }
 
+    /**
+     * Prüft, ob ein Logbucheintrag für heute existiert und passt die UI an.
+     */
+    function checkLogbookEntryForToday() {
+        const todayEntry = getTodayLogEntry();
+
+        if (todayEntry && todayEntry.leaving) {
+            normalButtons.style.display = 'none';
+            logbookButtonContainer.style.display = 'block';
+            startLogbookCountdownBtn.onclick = () => {
+                const zielzeitInMinuten = timeStringToMinutes(todayEntry.leaving);
+                startCountdown(zielzeitInMinuten, "Restzeit bis Feierabend");
+            };
+        } else {
+            normalButtons.style.display = 'block';
+            logbookButtonContainer.style.display = 'none';
+        }
+    }
+
     // Event Listeners
     if (closeCountdownBtn) closeCountdownBtn.addEventListener('click', closeCountdown);
     if (countdownModal) countdownModal.addEventListener('click', (event: MouseEvent) => {
@@ -118,4 +141,10 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("Bitte gib zuerst im 'Plus / Minus'-Rechner eine Wunsch-Gehzeit ein.");
         }
     });
+
+    // Lausche auf Änderungen im Logbuch, um die Buttons zu aktualisieren
+    document.addEventListener('logbookUpdated', checkLogbookEntryForToday);
+    
+    // Führe die Prüfung direkt beim Laden der Seite aus
+    checkLogbookEntryForToday();
 });

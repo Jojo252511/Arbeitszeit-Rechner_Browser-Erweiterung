@@ -72,6 +72,12 @@ body::-webkit-scrollbar-thumb:hover {
     margin: 1.5rem;
 }
 
+.faq-li {
+    margin-left: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
 .card {
     background-color: var(--card-background-color);
     border-radius: 12px;
@@ -382,6 +388,10 @@ input[type="time"] {
     font-weight: 400;
     font-size: 1.2rem;
     color: var(--text-color);
+}
+
+#countdown-buttons-logbook {
+    display: none;
 }
 
 .timer-display {

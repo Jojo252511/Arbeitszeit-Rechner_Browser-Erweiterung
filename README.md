@@ -54,6 +54,15 @@ Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Standart Gleitze
 
 *Kernzeiten über "Optionen" anpassbar*
 
+### Wie funktioniert der Countdown?
+Der Countdown-Timer hilft dir, die verbleibende Zeit bis zum Feierabend im Blick zu behalten. Es gibt drei Möglichkeiten, ihn zu starten:
+
+- **Countdown bis Feierabend (+0):** Nutzt die berechnete Gehzeit aus dem ersten Rechner.
+- **Countdown bis Wunsch-Gehzeit:** Nutzt die von dir im zweiten Rechner eingetragene Gehzeit.
+- **Countdown bis Feierabend (Logbuch):** Dieser Button erscheint automatisch, wenn für den heutigen Tag bereits ein Logbuch-Eintrag existiert. Er nutzt die dort gespeicherte Gehzeit.  
+
+In den Einstellungen kannst du außerdem wählen, ob der Countdown in der Erweiterung oder in einem eigenen kleinen Fenster angezeigt werden soll.
+
 ### Wie funktioniert die Import/Export Funktion des Logbuches?
 Du kannst dein Logbuch als CSV-Datei oder JSON exportieren, um eine Sicherungskopie zu erstellen oder die Daten
 in anderen Anwendungen zu verwenden. Beim Import kannst du eine CSV-Datei oder JSON auswählen, um deine

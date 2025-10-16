@@ -9,7 +9,22 @@
 import { formatMinutesToString, timeStringToMinutes, getKernzeitUndGleitzeit } from './utils.js';
 
 declare const Chart: any;
+const LOGBOOK_KEY = 'workLogbook';
 
+let logbookChart: Chart | null = null;
+
+/**
+ * Gibt das Logbuch aus dem Local Storage zurück.
+ * @returns 
+ */
+function getLog(): LogEntry[] {
+    const log = localStorage.getItem(LOGBOOK_KEY);
+    return log ? JSON.parse(log) : [];
+}
+
+/**
+ * Typdefinition für einen Logbucheintrag.
+ */
 export interface LogEntry {
     id: number;
     date: string;
@@ -17,6 +32,16 @@ export interface LogEntry {
     leaving: string;
     targetHours: number;
     dailySaldoMinutes: number;
+}
+
+/**
+ * Prüft, ob für den heutigen Tag ein Eintrag im Logbuch existiert.
+ * @returns {LogEntry | undefined} Den heutigen Eintrag oder undefined.
+ */
+export function getTodayLogEntry(): LogEntry | undefined {
+    const logData = getLog();
+    const todayDateString = new Date().toLocaleDateString('de-DE');
+    return logData.find(entry => entry.date === todayDateString);
 }
 
 /**
@@ -31,18 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const editLogbookBtn = document.getElementById('edit-logbook-btn') as HTMLButtonElement;
     const logbookCard = document.getElementById('logbook-card') as HTMLDivElement;
 
-    const LOGBOOK_KEY = 'workLogbook';
 
-    let logbookChart: Chart | null = null;
-
-    /**
-     * Gibt das Logbuch aus dem Local Storage zurück.
-     * @returns 
-     */
-    function getLog(): LogEntry[] {
-        const log = localStorage.getItem(LOGBOOK_KEY);
-        return log ? JSON.parse(log) : [];
-    }
 
     /**
      * Speichert das Logbuch im Local Storage.
@@ -113,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     legend: { display: false },
                     tooltip: {
                         callbacks: {
-                            label: function(context: any) {
+                            label: function (context: any) {
                                 let label = context.dataset.label || '';
                                 if (label) { label += ': '; }
                                 if (context.parsed.y !== null) {
@@ -312,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         importedLog.forEach(entry => logMap.set(entry.id, entry));
 
                         const mergedLog = Array.from(logMap.values());
-                        
+
                         saveLog(mergedLog);
                         renderLog();
                         alert('Logbuch erfolgreich importiert und zusammengeführt.');
@@ -460,7 +474,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const newArrival = arrivalInput.value;
                     const newLeaving = leavingInput.value;
-                    
+
                     const arrivalMinutes = timeStringToMinutes(newArrival);
                     const leavingMinutes = timeStringToMinutes(newLeaving);
                     const targetHours = logData[entryIndex].targetHours;
@@ -482,7 +496,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (target.classList.contains('cancel-edit-btn')) {
-            renderLog(true); 
+            renderLog(true);
         }
     });
 
