@@ -6,25 +6,12 @@
  * @author Joern Unverzagt
  */
 
-import { formatMinutesToString, timeStringToMinutes, getKernzeitUndGleitzeit } from './utils.js';
+import { formatMinutesToString, timeStringToMinutes } from './utils.js';
 
 declare const Chart: any;
-const LOGBOOK_KEY = 'workLogbook';
 
-let logbookChart: Chart | null = null;
+export const LOGBOOK_KEY = 'workLogbook';
 
-/**
- * Gibt das Logbuch aus dem Local Storage zurück.
- * @returns 
- */
-function getLog(): LogEntry[] {
-    const log = localStorage.getItem(LOGBOOK_KEY);
-    return log ? JSON.parse(log) : [];
-}
-
-/**
- * Typdefinition für einen Logbucheintrag.
- */
 export interface LogEntry {
     id: number;
     date: string;
@@ -32,6 +19,15 @@ export interface LogEntry {
     leaving: string;
     targetHours: number;
     dailySaldoMinutes: number;
+}
+
+/**
+ * Gibt das Logbuch aus dem Local Storage zurück.
+ * @returns {LogEntry[]}
+ */
+export function getLog(): LogEntry[] {
+    const log = localStorage.getItem(LOGBOOK_KEY);
+    return log ? JSON.parse(log) : [];
 }
 
 /**
@@ -44,10 +40,7 @@ export function getTodayLogEntry(): LogEntry | undefined {
     return logData.find(entry => entry.date === todayDateString);
 }
 
-/**
- * Diese Funktion initialisiert und verwaltet das Logbuch.
- * Sie ermöglicht das Anzeigen, Bearbeiten, Löschen, Exportieren und Importieren von Logbucheinträgen.
- */
+
 document.addEventListener('DOMContentLoaded', () => {
     const logbookBody = document.getElementById('logbook-body') as HTMLTableSectionElement;
     const clearLogbookBtn = document.getElementById('clear-logbook-btn') as HTMLButtonElement;
@@ -55,22 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const importLogbookBtn = document.getElementById('import-logbook-btn') as HTMLButtonElement;
     const editLogbookBtn = document.getElementById('edit-logbook-btn') as HTMLButtonElement;
     const logbookCard = document.getElementById('logbook-card') as HTMLDivElement;
+    const printLogBtn = document.getElementById('print-log-btn') as HTMLButtonElement;
 
-
-
-    /**
-     * Speichert das Logbuch im Local Storage.
-     * @param logData 
-     */
+    let logbookChart: Chart | null = null;
+    
     function saveLog(logData: LogEntry[]): void {
         localStorage.setItem(LOGBOOK_KEY, JSON.stringify(logData));
+        document.dispatchEvent(new CustomEvent('logbookUpdated'));
     }
 
-    /**
-     * Generiert und rendert das Balkendiagramm für die letzten 7 Tage.
-     * @param logData 
-     * @returns 
-     */
     function renderChart(logData: LogEntry[]): void {
         const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
         if (!chartContainer || !Chart) return;
@@ -153,12 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    /**
-     * Erstellt die Logbuch-Tabelle.
-     * @param editMode 
-     * @returns 
-     */
     function renderLog(editMode = false): void {
         if (!logbookBody) return;
         logbookBody.innerHTML = '';
@@ -171,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        logData.forEach((entry, index) => {
+        logData.forEach((entry) => {
             const row = document.createElement('tr');
             row.dataset.entryId = entry.id.toString();
             const saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
@@ -194,11 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Fügt einen neuen Eintrag zum Logbuch hinzu oder aktualisiert einen bestehenden.
-     * @param newEntry 
-     * @returns 
-     */
     function addLogEntry(newEntry: LogEntry): void {
         const logData = getLog();
         const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
@@ -212,13 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLog();
     }
 
-    /**
-     * Füllt das Ankunftszeit-Feld mit der heutigen Ankunftszeit aus dem Logbuch, falls vorhanden.
-     */
     function prefillArrivalFromLog(): void {
-        const logData = getLog();
-        const todayDateString = new Date().toLocaleDateString('de-DE');
-        const todayEntry = logData.find(entry => entry.date === todayDateString);
+        const todayEntry = getTodayLogEntry();
         if (todayEntry) {
             const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
             if (ankunftszeitInput && !ankunftszeitInput.value) {
@@ -227,11 +197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Liest eine CSV-Datei ein und generiert Logbucheinträge daraus.
-     * @param csvText 
-     * @returns 
-     */
     function parseCsvAndGenerateLog(csvText: string): LogEntry[] {
         const lines = csvText.trim().split('\n');
         const header = lines[0].split(';').map(h => h.trim());
@@ -293,11 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return newLogEntries;
     }
-
-    /**
-     * Verarbeitet eine importierte Datei (JSON oder CSV).
-     * @param file Die zu verarbeitende Datei.
-     */
+    
     function handleFile(file: File) {
         if (!file) return;
 
@@ -342,21 +303,26 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsText(file);
     }
 
-    /**
-     * Event-Listener für die verschiedenen Buttons und Initialisierung des Logbuchs.
-     */
+    if (printLogBtn) {
+        printLogBtn.addEventListener('click', () => {
+            const logData = getLog();
+            if (logData.length === 0) {
+                alert('Das Logbuch ist leer. Es gibt nichts zu drucken.');
+                return;
+            }
+            window.open('print_log.html', '_blank');
+        });
+    }
+
     if (clearLogbookBtn) {
         clearLogbookBtn.addEventListener('click', () => {
             if (confirm('Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?')) {
-                localStorage.removeItem('workLogbook');
+                localStorage.removeItem(LOGBOOK_KEY);
                 renderLog();
             }
         });
     }
 
-    /**
-     * Event-Listener für den Export des Logbuchs (JSON oder CSV).
-     */
     if (exportLogbookBtn) {
         exportLogbookBtn.addEventListener('click', () => {
             const logData = getLog();
@@ -402,9 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Event-Listener für den Datei-Import (über verstecktes Input-Element).
-     */
     if (importLogbookBtn) {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -414,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
         fileInput.onchange = (event) => {
             const file = (event.target as HTMLInputElement).files?.[0];
             handleFile(file!);
-            fileInput.value = ''; // Reset, um selbe Datei erneut wählen zu können
+            fileInput.value = '';
         };
         document.body.appendChild(fileInput);
 
@@ -423,9 +386,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Drag-and-Drop Unterstützung für den Datei-Import ins Logbuch.
-     */
     if (logbookCard) {
         logbookCard.addEventListener('dragover', (event) => {
             event.preventDefault();
@@ -474,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const newArrival = arrivalInput.value;
                     const newLeaving = leavingInput.value;
-
+                    
                     const arrivalMinutes = timeStringToMinutes(newArrival);
                     const leavingMinutes = timeStringToMinutes(newLeaving);
                     const targetHours = logData[entryIndex].targetHours;
@@ -496,7 +456,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (target.classList.contains('cancel-edit-btn')) {
-            renderLog(true);
+            renderLog(true); 
         }
     });
 
@@ -508,3 +468,4 @@ document.addEventListener('DOMContentLoaded', () => {
     renderLog();
     prefillArrivalFromLog();
 });
+
