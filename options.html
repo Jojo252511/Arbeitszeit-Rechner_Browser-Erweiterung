@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Joern Unverzagt">
     <title>Einstellungen - Arbeitszeit-Rechner</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -51,6 +52,18 @@
         <div class="form-group checkbox-group">
             <input type="checkbox" id="standard-pause-minderjaehrig">
             <label for="standard-pause-minderjaehrig">60 Minuten Pause (für Minderjährige)</label>
+        </div>
+             <hr>
+        <div class="form-group">
+            <label>Countdown-Anzeige</label>
+            <div class="switch-container">
+                <span>Im Modal</span>
+                <label class="switch">
+                    <input type="checkbox" id="countdown-window-toggle-options" title="Countdown in einem separaten Fenster anzeigen">
+                    <span class="slider round"></span>
+                </label>
+                <span>Separates Fenster</span>
+            </div>
         </div>
         <hr>
         <div class="form-group">

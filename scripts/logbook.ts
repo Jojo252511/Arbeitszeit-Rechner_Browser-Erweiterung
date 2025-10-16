@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportLogbookBtn = document.getElementById('export-logbook-btn') as HTMLButtonElement;
     const importLogbookBtn = document.getElementById('import-logbook-btn') as HTMLButtonElement;
     const editLogbookBtn = document.getElementById('edit-logbook-btn') as HTMLButtonElement;
+    const logbookCard = document.getElementById('logbook-card') as HTMLDivElement;
 
     const LOGBOOK_KEY = 'workLogbook';
 
@@ -152,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderChart(logData);
 
         if (logData.length === 0) {
-            logbookBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Noch keine Einträge vorhanden.</td></tr>';
+            logbookBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Noch keine Einträge. Zum Importieren Datei hierher ziehen.</td></tr>';
             return;
         }
 
@@ -280,6 +281,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
+     * Verarbeitet eine importierte Datei (JSON oder CSV).
+     * @param file Die zu verarbeitende Datei.
+     */
+    function handleFile(file: File) {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                let importedLog: LogEntry[] = [];
+                const content = e.target?.result as string;
+                if (!content) throw new Error("File content is empty.");
+
+                if (file.name.endsWith('.json')) {
+                    importedLog = JSON.parse(content);
+                } else if (file.name.endsWith('.csv')) {
+                    importedLog = parseCsvAndGenerateLog(content);
+                } else {
+                    alert('Ungültiger Dateityp. Bitte eine .json oder .csv Datei auswählen.');
+                    return;
+                }
+
+                if (Array.isArray(importedLog) && importedLog.every(entry => 'id' in entry && 'date' in entry)) {
+                    if (confirm('Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen? Bestehende Tage werden überschrieben.')) {
+                        const currentLog = getLog();
+                        const logMap = new Map<number, LogEntry>();
+
+                        currentLog.forEach(entry => logMap.set(entry.id, entry));
+                        importedLog.forEach(entry => logMap.set(entry.id, entry));
+
+                        const mergedLog = Array.from(logMap.values());
+                        
+                        saveLog(mergedLog);
+                        renderLog();
+                        alert('Logbuch erfolgreich importiert und zusammengeführt.');
+                    }
+                } else {
+                    alert('Die ausgewählte Datei hat kein gültiges Logbuch-Format.');
+                }
+            } catch (error) {
+                console.error("Import error:", error);
+                alert('Fehler beim Lesen oder Parsen der Datei.');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    /**
      * Event-Listener für die verschiedenen Buttons und Initialisierung des Logbuchs.
      */
     if (clearLogbookBtn) {
@@ -292,7 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Event-Listener für den Export-Button (JSON und CSV).
+     * Event-Listener für den Export des Logbuchs (JSON oder CSV).
      */
     if (exportLogbookBtn) {
         exportLogbookBtn.addEventListener('click', () => {
@@ -340,57 +389,54 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Event-Listener für den Import-Button (JSON und CSV).
+     * Event-Listener für den Datei-Import (über verstecktes Input-Element).
      */
     if (importLogbookBtn) {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json,.csv';
+        fileInput.style.display = 'none';
+
+        fileInput.onchange = (event) => {
+            const file = (event.target as HTMLInputElement).files?.[0];
+            handleFile(file!);
+            fileInput.value = ''; // Reset, um selbe Datei erneut wählen zu können
+        };
+        document.body.appendChild(fileInput);
+
         importLogbookBtn.addEventListener('click', () => {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json,.csv';
-            input.onchange = (event) => {
-                const file = (event.target as HTMLInputElement).files?.[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        try {
-                            let importedLog: LogEntry[] = [];
-                            if (file.name.endsWith('.json')) {
-                                importedLog = JSON.parse(e.target?.result as string);
-                            } else if (file.name.endsWith('.csv')) {
-                                importedLog = parseCsvAndGenerateLog(e.target?.result as string);
-                            }
-
-                            if (Array.isArray(importedLog) && importedLog.every(entry => 'id' in entry && 'date' in entry)) {
-                                if (confirm('Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen? Bestehende Tage werden überschrieben.')) {
-                                    const currentLog = getLog();
-                                    const logMap = new Map<number, LogEntry>();
-
-                                    currentLog.forEach(entry => logMap.set(entry.id, entry));
-                                    importedLog.forEach(entry => logMap.set(entry.id, entry));
-
-                                    const mergedLog = Array.from(logMap.values());
-                                    
-                                    saveLog(mergedLog);
-                                    renderLog();
-                                    alert('Logbuch erfolgreich importiert und zusammengeführt.');
-                                }
-                            } else {
-                                alert('Die ausgewählte Datei hat kein gültiges Logbuch-Format.');
-                            }
-                        } catch (error) {
-                            alert('Fehler beim Lesen oder Parsen der Datei.');
-                        }
-                    };
-                    reader.readAsText(file);
-                }
-            };
-            input.click();
+            fileInput.click();
         });
     }
 
     /**
-     * Event-Listener für den Editier-Modus des Logbuchs.
+     * Drag-and-Drop Unterstützung für den Datei-Import ins Logbuch.
      */
+    if (logbookCard) {
+        logbookCard.addEventListener('dragover', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            logbookCard.classList.add('drag-over');
+        });
+
+        logbookCard.addEventListener('dragleave', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            logbookCard.classList.remove('drag-over');
+        });
+
+        logbookCard.addEventListener('drop', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            logbookCard.classList.remove('drag-over');
+
+            const files = event.dataTransfer?.files;
+            if (files && files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+    }
+
     if (editLogbookBtn) {
         editLogbookBtn.addEventListener('click', () => {
             logbookBody.classList.toggle('edit-mode');
@@ -399,9 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    /**
-     * Event-Listener für die Speichern- und Abbrechen-Buttons in der Logbuch-Tabelle.
-     */
     logbookBody.addEventListener('click', (event) => {
         const target = event.target as HTMLElement;
 
@@ -443,9 +486,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    /**
-     * Event-Listener für das Speichern eines neuen Logbucheintrags über ein Custom Event.
-     */
     document.addEventListener('saveLogEntry', (event: Event) => {
         const customEvent = event as CustomEvent<LogEntry>;
         addLogEntry(customEvent.detail);

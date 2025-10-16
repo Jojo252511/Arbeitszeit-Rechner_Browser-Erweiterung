@@ -38,6 +38,18 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {string} titel - Der Titel, der über dem Countdown angezeigt wird.
      */
     function startCountdown(zielzeitInMinuten: number, titel: string): void {
+        const useWindow = localStorage.getItem('userCountdownWindow') === 'true';
+
+        if (useWindow) {
+            const url = `countdown.html?zielzeit=${zielzeitInMinuten}&titel=${encodeURIComponent(titel)}`;
+            window.open(url, 'Countdown', 'width=400,height=200,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=no,status=no');
+            return;
+        } else {
+            if (!countdownModal || !countdownTitleEl) return;
+            countdownModal.style.display = 'flex';
+            countdownTitleEl.textContent = titel;
+        }
+        
         if (!countdownModal || !countdownTitleEl) return;
         countdownModal.style.display = 'flex';
         countdownTitleEl.textContent = titel;
@@ -64,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const minuten = Math.floor((restSekunden % 3600) / 60);
             const sekunden = restSekunden % 60;
 
-            countdownTimerEl.textContent = 
+            countdownTimerEl.textContent =
                 `${String(stunden).padStart(2, '0')}:${String(minuten).padStart(2, '0')}:${String(sekunden).padStart(2, '0')}`;
         }, 1000);
     }

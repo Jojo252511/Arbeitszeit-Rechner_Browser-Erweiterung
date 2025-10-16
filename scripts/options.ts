@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const kernzeitEndeInput = document.getElementById('kernzeit-ende') as HTMLInputElement;
     const kernzeitEndeFrInput = document.getElementById('kernzeit-ende-fr') as HTMLInputElement;
     const gleitzeitEndeInput = document.getElementById('gleitzeit-ende') as HTMLInputElement;
+    const countdownWindowToggleOptions = document.getElementById('countdown-window-toggle-options') as HTMLInputElement;
 
     const toggleCustomWunschGehzeit = (): void => {
         customWunschGehzeitContainer.style.display = wunschGehzeitModeToggle.checked ? 'block' : 'none';
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
         kernzeitEndeInput.value = localStorage.getItem('userKernzeitEnde') || '15:30';
         kernzeitEndeFrInput.value = localStorage.getItem('userKernzeitEndeFr') || '15:00';
         gleitzeitEndeInput.value = localStorage.getItem('userGleitzeitEnde') || '19:00';
+        countdownWindowToggleOptions.checked = localStorage.getItem('userCountdownWindow') === 'true';
 
         toggleCustomWunschGehzeit();
     };
@@ -74,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('userKernzeitEnde', kernzeitEndeInput.value);
         localStorage.setItem('userKernzeitEndeFr', kernzeitEndeFrInput.value);
         localStorage.setItem('userGleitzeitEnde', gleitzeitEndeInput.value);
+        localStorage.setItem('userCountdownWindow', String(countdownWindowToggleOptions.checked));
 
         saveFeedback.style.opacity = '1';
         setTimeout(() => { saveFeedback.style.opacity = '0'; }, 2000);
