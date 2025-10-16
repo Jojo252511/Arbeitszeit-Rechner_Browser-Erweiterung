@@ -91,9 +91,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     /* Funktionalität zur Seitenausrichtung vorerst deaktiviert
-    orientationSelect.addEventListener('change', () => {
-        printContent.className = orientationSelect.value;
-    });
+        orientationSelect.addEventListener('change', () => {
+            printContent.className = orientationSelect.value;
+        });
     */
     executePrintBtn.addEventListener('click', () => {
         window.print();
