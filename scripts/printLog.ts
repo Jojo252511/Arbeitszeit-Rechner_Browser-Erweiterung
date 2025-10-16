@@ -87,13 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event Listeners für die Einstellungsleiste
     toggleChartCheck.addEventListener('change', () => {
-        chartContainer.style.display = toggleChartCheck.checked ? 'block' : 'none';
+        chartContainer.style.display = toggleChartCheck.checked ? 'flex' : 'none';
     });
 
+    /* Funktionalität zur Seitenausrichtung vorerst deaktiviert
     orientationSelect.addEventListener('change', () => {
         printContent.className = orientationSelect.value;
     });
-
+    */
     executePrintBtn.addEventListener('click', () => {
         window.print();
     });

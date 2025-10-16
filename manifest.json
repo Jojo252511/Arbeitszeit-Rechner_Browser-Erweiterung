@@ -22,7 +22,8 @@
     {
       "resources": [
         "countdown.html",
-        "print_log.html"
+        "/Print/",
+        "/Print/index.html"
       ],
       "matches": [
         "<all_urls>"

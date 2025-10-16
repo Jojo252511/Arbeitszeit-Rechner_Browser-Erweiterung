@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Das Logbuch ist leer. Es gibt nichts zu drucken.');
                 return;
             }
-            window.open('print_log.html', '_blank');
+            window.open('/Print/index.html', '_blank');
         });
     }
 
