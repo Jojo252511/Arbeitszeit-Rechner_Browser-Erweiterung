@@ -190,17 +190,23 @@
         </div>
 
         <!------------------------- Countdown ------------------------------>
-        <div class="card">
+        <div class="card" id="countdown-card">
             <h2>Countdown Starten</h2>
             <p class="info-text">Startet einen Timer bis zum berechneten oder gewünschten Feierabend.</p>
-            <div class="form-group">
-                <button type="button" id="start-countdown-plus0">Countdown bis Feierabend (+0)</button>
+            <div id="countdown-buttons-normal">
+                <div class="form-group">
+                    <button type="button" id="start-countdown-plus0">Countdown bis Feierabend (+0)</button>
+                </div>
+                <div class="form-group">
+                    <button type="button" id="start-countdown-wunsch">Countdown bis Wunsch-Gehzeit</button>
+                </div>
             </div>
-            <div class="form-group">
-                <button type="button" id="start-countdown-wunsch">Countdown bis Wunsch-Gehzeit</button>
+            <div id="countdown-buttons-logbook">
+                <div class="form-group">
+                    <button type="button" id="start-countdown-logbook">Countdown bis Feierabend (Logbuch)</button>
+                </div>
             </div>
         </div>
-
         <!------------------------- Rechner3 ------------------------------>
         <div class="card">
             <h2>Überstunden-Planer</h2>
@@ -341,6 +347,21 @@
                 </p>
             </div>
             <p><a href="./options.html" target="_blank">Kernzeiten anpassen</a></p>
+            <br>
+             <div class="faq-item">
+                <h3>Wie funktioniert der Countdown?</h3>
+                <p>
+                    Der Countdown-Timer hilft dir, die verbleibende Zeit bis zum Feierabend im Blick zu behalten. Es gibt drei Möglichkeiten, ihn zu starten:
+                </p>
+                <ul>
+                    <li class="faq-li"><b>Countdown bis Feierabend (+0):</b> Nutzt die berechnete Gehzeit aus dem ersten Rechner.</li>
+                    <li class="faq-li"><b>Countdown bis Wunsch-Gehzeit:</b> Nutzt die von dir im zweiten Rechner eingetragene Gehzeit.</li>
+                    <li class="faq-li"><b>Countdown bis Feierabend (Logbuch):</b> Dieser Button erscheint automatisch, wenn für den heutigen Tag bereits ein Logbuch-Eintrag existiert. Er nutzt die dort gespeicherte Gehzeit.</li>
+                </ul>
+                <p>
+                    In den Einstellungen kannst du außerdem wählen, ob der Countdown in der Erweiterung oder in einem eigenen kleinen Fenster angezeigt werden soll.
+                </p>
+            </div>
             <br>
             <div class="faq-item">
                 <h3>Wie funktioniert die Import/Export Funktion des Logbuches?</h3>
