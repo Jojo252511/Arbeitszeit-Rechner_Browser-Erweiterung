@@ -17,6 +17,8 @@ Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, 
     npx tsc
     ```
 
+---
+
 ## Installation als Browser-Erweiterung
 1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`.  
     Öffne Microsoft Edge und navigiere zur Seite `edge://extensions`.

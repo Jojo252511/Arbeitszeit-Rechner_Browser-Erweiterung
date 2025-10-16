@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logbuch Druckvorschau</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="print.css" media="print">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="./scripts/chart.umd.js" defer></script>
+    <script type="module" src="./dist/printLog.js" defer></script>
+</head>
+<body class="print-page-body">
+
+    <div class="print-controls">
+        <div class="print-options">
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="toggle-chart" checked>
+                <label for="toggle-chart">Diagramm anzeigen</label>
+            </div>
+            <div class="form-group">
+                <label for="orientation-select">Ausrichtung:</label>
+                <select id="orientation-select">
+                    <option value="portrait" selected>Hochformat</option>
+                    <option value="landscape">Querformat</option>
+                </select>
+            </div>
+        </div>
+        <button type="button" id="execute-print-btn">Drucken</button>
+    </div>
+
+    <div id="print-content" class="portrait">
+        <h1>Arbeitszeit-Logbuch</h1>
+        <div class="chart-container" id="print-chart-container">
+            <canvas id="print-log-chart"></canvas>
+        </div>
+        <div class="logbook-container">
+            <table id="print-log-table">
+                <thead>
+                    <tr>
+                        <th>Datum</th>
+                        <th>Kommen</th>
+                        <th>Gehen</th>
+                        <th>Tagessaldo</th>
+                    </tr>
+                </thead>
+                <tbody id="print-log-body">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>

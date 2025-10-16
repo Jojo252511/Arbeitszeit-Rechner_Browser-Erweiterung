@@ -1,0 +1,72 @@
+/* print.css */
+
+@media print {
+    body {
+        background-color: #fff !important;
+        color: #000 !important;
+    }
+
+    .print-controls {
+        display: none !important;
+    }
+
+    #print-content {
+        margin: 0;
+        padding: 1cm;
+        box-shadow: none;
+        border: none;
+    }
+
+    .chart-container {
+        height: 10cm !important; /* Feste Höhe für den Druck */
+        page-break-inside: avoid;
+    }
+
+    .logbook-container {
+        max-height: none;
+        overflow: visible;
+        border: none;
+    }
+
+    #print-log-table {
+        font-size: 10pt;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #print-log-table th,
+    #print-log-table td {
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+    }
+    
+    #print-log-table th {
+        background-color: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .negative-saldo {
+        color: #dc3545 !important;
+    }
+}
+
+@page {
+    margin: 1cm;
+}
+
+@page portrait {
+    size: A4 portrait;
+}
+
+@page landscape {
+    size: A4 landscape;
+}
+
+.portrait {
+    page: portrait;
+}
+
+.landscape {
+    page: landscape;
+}
