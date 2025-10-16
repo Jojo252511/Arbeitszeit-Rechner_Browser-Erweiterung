@@ -8,7 +8,7 @@
  * @author Joern Unverzagt
  */
 
-import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis } from './utils.js';
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis, saveUeberH } from './utils.js';
 import { type LogEntry } from './logbook.js'; // Importiert die Struktur eines Log-Eintrags
 
 declare global {
@@ -80,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const aktuellerSaldoInMin = aktuelleUeberstunden * 60;
         const neuerGesamtSaldo = aktuellerSaldoInMin + tagesDifferenz;
         const formatierteRestzeit = berechneRestzeitBis(minutesToTimeString(finaleGehzeitInMinuten));
+        const saldoDezimalFuerFunktion = (neuerGesamtSaldo / 60).toFixed(2);
         
         let kernzeitHinweis = '';
         if (ankunftInMinutenTotal > zeiten.kernzeitStart) {
@@ -125,6 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveLogButton.addEventListener('click', () => {
             document.dispatchEvent(new CustomEvent('saveLogEntry', { detail: logEntry }));
+            saveLogButton.disabled = true;
+            saveLogButton.textContent = 'Gespeichert!';
+            saveUeberH(parseFloat(saldoDezimalFuerFunktion));
         });
 
         ergebnisGehzeitEl.appendChild(saveLogButton);
