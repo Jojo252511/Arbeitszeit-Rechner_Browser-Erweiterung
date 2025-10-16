@@ -8,6 +8,9 @@
 
 export const LOGBOOK_KEY = 'workLogbook';
 
+/**
+ * Logbuch-Typdefinition
+ */
 export interface LogEntry {
     id: number;
     date: string;

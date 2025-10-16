@@ -1,10 +1,20 @@
 // scripts/printLog.ts
 
+/**
+ * @module printLog
+ * @description Dieses Modul rendert die Druckansicht des Logbuchs, einschließlich der Tabelle und des Diagramms.
+ * Es ermöglicht dem Benutzer, die Druckeinstellungen anzupassen und das Logbuch zu drucken.
+ * @author Jörn Unverzagt
+ */
+
 import { formatMinutesToString } from './utils.js';
 import { type LogEntry, getLog } from './logbook-data.js';
 
 declare const Chart: any;
 
+/**
+ * Initialisiert die Druckansicht
+ */
 document.addEventListener('DOMContentLoaded', () => {
     const printLogBody = document.getElementById('print-log-body') as HTMLTableSectionElement;
     const printContent = document.getElementById('print-content') as HTMLDivElement;
