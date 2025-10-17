@@ -58,7 +58,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     saveSettingsBtn.addEventListener('click', async (): Promise<void> => {
-        // Kernzeit-Validierung
         if (wunschGehzeitModeToggle.checked && customWunschGehzeitInput.value) {
             const zeiten = getKernzeitUndGleitzeit();
             const customTimeInMinutes = timeStringToMinutes(customWunschGehzeitInput.value);
@@ -116,7 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Einstellungen exportiert!', 'success');
     });
 
-    // --- NEU: Import Logik ---
+    // --- Import Logik ---
     const handleSettingsFile = (file: File) => {
         if (!file || !file.name.endsWith('.json')) {
             showToast('Ungültiger Dateityp. Bitte eine .json Datei auswählen.', 'error');
@@ -129,7 +128,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const content = e.target?.result as string;
                 const importedSettings = JSON.parse(content);
 
-                // Einfache Validierung
                 if (typeof importedSettings !== 'object' || !('userSollzeit' in importedSettings)) {
                     throw new Error('Keine gültige Einstellungs-Datei.');
                 }
