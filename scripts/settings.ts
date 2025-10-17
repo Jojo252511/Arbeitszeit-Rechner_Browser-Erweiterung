@@ -12,7 +12,7 @@ import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, show
  * @file Enthält die gesamte Logik für das Einstellungs-Modal im Side Panel.
  * @description Steuert das Öffnen, Schließen, Speichern und Laden von Benutzereinstellungen.
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const menuToggleBtn = document.getElementById('menu-toggle') as HTMLButtonElement;
     const settingsModal = document.getElementById('settings-modal') as HTMLDivElement;
     const closeSettingsBtn = document.getElementById('close-settings') as HTMLSpanElement;
@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const calculatorCard = document.getElementById('calculator-card') as HTMLDivElement;
     const calculatorIframe = document.getElementById('calculator-iframe') as HTMLIFrameElement;
     const countdownWindowToggle = document.getElementById('countdown-window-toggle') as HTMLInputElement;
+    const logbookSyncToggle = document.getElementById('logbook-sync-toggle') as HTMLInputElement;
 
     /**
      * Steuert die Sichtbarkeit des Taschenrechner-iFrames.
@@ -59,26 +60,27 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Lädt alle gespeicherten Benutzereinstellungen aus dem Local Storage.
      */
-    const loadSettings = (): void => {
+    const loadSettings = async (): Promise<void> => {
+        const settings = await chrome.storage.sync.get([
+            'userSollzeit', 
+            'userUeberstunden',
+            'userIsMinderjaehrig',
+            'userWunschGehtzeitMode',
+            'userCustomWunschGehzeit',
+            'userRechnerAnzeigen',
+            'userCountdownWindow',
+            'userLogbookSync'
+        ]);
+
+        countdownWindowToggle.checked = settings.userCountdownWindow === true;
+        logbookSyncToggle.checked = settings.userLogbookSync === true;
+        
+        hauptSollzeitSelect.value = settings.userSollzeit || '8';
+        standardSollzeitSelect.value = settings.userSollzeit || '8';
         countdownWindowToggle.checked = localStorage.getItem('userCountdownWindow') === 'true';
 
         hauptSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
         standardSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
-
-        const savedUeberstunden = localStorage.getItem('userUeberstunden');
-        if (savedUeberstunden !== null) {
-            hauptUeberstundenInput.value = savedUeberstunden;
-            standardUeberstundenInput.value = savedUeberstunden;
-        }
-
-        const isMinderjaehrig = localStorage.getItem('userIsMinderjaehrig') === 'true';
-        hauptMinderjaehrigCheckbox.checked = isMinderjaehrig;
-        standardMinderjaehrigCheckbox.checked = isMinderjaehrig;
-
-        wunschGehzeitModeToggle.checked = localStorage.getItem('userWunschGehzeitMode') === 'true';
-        customWunschGehzeitInput.value = localStorage.getItem('userCustomWunschGehzeit') || '';
-        
-        rechnerToggle.checked = localStorage.getItem('userRechnerAnzeigen') === 'true';
         
         toggleCustomWunschGehzeit();
         applyRechnerVisibility();
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     wunschGehzeitModeToggle.addEventListener('change', toggleCustomWunschGehzeit);
     rechnerToggle.addEventListener('change', applyRechnerVisibility);
 
-    saveSettingsBtn.addEventListener('click', () => {
+    saveSettingsBtn.addEventListener('click', async () => {
         const selectedSollzeit = standardSollzeitSelect.value;
         const selectedIsMinderjaehrig = standardMinderjaehrigCheckbox.checked;
         const selectedUeberstunden = standardUeberstundenInput.value;
@@ -121,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const selectedCustomWunschGehzeit = customWunschGehzeitInput.value;
         const selectedRechnerState = rechnerToggle.checked;
         const selectedCountdownWindowState = countdownWindowToggle.checked;
+        const selectedLogbookSync = logbookSyncToggle.checked;
 
         if (selectedWunschGehzeitMode && selectedCustomWunschGehzeit) {
             const zeiten = getKernzeitUndGleitzeit();
@@ -132,13 +135,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        localStorage.setItem('userSollzeit', selectedSollzeit);
-        localStorage.setItem('userIsMinderjaehrig', String(selectedIsMinderjaehrig));
-        localStorage.setItem('userUeberstunden', selectedUeberstunden);
-        localStorage.setItem('userWunschGehzeitMode', String(selectedWunschGehzeitMode));
-        localStorage.setItem('userCustomWunschGehzeit', selectedCustomWunschGehzeit);
-        localStorage.setItem('userRechnerAnzeigen', String(selectedRechnerState));
-        localStorage.setItem('userCountdownWindow', String(selectedCountdownWindowState));
+       // Speichere alle Einstellungen auf einmal
+        await chrome.storage.sync.set({
+            'userSollzeit': selectedSollzeit,
+            'userIsMinderjaehrig': String(selectedIsMinderjaehrig),
+            'userUeberstunden': selectedUeberstunden,
+            'userWunschGehtzeitMode': String(selectedWunschGehzeitMode),
+            'userCustomWunschGehzeit': selectedCustomWunschGehzeit,
+            'userRechnerAnzeigen': String(selectedRechnerState),
+            'userCountdownWindow': String(selectedCountdownWindowState),
+            'userLogbookSync': selectedLogbookSync
+        });
 
         showToast('Einstellungen gespeichert. Die Seite wird neu geladen...', 'success');
 
@@ -149,5 +156,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     });
 
-    loadSettings();
+    await loadSettings();
 });

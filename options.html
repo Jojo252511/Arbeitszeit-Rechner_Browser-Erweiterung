@@ -54,16 +54,33 @@
             <input type="checkbox" id="standard-pause-minderjaehrig">
             <label for="standard-pause-minderjaehrig">60 Minuten Pause (für Minderjährige)</label>
         </div>
-             <hr>
+        <hr>
         <div class="form-group">
             <label>Countdown-Anzeige</label>
             <div class="switch-container">
                 <span>Im Modal</span>
                 <label class="switch">
-                    <input type="checkbox" id="countdown-window-toggle-options" title="Countdown in einem separaten Fenster anzeigen">
+                    <input type="checkbox" id="countdown-window-toggle-options"
+                        title="Countdown in einem separaten Fenster anzeigen">
                     <span class="slider round"></span>
                 </label>
                 <span>Separates Fenster</span>
+            </div>
+        </div>
+        <hr>
+        <div class="form-group">
+            <label>Logbuch synchronisieren
+                <span class="info-icon"
+                    data-tooltip="Wenn aktiv, wird das Logbuch über dein Google-Konto synchronisiert (Limit ca. 100KB).">i</span>
+            </label>
+            <div class="switch-container">
+                <span>Aus</span>
+                <label class="switch">
+                    <input type="checkbox" id="logbook-sync-toggle-options"
+                        title="Logbuch Synchronisation an-/ausschalten">
+                    <span class="slider round"></span>
+                </label>
+                <span>An</span>
             </div>
         </div>
         <hr>

@@ -117,7 +117,7 @@ export const berechneRestzeitBis = (zielZeitString: string): string | null => {
  * Speichert den neuen Überstundensaldo im Local Storage und löst ein Event aus.
  * @param {number} time - Der neue Überstundensaldo als Dezimalzahl.
  */
-export function saveUeberH(time: number): void {
+export async function saveUeberH(time: number): Promise<void> {
     const timeAsString = String(time.toFixed(2));
     localStorage.setItem('userUeberstunden', timeAsString);
     const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
@@ -129,7 +129,9 @@ export function saveUeberH(time: number): void {
     document.dispatchEvent(new CustomEvent('ueberstundenUpdated', { detail: { newSaldo: timeAsString } }));
 }
 
-// scripts/utils.ts
+// =====================================================================================
+// ----------------------------- Toast Notification ------------------------------------
+// =====================================================================================
 
 /**
  * Zeigt eine Toast-Benachrichtigung an.

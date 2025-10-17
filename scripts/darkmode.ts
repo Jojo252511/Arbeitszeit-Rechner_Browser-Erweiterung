@@ -9,7 +9,7 @@
 /**
  * @file Steuert die Dark-Mode-Funktionalität.
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const toggleButton = document.getElementById('dark-mode-toggle') as HTMLButtonElement;
     const body = document.body;
 
