@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const calculatorCard = document.getElementById('calculator-card') as HTMLDivElement;
     const calculatorIframe = document.getElementById('calculator-iframe') as HTMLIFrameElement;
     const countdownWindowToggle = document.getElementById('countdown-window-toggle') as HTMLInputElement;
-    const logbookSyncToggle = document.getElementById('logbook-sync-toggle') as HTMLInputElement;
 
     /**
      * Steuert die Sichtbarkeit des Taschenrechner-iFrames.
@@ -58,43 +57,43 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     /**
-     * Lädt alle gespeicherten Benutzereinstellungen aus dem Local Storage.
+     * Lädt alle gespeicherten Benutzereinstellungen aus dem Chrome Storage.
      */
     const loadSettings = async (): Promise<void> => {
         const settings = await chrome.storage.sync.get([
-            'userSollzeit', 
-            'userUeberstunden',
-            'userIsMinderjaehrig',
-            'userWunschGehtzeitMode',
-            'userCustomWunschGehzeit',
-            'userRechnerAnzeigen',
-            'userCountdownWindow',
-            'userLogbookSync'
+            'userSollzeit', 'userUeberstunden', 'userIsMinderjaehrig',
+            'userWunschGehzeitMode', 'userCustomWunschGehzeit', 'userRechnerAnzeigen',
+            'userCountdownWindow', 'userLogbookSync', 'userGleitzeitStart', 
+            'userKernzeitStart', 'userKernzeitEnde', 'userKernzeitEndeFr'
         ]);
 
-        countdownWindowToggle.checked = settings.userCountdownWindow === true;
-        logbookSyncToggle.checked = settings.userLogbookSync === true;
-        
+        // Haupt-UI aktualisieren
         hauptSollzeitSelect.value = settings.userSollzeit || '8';
-        standardSollzeitSelect.value = settings.userSollzeit || '8';
-        countdownWindowToggle.checked = localStorage.getItem('userCountdownWindow') === 'true';
+        if (settings.userUeberstunden !== undefined) hauptUeberstundenInput.value = settings.userUeberstunden;
+        hauptMinderjaehrigCheckbox.checked = settings.userIsMinderjaehrig === 'true';
 
-        hauptSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
-        standardSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
+        // Einstellungs-Modal UI aktualisieren
+        standardSollzeitSelect.value = settings.userSollzeit || '8';
+        if (settings.userUeberstunden !== undefined) standardUeberstundenInput.value = settings.userUeberstunden;
+        standardMinderjaehrigCheckbox.checked = settings.userIsMinderjaehrig === 'true';
+        wunschGehzeitModeToggle.checked = settings.userWunschGehzeitMode === 'true';
+        customWunschGehzeitInput.value = settings.userCustomWunschGehzeit || '';
+        rechnerToggle.checked = settings.userRechnerAnzeigen === true;
+        countdownWindowToggle.checked = settings.userCountdownWindow === true;
         
         toggleCustomWunschGehzeit();
         applyRechnerVisibility();
-        updateFaqTimes();
+        updateFaqTimes(settings);
     };
 
     /**
      * Aktualisiert die Zeitangaben im FAQ-Bereich dynamisch.
      */
-    function updateFaqTimes(): void {
-        const gleitzeitStart = localStorage.getItem('userGleitzeitStart') || '06:45';
-        const kernzeitStart = localStorage.getItem('userKernzeitStart') || '08:45';
-        const kernzeitEnde = localStorage.getItem('userKernzeitEnde') || '15:30';
-        const kernzeitEndeFr = localStorage.getItem('userKernzeitEndeFr') || '15:00';
+    function updateFaqTimes(settings: { [key: string]: any }): void {
+        const gleitzeitStart = settings.userGleitzeitStart || '06:45';
+        const kernzeitStart = settings.userKernzeitStart || '08:45';
+        const kernzeitEnde = settings.userKernzeitEnde || '15:30';
+        const kernzeitEndeFr = settings.userKernzeitEndeFr || '15:00';
 
         const faqGleitzeitStartEl = document.getElementById('faq-gleitzeit-start');
         const faqKernzeitStartEl = document.getElementById('faq-kernzeit-start');
@@ -107,15 +106,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (faqKernzeitEndeFrEl) faqKernzeitEndeFrEl.textContent = kernzeitEndeFr;
     }
 
-    menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; document.body.style.overflowY = 'hidden';});
-    closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto';});
+    menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; document.body.style.overflowY = 'hidden'; });
+    closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto'; });
     settingsModal.addEventListener('click', (event: MouseEvent) => {
-        if (event.target === settingsModal) { settingsModal.style.display = 'none';  document.body.style.overflowY = 'auto';}
+        if (event.target === settingsModal) { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto'; }
     });
     wunschGehzeitModeToggle.addEventListener('change', toggleCustomWunschGehzeit);
     rechnerToggle.addEventListener('change', applyRechnerVisibility);
 
-    saveSettingsBtn.addEventListener('click', async () => {
+saveSettingsBtn.addEventListener('click', async () => {
         const selectedSollzeit = standardSollzeitSelect.value;
         const selectedIsMinderjaehrig = standardMinderjaehrigCheckbox.checked;
         const selectedUeberstunden = standardUeberstundenInput.value;
@@ -123,38 +122,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         const selectedCustomWunschGehzeit = customWunschGehzeitInput.value;
         const selectedRechnerState = rechnerToggle.checked;
         const selectedCountdownWindowState = countdownWindowToggle.checked;
-        const selectedLogbookSync = logbookSyncToggle.checked;
 
         if (selectedWunschGehzeitMode && selectedCustomWunschGehzeit) {
             const zeiten = getKernzeitUndGleitzeit();
             const customTimeInMinutes = timeStringToMinutes(selectedCustomWunschGehzeit);
             if (customTimeInMinutes < zeiten.kernzeitEnde) {
                 const kernzeitEndeFormatiert = minutesToTimeString(zeiten.kernzeitEnde);
-                showToast(`Fehler: Die feste Wunsch-Gehzeit (${selectedCustomWunschGehzeit} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`, 'error');
+                showToast(`Die Wunsch-Gehzeit (${selectedCustomWunschGehzeit}) muss nach dem Kernzeitende (${kernzeitEndeFormatiert}) liegen.`, 'error');
                 return;
             }
         }
 
-       // Speichere alle Einstellungen auf einmal
         await chrome.storage.sync.set({
             'userSollzeit': selectedSollzeit,
-            'userIsMinderjaehrig': String(selectedIsMinderjaehrig),
+            'userIsMinderjaehrig': selectedIsMinderjaehrig,
             'userUeberstunden': selectedUeberstunden,
-            'userWunschGehtzeitMode': String(selectedWunschGehzeitMode),
+            'userWunschGehzeitMode': selectedWunschGehzeitMode,
             'userCustomWunschGehzeit': selectedCustomWunschGehzeit,
-            'userRechnerAnzeigen': String(selectedRechnerState),
-            'userCountdownWindow': String(selectedCountdownWindowState),
-            'userLogbookSync': selectedLogbookSync
+            'userRechnerAnzeigen': selectedRechnerState,
+            'userCountdownWindow': selectedCountdownWindowState,
         });
 
-        showToast('Einstellungen gespeichert. Die Seite wird neu geladen...', 'success');
+         showToast('Einstellungen gespeichert. Die Seite wird neu geladen...', 'success');
 
         // warten, damit der Nutzer die Toast-Nachricht sieht
-        setTimeout(() =>{
+        setTimeout(() => {
             window.location.reload();
         }, 2000);
-
     });
-
     await loadSettings();
 });

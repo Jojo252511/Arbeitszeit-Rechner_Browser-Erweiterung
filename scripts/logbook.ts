@@ -459,9 +459,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
-    document.addEventListener('saveLogEntry', (event: Event) => {
+    document.addEventListener('saveLogEntry', async (event: Event) => {
         const customEvent = event as CustomEvent<LogEntry>;
-        addLogEntry(customEvent.detail);
+        await addLogEntry(customEvent.detail);
     });
 
     // Erster Aufruf beim laden
@@ -489,15 +489,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                     showToast('PDF-Erstellung fehlgeschlagen (Iframe-Inhalt).', 'error');
                     return;
                 }
-                
+
                 const printContent = printDocument.getElementById('print-content');
                 if (!printContent) {
-                     showToast('PDF-Erstellung fehlgeschlagen (print-content).', 'error');
+                    showToast('PDF-Erstellung fehlgeschlagen (print-content).', 'error');
                     return;
                 }
 
                 const printControls = printDocument.querySelector('.print-controls') as HTMLElement;
-                if(printControls) printControls.style.display = 'none';
+                if (printControls) printControls.style.display = 'none';
 
                 // 3. Nutze html2canvas, um das Element zu "fotografieren"
                 const canvas = await html2canvas(printContent, {
@@ -519,10 +519,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const canvasWidth = canvas.width;
                 const canvasHeight = canvas.height;
                 const ratio = canvasWidth / canvasHeight;
-                
+
                 let imgWidth = pdfWidth;
                 let imgHeight = imgWidth / ratio;
-                
+
                 if (imgHeight > pdfHeight) {
                     imgHeight = pdfHeight;
                     imgWidth = imgHeight * ratio;
@@ -530,7 +530,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 const x = (pdfWidth - imgWidth) / 2;
                 const y = (pdfHeight - imgHeight) / 2;
-                
+
                 pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
 
                 // 5. Speichere das PDF
