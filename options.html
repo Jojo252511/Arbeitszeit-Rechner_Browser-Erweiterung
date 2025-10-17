@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script type="module" src="./dist/utils.js" defer></script>
     <script type="module" src="./dist/options.js" defer></script>
@@ -123,9 +124,32 @@
             </div>
         </div>
         <hr>
+        <div class="form-group import-export-buttons">
+            <button type="button" id="export-settings-btn" class="btn-secondary"><i class="fa-solid fa-file-export"></i>
+                Exportieren</button>
+            <button type="button" id="import-settings-btn" class="btn-secondary"><i class="fa-solid fa-file-import"></i>
+                Importieren</button>
+        </div>
+        <p class="info-text" style="text-align: center; margin-top: -0.5rem; margin-bottom: 1.5rem;">
+            Oder ziehe eine Einstellungs-Datei hierher.
+        </p>
+        <hr>
         <button type="button" id="save-settings">Einstellungen speichern</button>
         <div id="save-feedback" class="save-feedback">Gespeichert!</div>
         <span id="copyright">&copy;2025 Jörn Unverzagt</span>
+    </div>
+
+    <!------------------------- Toast Container --------------------------->
+    <div id="toast-container"></div>
+
+    <!------------------------- Custom Modal --------------------------->
+    <div class="modal-overlay" id="custom-modal-overlay" style="display: none;">
+        <div class="modal-content-custom">
+            <h3 id="modal-title"></h3>
+            <p id="modal-message"></p>
+            <div id="modal-input-container"></div>
+            <div id="modal-button-container" class="modal-buttons"></div>
+        </div>
     </div>
 
 </body>

@@ -179,6 +179,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    document.addEventListener('logbookUpdated', () => {
+       prefillArrivalFromLog();
+    });
+
     /**
      * Zum auslesen der exportierten CSV
      * @param csvText 
