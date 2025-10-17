@@ -9,6 +9,10 @@
 import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt } from './utils.js';
 import { LOGBOOK_KEY, type LogEntry, getLog, getTodayLogEntry } from './logbook-data.js';
 
+// Deklariere die globalen Bibliotheken für TypeScript
+declare const html2canvas: any;
+declare const jspdf: any;
+
 declare const Chart: any;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -324,7 +328,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const format = await showPrompt(
                 "Exportformat wählen",
                 "In welchem Format möchtest du das Logbuch exportieren?",
-                ['json', 'csv']
+                ['json', 'csv', 'pdf']
             );
 
             if (format === null) { // Benutzer hat auf "Abbrechen" geklickt
@@ -360,6 +364,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+            } else if (format === 'pdf') {
+                // HIER kommt die neue PDF-Logik
+                await generatePdf();
             } else if (format !== null) {
                 showToast("Ungültiges Format. Bitte 'json' oder 'csv' eingeben.", "error");
             }
@@ -465,5 +472,83 @@ document.addEventListener('DOMContentLoaded', () => {
 
     renderLog();
     prefillArrivalFromLog();
+
+    /**
+     * Funktion für den PDF Export (BETA)
+     */
+    async function generatePdf() {
+        showToast('PDF wird generiert...', 'info', 2000);
+
+        // 1. Erstelle ein unsichtbares Iframe, um die Druckansicht zu laden
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'absolute';
+        iframe.style.left = '-9999px';
+        iframe.src = '/Print/index.html';
+        document.body.appendChild(iframe);
+
+        // 2. Warte, bis der Inhalt des Iframes geladen ist
+        iframe.onload = async () => {
+            try {
+                const printDocument = iframe.contentDocument;
+                if (!printDocument) {
+                    showToast('PDF-Erstellung fehlgeschlagen (Iframe-Inhalt).', 'error');
+                    return;
+                }
+                
+                const printContent = printDocument.getElementById('print-content');
+                if (!printContent) {
+                     showToast('PDF-Erstellung fehlgeschlagen (print-content).', 'error');
+                    return;
+                }
+
+                const printControls = printDocument.querySelector('.print-controls') as HTMLElement;
+                if(printControls) printControls.style.display = 'none';
+
+                // 3. Nutze html2canvas, um das Element zu "fotografieren"
+                const canvas = await html2canvas(printContent, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                // 4. Erstelle das PDF mit jsPDF
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jspdf.jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                const canvasWidth = canvas.width;
+                const canvasHeight = canvas.height;
+                const ratio = canvasWidth / canvasHeight;
+                
+                let imgWidth = pdfWidth;
+                let imgHeight = imgWidth / ratio;
+                
+                if (imgHeight > pdfHeight) {
+                    imgHeight = pdfHeight;
+                    imgWidth = imgHeight * ratio;
+                }
+
+                const x = (pdfWidth - imgWidth) / 2;
+                const y = (pdfHeight - imgHeight) / 2;
+                
+                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+
+                // 5. Speichere das PDF
+                pdf.save('Arbeitszeit-Logbuch.pdf');
+
+            } catch (error) {
+                console.error("PDF generation error:", error);
+                showToast('Ein Fehler ist beim Erstellen des PDFs aufgetreten.', 'error');
+            } finally {
+                // 6. Räume das Iframe wieder auf
+                document.body.removeChild(iframe);
+            }
+        };
+    }
 });
 
