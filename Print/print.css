@@ -4,7 +4,7 @@
    Stile für die Druckansicht
    ====================================================================== 
 */
-   label{
+label {
     margin-bottom: 0;
 }
 
@@ -20,6 +20,9 @@
     bottom: 10px;
 }
 
+/*--------------*/
+
+
 .portrait {
     width: 210mm;
 }
@@ -34,6 +37,7 @@
     border: none;
     width: 100%;
 }
+
 .chart-container {
     display: flex;
     justify-content: center;
@@ -108,10 +112,85 @@ h1 {
     .print-controls {
         display: none !important;
     }
+
+
+    .portrait {
+        width: 210mm;
+    }
+
+    .landscape {
+        width: 297mm;
+    }
+
+    .logbook-container {
+        max-height: none;
+        overflow: visible;
+        border: none;
+        width: 100%;
+    }
+
+    .chart-container {
+        display: flex;
+        justify-content: center;
+    }
+
+    .chart-container,
+    .logbook-container {
+        margin-bottom: 20px;
+        width: 100%;
+    }
+
+
+    #print-log-table {
+        font-size: 10pt;
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    #print-log-table th,
+    #print-log-table td {
+        border: 1px solid #ccc;
+        padding: 0.5rem;
+    }
+
+    #print-log-table th {
+        background-color: #f0f0f0 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+
+    .negative-saldo {
+        color: #dc3545 !important;
+    }
+
+    #print-content {
+        box-shadow: none;
+        border: none;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    body.print-page-body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        max-width: 100%;
+    }
+
+    h1 {
+        color: #000000 !important;
+    }
+
+    #print-log-chart {
+        max-width: 85%;
+        height: auto;
+    }
+
 }
 
 /* Querformat für A4-Seiten */
-@page{
+@page {
     size: A4 landscape;
     margin: 1cm;
 }
