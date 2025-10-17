@@ -6,7 +6,7 @@
  * @author Joern Unverzagt
  */
 
-import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString } from './utils.js';
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, showToast } from './utils.js';
 
 /**
  * @file Enthält die gesamte Logik für das Einstellungs-Modal im Side Panel.
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const customTimeInMinutes = timeStringToMinutes(selectedCustomWunschGehzeit);
             if (customTimeInMinutes < zeiten.kernzeitEnde) {
                 const kernzeitEndeFormatiert = minutesToTimeString(zeiten.kernzeitEnde);
-                alert(`Fehler: Die feste Wunsch-Gehzeit (${selectedCustomWunschGehzeit} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`);
+                showToast(`Fehler: Die feste Wunsch-Gehzeit (${selectedCustomWunschGehzeit} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`, 'error');
                 return;
             }
         }
@@ -140,7 +140,13 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('userRechnerAnzeigen', String(selectedRechnerState));
         localStorage.setItem('userCountdownWindow', String(selectedCountdownWindowState));
 
-        window.location.reload();
+        showToast('Einstellungen gespeichert. Die Seite wird neu geladen...', 'success');
+
+        // warten, damit der Nutzer die Toast-Nachricht sieht
+        setTimeout(() =>{
+            window.location.reload();
+        }, 2000);
+
     });
 
     loadSettings();

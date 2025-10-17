@@ -6,7 +6,7 @@
  * @author Joern Unverzagt
  */
 
-import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString } from './utils.js';
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, showToast } from './utils.js';
 
 /**
  * @file Optionen-Seite für den Arbeitszeit-Rechner.
@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const customTimeInMinutes = timeStringToMinutes(customWunschGehzeitInput.value);
             if (customTimeInMinutes < zeiten.kernzeitEnde) {
                 const kernzeitEndeFormatiert = minutesToTimeString(zeiten.kernzeitEnde);
-                alert(`Fehler: Die feste Wunsch-Gehzeit (${customWunschGehzeitInput.value} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`);
+                showToast(`Fehler: Die feste Wunsch-Gehzeit (${customWunschGehzeitInput.value} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`, 'error');
                 return;
             }
         }

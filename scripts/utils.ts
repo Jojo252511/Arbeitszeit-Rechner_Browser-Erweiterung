@@ -128,3 +128,135 @@ export function saveUeberH(time: number): void {
     // Löst ein Event aus, damit andere Teile der Anwendung reagieren können.
     document.dispatchEvent(new CustomEvent('ueberstundenUpdated', { detail: { newSaldo: timeAsString } }));
 }
+
+// scripts/utils.ts
+
+/**
+ * Zeigt eine Toast-Benachrichtigung an.
+ * @param {string} message - Die anzuzeigende Nachricht.
+ * @param {'success' | 'error' | 'info'} [type='info'] - Der Typ der Nachricht.
+ * @param {number} [duration=3000] - Die Anzeigedauer in Millisekunden.
+ */
+export function showToast(message: string, type: 'success' | 'error' | 'info' = 'info', duration: number = 3000): void {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    // Fade in
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10); // kleiner Delay für den CSS-Übergang
+
+    // Fade out und entfernen
+    setTimeout(() => {
+        toast.classList.remove('show');
+        toast.classList.add('hide');
+        toast.addEventListener('transitionend', () => {
+            toast.remove();
+        });
+    }, duration);
+}
+
+// =====================================================================================
+// ----------------------------- Mordal Logic ------------------------------------------
+// =====================================================================================
+
+interface ModalButton {
+    text: string;
+    value: any;
+    class: string;
+}
+
+interface ModalOptions {
+    title: string;
+    message: string;
+    buttons: ModalButton[];
+    inputs?: { type: 'radio'; name: string; choices: string[] };
+}
+
+function showModal(options: ModalOptions): Promise<any> {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('custom-modal-overlay') as HTMLDivElement;
+        const titleEl = document.getElementById('modal-title') as HTMLHeadingElement;
+        const messageEl = document.getElementById('modal-message') as HTMLParagraphElement;
+        const inputContainer = document.getElementById('modal-input-container') as HTMLDivElement;
+        const buttonContainer = document.getElementById('modal-button-container') as HTMLDivElement;
+        
+        // Diese Konstante hilft TypeScript beim Verstehen des Typs
+        const modalInputs = options.inputs;
+
+        titleEl.textContent = options.title;
+        messageEl.innerHTML = options.message;
+        inputContainer.innerHTML = '';
+        buttonContainer.innerHTML = '';
+
+        if (modalInputs) {
+            if (modalInputs.type === 'radio') {
+                const radioGroup = document.createElement('div');
+                radioGroup.className = 'modal-radio-group';
+                modalInputs.choices.forEach((choice, index) => {
+                    const label = document.createElement('label');
+                    const radio = document.createElement('input');
+                    radio.type = 'radio';
+                    radio.name = modalInputs.name;
+                    radio.value = choice;
+                    if (index === 0) radio.checked = true;
+                    
+                    label.appendChild(radio);
+                    label.appendChild(document.createTextNode(choice.toUpperCase()));
+                    radioGroup.appendChild(label);
+                });
+                inputContainer.appendChild(radioGroup);
+            }
+        }
+
+        options.buttons.forEach(btnInfo => {
+            const button = document.createElement('button');
+            button.textContent = btnInfo.text;
+            button.className = btnInfo.class;
+            button.onclick = () => {
+                let result = btnInfo.value;
+                // Hier war der Fehler: Wir prüfen jetzt wieder auf modalInputs
+                if (modalInputs && result) { 
+                    if (modalInputs.type === 'radio') {
+                        const selected = inputContainer.querySelector<HTMLInputElement>(`input[name="${modalInputs.name}"]:checked`);
+                        if (selected) {
+                            result = selected.value;
+                        }
+                    }
+                }
+                overlay.classList.remove('show');
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    resolve(result);
+                }, 300);
+            };
+            buttonContainer.appendChild(button);
+        });
+
+        overlay.style.display = 'flex';
+        setTimeout(() => overlay.classList.add('show'), 10);
+    });
+}
+
+export function showConfirm(title: string, message: string, danger: boolean = false): Promise<boolean> {
+    const buttons: ModalButton[] = [
+        { text: 'Abbrechen', value: false, class: 'btn-secondary' },
+        { text: 'OK', value: true, class: danger ? 'btn-danger' : '' }
+    ];
+    return showModal({ title, message, buttons });
+}
+
+export function showPrompt(title: string, message: string, choices: string[]): Promise<string | null> {
+    const buttons: ModalButton[] = [
+        { text: 'Abbrechen', value: null, class: 'btn-secondary' },
+        { text: 'Exportieren', value: true, class: '' } 
+    ];
+    const inputs = { type: 'radio' as const, name: 'export-format', choices: choices };
+    return showModal({ title, message, buttons, inputs });
+}
