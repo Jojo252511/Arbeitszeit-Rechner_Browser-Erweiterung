@@ -7,7 +7,7 @@
  */
 
 import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt } from './utils.js';
-import { LOGBOOK_KEY, type LogEntry, getLog, getTodayLogEntry } from './logbook-data.js';
+import { LOGBOOK_KEY, type LogEntry, getLog, saveLog, getTodayLogEntry } from './logbook-data.js';
 
 // Deklariere die globalen Bibliotheken für TypeScript
 declare const html2canvas: any;
@@ -15,7 +15,7 @@ declare const jspdf: any;
 
 declare const Chart: any;
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const logbookBody = document.getElementById('logbook-body') as HTMLTableSectionElement;
     const clearLogbookBtn = document.getElementById('clear-logbook-btn') as HTMLButtonElement;
     const exportLogbookBtn = document.getElementById('export-logbook-btn') as HTMLButtonElement;
@@ -25,11 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const printLogBtn = document.getElementById('print-log-btn') as HTMLButtonElement;
 
     let logbookChart: Chart | null = null;
-
-    function saveLog(logData: LogEntry[]): void {
-        localStorage.setItem(LOGBOOK_KEY, JSON.stringify(logData));
-        document.dispatchEvent(new CustomEvent('logbookUpdated'));
-    }
 
     function renderChart(logData: LogEntry[]): void {
         const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
@@ -113,10 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function renderLog(editMode = false): void {
+    async function renderLog(editMode = false): Promise<void> {
         if (!logbookBody) return;
         logbookBody.innerHTML = '';
-        const logData = getLog();
+        const logData = await getLog();
         logData.sort((a, b) => b.id - a.id);
         renderChart(logData);
 
@@ -154,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
      * @returns 
      */
     async function addLogEntry(newEntry: LogEntry): Promise<void> {
-        const logData = getLog();
+        const logData = await getLog();
         const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
         if (existingEntryIndex > -1) {
             // ALT: if (!confirm(`...`)) { return; }
@@ -172,8 +167,8 @@ document.addEventListener('DOMContentLoaded', () => {
         renderLog();
     }
 
-    function prefillArrivalFromLog(): void {
-        const todayEntry = getTodayLogEntry();
+    async function prefillArrivalFromLog(): Promise<void> {
+        const todayEntry = await getTodayLogEntry();
         if (todayEntry) {
             const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
             if (ankunftszeitInput && !ankunftszeitInput.value) {
@@ -244,7 +239,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return newLogEntries;
     }
 
-    function handleFile(file: File) {
+    async function handleFile(file: File) {
         if (!file) return;
 
         const reader = new FileReader();
@@ -269,7 +264,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         "Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen?<br>Bestehende Tage werden dabei überschrieben."
                     );
                     if (merge) {
-                        const currentLog = getLog();
+                        const currentLog = await getLog();
                         const logMap = new Map<number, LogEntry>();
 
                         currentLog.forEach(entry => logMap.set(entry.id, entry));
@@ -277,8 +272,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         const mergedLog = Array.from(logMap.values());
 
-                        saveLog(mergedLog);
-                        renderLog();
+                        await saveLog(mergedLog);
+                        await renderLog();
                         showToast('Logbuch erfolgreich importiert und zusammengeführt.', 'success');
                     }
                 } else {
@@ -293,8 +288,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (printLogBtn) {
-        printLogBtn.addEventListener('click', () => {
-            const logData = getLog();
+        printLogBtn.addEventListener('click', async () => {
+            const logData = await getLog();
             if (logData.length === 0) {
                 showToast('Das Logbuch ist leer. Es gibt nichts zu drucken.', 'info')
                 return;
@@ -311,15 +306,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 true
             );
             if (confirmed) {
-                localStorage.removeItem(LOGBOOK_KEY);
-                renderLog();
+                await saveLog([]);
+                await renderLog();
                 showToast("Logbuch wurde geleert.", "info");
             }
         });
     }
     if (exportLogbookBtn) {
         exportLogbookBtn.addEventListener('click', async () => {
-            const logData = getLog();
+            const logData = await getLog();
             if (logData.length === 0) {
                 showToast('Das Logbuch ist leer. Es gibt nichts zu exportieren.', 'info');
                 return;
@@ -365,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             } else if (format === 'pdf') {
-                // HIER kommt die neue PDF-Logik
                 await generatePdf();
             } else if (format !== null) {
                 showToast("Ungültiges Format. Bitte 'json' oder 'csv' eingeben.", "error");
@@ -424,14 +418,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    logbookBody.addEventListener('click', (event) => {
+    logbookBody.addEventListener('click', async (event) => {
         const target = event.target as HTMLElement;
 
         if (target.classList.contains('save-edit-btn')) {
             const row = target.closest('tr');
             if (row) {
                 const entryId = parseInt(row.dataset.entryId || '0', 10);
-                const logData = getLog();
+                const logData = await getLog();
                 const entryIndex = logData.findIndex(e => e.id === entryId);
                 if (entryIndex > -1) {
                     const arrivalInput = row.querySelector('input[type="time"]') as HTMLInputElement;
@@ -454,8 +448,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     logData[entryIndex].leaving = newLeaving;
                     logData[entryIndex].dailySaldoMinutes = Math.round(tagesDifferenz);
 
-                    saveLog(logData);
-                    renderLog(true);
+                    await saveLog(logData);
+                    await renderLog(true);
                 }
             }
         }
@@ -465,13 +459,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    document.addEventListener('saveLogEntry', (event: Event) => {
+    document.addEventListener('saveLogEntry', async (event: Event) => {
         const customEvent = event as CustomEvent<LogEntry>;
-        addLogEntry(customEvent.detail);
+        await addLogEntry(customEvent.detail);
     });
 
-    renderLog();
-    prefillArrivalFromLog();
+    // Erster Aufruf beim laden
+    await renderLog();
+    await prefillArrivalFromLog();
 
     /**
      * Funktion für den PDF Export (BETA)
@@ -494,15 +489,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     showToast('PDF-Erstellung fehlgeschlagen (Iframe-Inhalt).', 'error');
                     return;
                 }
-                
+
                 const printContent = printDocument.getElementById('print-content');
                 if (!printContent) {
-                     showToast('PDF-Erstellung fehlgeschlagen (print-content).', 'error');
+                    showToast('PDF-Erstellung fehlgeschlagen (print-content).', 'error');
                     return;
                 }
 
                 const printControls = printDocument.querySelector('.print-controls') as HTMLElement;
-                if(printControls) printControls.style.display = 'none';
+                if (printControls) printControls.style.display = 'none';
 
                 // 3. Nutze html2canvas, um das Element zu "fotografieren"
                 const canvas = await html2canvas(printContent, {
@@ -524,10 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const canvasWidth = canvas.width;
                 const canvasHeight = canvas.height;
                 const ratio = canvasWidth / canvasHeight;
-                
+
                 let imgWidth = pdfWidth;
                 let imgHeight = imgWidth / ratio;
-                
+
                 if (imgHeight > pdfHeight) {
                     imgHeight = pdfHeight;
                     imgWidth = imgHeight * ratio;
@@ -535,7 +530,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const x = (pdfWidth - imgWidth) / 2;
                 const y = (pdfHeight - imgHeight) / 2;
-                
+
                 pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
 
                 // 5. Speichere das PDF

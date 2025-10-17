@@ -1,19 +1,9 @@
 // scripts/options.ts
 
-/**
- * @module options
- * @description Verwaltung der Optionen-Seite für den Arbeitszeit-Rechner.
- * @author Joern Unverzagt
- */
-
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, showToast } from './utils.js';
 
-/**
- * @file Optionen-Seite für den Arbeitszeit-Rechner.
- * @description Ermöglicht dem Benutzer das Anpassen und Speichern von Einstellungen.
- */
-document.addEventListener('DOMContentLoaded', () => {
-    // Alle Einstellungs-Elemente holen
+document.addEventListener('DOMContentLoaded', async () => {
+    // --- Alle Einstellungs-Elemente von options.html holen ---
     const saveSettingsBtn = document.getElementById('save-settings') as HTMLButtonElement;
     const saveFeedback = document.getElementById('save-feedback') as HTMLDivElement;
     const standardSollzeitSelect = document.getElementById('standard-sollzeit') as HTMLSelectElement;
@@ -29,59 +19,76 @@ document.addEventListener('DOMContentLoaded', () => {
     const kernzeitEndeFrInput = document.getElementById('kernzeit-ende-fr') as HTMLInputElement;
     const gleitzeitEndeInput = document.getElementById('gleitzeit-ende') as HTMLInputElement;
     const countdownWindowToggleOptions = document.getElementById('countdown-window-toggle-options') as HTMLInputElement;
+    const logbookSyncToggleOptions = document.getElementById('logbook-sync-toggle-options') as HTMLInputElement; // Neuer Schalter
 
     const toggleCustomWunschGehzeit = (): void => {
         customWunschGehzeitContainer.style.display = wunschGehzeitModeToggle.checked ? 'block' : 'none';
     };
 
     /**
-     * Lädt alle Einstellungen aus dem Local Storage und füllt die Felder auf der Optionsseite.
+     * Lädt alle Einstellungen aus dem Chrome Storage und füllt die Felder auf der Optionsseite.
      */
-    const loadSettingsForOptionsPage = (): void => {
-        standardSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
-        standardUeberstundenInput.value = localStorage.getItem('userUeberstunden') || '';
-        standardMinderjaehrigCheckbox.checked = localStorage.getItem('userIsMinderjaehrig') === 'true';
-        rechnerToggle.checked = localStorage.getItem('userRechnerAnzeigen') === 'true';
-        wunschGehzeitModeToggle.checked = localStorage.getItem('userWunschGehzeitMode') === 'true';
-        customWunschGehzeitInput.value = localStorage.getItem('userCustomWunschGehzeit') || '';
-        gleitzeitStartInput.value = localStorage.getItem('userGleitzeitStart') || '06:45';
-        kernzeitStartInput.value = localStorage.getItem('userKernzeitStart') || '08:45';
-        kernzeitEndeInput.value = localStorage.getItem('userKernzeitEnde') || '15:30';
-        kernzeitEndeFrInput.value = localStorage.getItem('userKernzeitEndeFr') || '15:00';
-        gleitzeitEndeInput.value = localStorage.getItem('userGleitzeitEnde') || '19:00';
-        countdownWindowToggleOptions.checked = localStorage.getItem('userCountdownWindow') === 'true';
+    const loadSettingsForOptionsPage = async (): Promise<void> => {
+        const settings = await chrome.storage.sync.get([
+            'userSollzeit', 'userUeberstunden', 'userIsMinderjaehrig',
+            'userWunschGehzeitMode', 'userCustomWunschGehzeit', 'userRechnerAnzeigen',
+            'userCountdownWindow', 'userLogbookSync',
+            'userGleitzeitStart', 'userKernzeitStart', 'userKernzeitEnde', 
+            'userKernzeitEndeFr', 'userGleitzeitEnde'
+        ]);
+
+        standardSollzeitSelect.value = settings.userSollzeit || '8';
+        standardUeberstundenInput.value = settings.userUeberstunden || '';
+        standardMinderjaehrigCheckbox.checked = settings.userIsMinderjaehrig === true;
+        rechnerToggle.checked = settings.userRechnerAnzeigen === true;
+        wunschGehzeitModeToggle.checked = settings.userWunschGehzeitMode === true;
+        customWunschGehzeitInput.value = settings.userCustomWunschGehzeit || '';
+        gleitzeitStartInput.value = settings.userGleitzeitStart || '06:45';
+        kernzeitStartInput.value = settings.userKernzeitStart || '08:45';
+        kernzeitEndeInput.value = settings.userKernzeitEnde || '15:30';
+        kernzeitEndeFrInput.value = settings.userKernzeitEndeFr || '15:00';
+        gleitzeitEndeInput.value = settings.userGleitzeitEnde || '19:00';
+        countdownWindowToggleOptions.checked = settings.userCountdownWindow === true;
+        logbookSyncToggleOptions.checked = settings.userLogbookSync === true;
 
         toggleCustomWunschGehzeit();
     };
 
-    saveSettingsBtn.addEventListener('click', (): void => {
+    saveSettingsBtn.addEventListener('click', async (): Promise<void> => {
+        // Kernzeit-Validierung
         if (wunschGehzeitModeToggle.checked && customWunschGehzeitInput.value) {
-            const zeiten = getKernzeitUndGleitzeit();
+            const zeiten = getKernzeitUndGleitzeit(); 
             const customTimeInMinutes = timeStringToMinutes(customWunschGehzeitInput.value);
             if (customTimeInMinutes < zeiten.kernzeitEnde) {
                 const kernzeitEndeFormatiert = minutesToTimeString(zeiten.kernzeitEnde);
-                showToast(`Fehler: Die feste Wunsch-Gehzeit (${customWunschGehzeitInput.value} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`, 'error');
+                showToast(`Wunsch-Gehzeit (${customWunschGehzeitInput.value}) muss nach Kernzeitende (${kernzeitEndeFormatiert}) liegen.`, 'error');
                 return;
             }
         }
         
-        localStorage.setItem('userSollzeit', standardSollzeitSelect.value);
-        localStorage.setItem('userUeberstunden', standardUeberstundenInput.value);
-        localStorage.setItem('userIsMinderjaehrig', String(standardMinderjaehrigCheckbox.checked));
-        localStorage.setItem('userRechnerAnzeigen', String(rechnerToggle.checked));
-        localStorage.setItem('userWunschGehzeitMode', String(wunschGehzeitModeToggle.checked));
-        localStorage.setItem('userCustomWunschGehzeit', customWunschGehzeitInput.value);
-        localStorage.setItem('userGleitzeitStart', gleitzeitStartInput.value);
-        localStorage.setItem('userKernzeitStart', kernzeitStartInput.value);
-        localStorage.setItem('userKernzeitEnde', kernzeitEndeInput.value);
-        localStorage.setItem('userKernzeitEndeFr', kernzeitEndeFrInput.value);
-        localStorage.setItem('userGleitzeitEnde', gleitzeitEndeInput.value);
-        localStorage.setItem('userCountdownWindow', String(countdownWindowToggleOptions.checked));
+        // Alle Einstellungen in einem Objekt sammeln und speichern
+        await chrome.storage.sync.set({
+            userSollzeit: standardSollzeitSelect.value,
+            userUeberstunden: standardUeberstundenInput.value,
+            userIsMinderjaehrig: standardMinderjaehrigCheckbox.checked,
+            userRechnerAnzeigen: rechnerToggle.checked,
+            userWunschGehzeitMode: wunschGehzeitModeToggle.checked,
+            userCustomWunschGehzeit: customWunschGehzeitInput.value,
+            userGleitzeitStart: gleitzeitStartInput.value,
+            userKernzeitStart: kernzeitStartInput.value,
+            userKernzeitEnde: kernzeitEndeInput.value,
+            userKernzeitEndeFr: kernzeitEndeFrInput.value,
+            userGleitzeitEnde: gleitzeitEndeInput.value,
+            userCountdownWindow: countdownWindowToggleOptions.checked,
+            userLogbookSync: logbookSyncToggleOptions.checked 
+        });
 
         saveFeedback.style.opacity = '1';
         setTimeout(() => { saveFeedback.style.opacity = '0'; }, 2000);
     });
 
     wunschGehzeitModeToggle.addEventListener('change', toggleCustomWunschGehzeit);
-    loadSettingsForOptionsPage();
+    
+    // Initiale Ladefunktion aufrufen
+    await loadSettingsForOptionsPage();
 });

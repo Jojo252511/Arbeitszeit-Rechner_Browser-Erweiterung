@@ -15,7 +15,7 @@ declare const Chart: any;
 /**
  * Initialisiert die Druckansicht
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const printLogBody = document.getElementById('print-log-body') as HTMLTableSectionElement;
     const printContent = document.getElementById('print-content') as HTMLDivElement;
     const toggleChartCheck = document.getElementById('toggle-chart') as HTMLInputElement;
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const chartContainer = document.getElementById('print-chart-container') as HTMLDivElement;
 
     // Lade Logbuchdaten
-    const logData: LogEntry[] = getLog();
+    const logData: LogEntry[] = await(getLog());
 
     /**
      * Rendert die Logbuch-Tabelle

@@ -20,21 +20,46 @@ export interface LogEntry {
     dailySaldoMinutes: number;
 }
 
+
 /**
- * Gibt das Logbuch aus dem Local Storage zurück.
- * @returns {LogEntry[]}
+ * Lädt das Logbuch aus dem Speicher (sync oder local).
+ * @returns {Promise<LogEntry[]>}
  */
-export function getLog(): LogEntry[] {
-    const log = localStorage.getItem(LOGBOOK_KEY);
-    return log ? JSON.parse(log) : [];
+export async function getLog(): Promise<LogEntry[]> {
+    const syncEnabled = (await chrome.storage.sync.get('userLogbookSync')).userLogbookSync === true;
+    const storageArea = syncEnabled ? chrome.storage.sync : chrome.storage.local;
+    const result = await storageArea.get(LOGBOOK_KEY);
+    return result[LOGBOOK_KEY] || [];
 }
 
 /**
- * Prüft, ob für den heutigen Tag ein Eintrag im Logbuch existiert.
- * @returns {LogEntry | undefined} Den heutigen Eintrag oder undefined.
+ * Speichert das Logbuch im Speicher (sync oder local).
+ * @param {LogEntry[]} logData - Die zu speichernden Log-Einträge.
  */
-export function getTodayLogEntry(): LogEntry | undefined {
-    const logData = getLog();
+export async function saveLog(logData: LogEntry[]): Promise<void> {
+    const syncEnabled = (await chrome.storage.sync.get('userLogbookSync')).userLogbookSync === true;
+    const storageArea = syncEnabled ? chrome.storage.sync : chrome.storage.local;
+    
+    try {
+        await storageArea.set({ [LOGBOOK_KEY]: logData });
+        if (chrome.runtime.lastError) {
+            console.error(chrome.runtime.lastError);
+            alert('Fehler beim Speichern des Logbuchs! Eventuell ist der Speicher voll.');
+        }
+    } catch (e) {
+        // Dieser Fehler tritt auf, wenn das Sync-Limit überschritten wird.
+        console.error(e);
+        alert('Sync-Fehler! Dein Logbuch ist wahrscheinlich zu groß für die Cloud-Synchronisation. Deaktiviere sie in den Einstellungen.');
+    }
+}
+
+
+/**
+ * Prüft, ob für den heutigen Tag ein Eintrag im Logbuch existiert.
+ * @returns {Promise<LogEntry | undefined>} Den heutigen Eintrag oder undefined.
+ */
+export async function getTodayLogEntry(): Promise<LogEntry | undefined> {
+    const logData = await getLog();
     const todayDateString = new Date().toLocaleDateString('de-DE');
     return logData.find(entry => entry.date === todayDateString);
 }

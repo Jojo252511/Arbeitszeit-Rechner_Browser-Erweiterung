@@ -107,8 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
     /**
      * Prüft, ob ein Logbucheintrag für heute existiert und passt die UI an.
      */
-    function checkLogbookEntryForToday() {
-        const todayEntry = getTodayLogEntry();
+    async function checkLogbookEntryForToday() {
+        const todayEntry = await(getTodayLogEntry());
 
         if (todayEntry && todayEntry.leaving) {
             normalButtons.style.display = 'none';

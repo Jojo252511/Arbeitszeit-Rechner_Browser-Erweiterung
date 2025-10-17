@@ -12,7 +12,7 @@ import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, show
  * @file Enthält die gesamte Logik für das Einstellungs-Modal im Side Panel.
  * @description Steuert das Öffnen, Schließen, Speichern und Laden von Benutzereinstellungen.
  */
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const menuToggleBtn = document.getElementById('menu-toggle') as HTMLButtonElement;
     const settingsModal = document.getElementById('settings-modal') as HTMLDivElement;
     const closeSettingsBtn = document.getElementById('close-settings') as HTMLSpanElement;
@@ -57,42 +57,43 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
-     * Lädt alle gespeicherten Benutzereinstellungen aus dem Local Storage.
+     * Lädt alle gespeicherten Benutzereinstellungen aus dem Chrome Storage.
      */
-    const loadSettings = (): void => {
-        countdownWindowToggle.checked = localStorage.getItem('userCountdownWindow') === 'true';
+    const loadSettings = async (): Promise<void> => {
+        const settings = await chrome.storage.sync.get([
+            'userSollzeit', 'userUeberstunden', 'userIsMinderjaehrig',
+            'userWunschGehzeitMode', 'userCustomWunschGehzeit', 'userRechnerAnzeigen',
+            'userCountdownWindow', 'userLogbookSync', 'userGleitzeitStart', 
+            'userKernzeitStart', 'userKernzeitEnde', 'userKernzeitEndeFr'
+        ]);
 
-        hauptSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
-        standardSollzeitSelect.value = localStorage.getItem('userSollzeit') || '8';
+        // Haupt-UI aktualisieren
+        hauptSollzeitSelect.value = settings.userSollzeit || '8';
+        if (settings.userUeberstunden !== undefined) hauptUeberstundenInput.value = settings.userUeberstunden;
+        hauptMinderjaehrigCheckbox.checked = settings.userIsMinderjaehrig === 'true';
 
-        const savedUeberstunden = localStorage.getItem('userUeberstunden');
-        if (savedUeberstunden !== null) {
-            hauptUeberstundenInput.value = savedUeberstunden;
-            standardUeberstundenInput.value = savedUeberstunden;
-        }
-
-        const isMinderjaehrig = localStorage.getItem('userIsMinderjaehrig') === 'true';
-        hauptMinderjaehrigCheckbox.checked = isMinderjaehrig;
-        standardMinderjaehrigCheckbox.checked = isMinderjaehrig;
-
-        wunschGehzeitModeToggle.checked = localStorage.getItem('userWunschGehzeitMode') === 'true';
-        customWunschGehzeitInput.value = localStorage.getItem('userCustomWunschGehzeit') || '';
-        
-        rechnerToggle.checked = localStorage.getItem('userRechnerAnzeigen') === 'true';
+        // Einstellungs-Modal UI aktualisieren
+        standardSollzeitSelect.value = settings.userSollzeit || '8';
+        if (settings.userUeberstunden !== undefined) standardUeberstundenInput.value = settings.userUeberstunden;
+        standardMinderjaehrigCheckbox.checked = settings.userIsMinderjaehrig === 'true';
+        wunschGehzeitModeToggle.checked = settings.userWunschGehzeitMode === 'true';
+        customWunschGehzeitInput.value = settings.userCustomWunschGehzeit || '';
+        rechnerToggle.checked = settings.userRechnerAnzeigen === true;
+        countdownWindowToggle.checked = settings.userCountdownWindow === true;
         
         toggleCustomWunschGehzeit();
         applyRechnerVisibility();
-        updateFaqTimes();
+        updateFaqTimes(settings);
     };
 
     /**
      * Aktualisiert die Zeitangaben im FAQ-Bereich dynamisch.
      */
-    function updateFaqTimes(): void {
-        const gleitzeitStart = localStorage.getItem('userGleitzeitStart') || '06:45';
-        const kernzeitStart = localStorage.getItem('userKernzeitStart') || '08:45';
-        const kernzeitEnde = localStorage.getItem('userKernzeitEnde') || '15:30';
-        const kernzeitEndeFr = localStorage.getItem('userKernzeitEndeFr') || '15:00';
+    function updateFaqTimes(settings: { [key: string]: any }): void {
+        const gleitzeitStart = settings.userGleitzeitStart || '06:45';
+        const kernzeitStart = settings.userKernzeitStart || '08:45';
+        const kernzeitEnde = settings.userKernzeitEnde || '15:30';
+        const kernzeitEndeFr = settings.userKernzeitEndeFr || '15:00';
 
         const faqGleitzeitStartEl = document.getElementById('faq-gleitzeit-start');
         const faqKernzeitStartEl = document.getElementById('faq-kernzeit-start');
@@ -105,15 +106,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (faqKernzeitEndeFrEl) faqKernzeitEndeFrEl.textContent = kernzeitEndeFr;
     }
 
-    menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; document.body.style.overflowY = 'hidden';});
-    closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto';});
+    menuToggleBtn.addEventListener('click', () => { settingsModal.style.display = 'flex'; document.body.style.overflowY = 'hidden'; });
+    closeSettingsBtn.addEventListener('click', () => { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto'; });
     settingsModal.addEventListener('click', (event: MouseEvent) => {
-        if (event.target === settingsModal) { settingsModal.style.display = 'none';  document.body.style.overflowY = 'auto';}
+        if (event.target === settingsModal) { settingsModal.style.display = 'none'; document.body.style.overflowY = 'auto'; }
     });
     wunschGehzeitModeToggle.addEventListener('change', toggleCustomWunschGehzeit);
     rechnerToggle.addEventListener('change', applyRechnerVisibility);
 
-    saveSettingsBtn.addEventListener('click', () => {
+saveSettingsBtn.addEventListener('click', async () => {
         const selectedSollzeit = standardSollzeitSelect.value;
         const selectedIsMinderjaehrig = standardMinderjaehrigCheckbox.checked;
         const selectedUeberstunden = standardUeberstundenInput.value;
@@ -127,27 +128,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const customTimeInMinutes = timeStringToMinutes(selectedCustomWunschGehzeit);
             if (customTimeInMinutes < zeiten.kernzeitEnde) {
                 const kernzeitEndeFormatiert = minutesToTimeString(zeiten.kernzeitEnde);
-                showToast(`Fehler: Die feste Wunsch-Gehzeit (${selectedCustomWunschGehzeit} Uhr) muss nach dem Kernzeitende (${kernzeitEndeFormatiert} Uhr) liegen.`, 'error');
+                showToast(`Die Wunsch-Gehzeit (${selectedCustomWunschGehzeit}) muss nach dem Kernzeitende (${kernzeitEndeFormatiert}) liegen.`, 'error');
                 return;
             }
         }
 
-        localStorage.setItem('userSollzeit', selectedSollzeit);
-        localStorage.setItem('userIsMinderjaehrig', String(selectedIsMinderjaehrig));
-        localStorage.setItem('userUeberstunden', selectedUeberstunden);
-        localStorage.setItem('userWunschGehzeitMode', String(selectedWunschGehzeitMode));
-        localStorage.setItem('userCustomWunschGehzeit', selectedCustomWunschGehzeit);
-        localStorage.setItem('userRechnerAnzeigen', String(selectedRechnerState));
-        localStorage.setItem('userCountdownWindow', String(selectedCountdownWindowState));
+        await chrome.storage.sync.set({
+            'userSollzeit': selectedSollzeit,
+            'userIsMinderjaehrig': selectedIsMinderjaehrig,
+            'userUeberstunden': selectedUeberstunden,
+            'userWunschGehzeitMode': selectedWunschGehzeitMode,
+            'userCustomWunschGehzeit': selectedCustomWunschGehzeit,
+            'userRechnerAnzeigen': selectedRechnerState,
+            'userCountdownWindow': selectedCountdownWindowState,
+        });
 
-        showToast('Einstellungen gespeichert. Die Seite wird neu geladen...', 'success');
+         showToast('Einstellungen gespeichert. Die Seite wird neu geladen...', 'success');
 
         // warten, damit der Nutzer die Toast-Nachricht sieht
-        setTimeout(() =>{
+        setTimeout(() => {
             window.location.reload();
         }, 2000);
-
     });
-
-    loadSettings();
+    await loadSettings();
 });
