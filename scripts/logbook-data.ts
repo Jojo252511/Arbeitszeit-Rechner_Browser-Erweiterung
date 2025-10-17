@@ -45,7 +45,9 @@ export async function saveLog(logData: LogEntry[]): Promise<void> {
         if (chrome.runtime.lastError) {
             console.error(chrome.runtime.lastError);
             alert('Fehler beim Speichern des Logbuchs! Eventuell ist der Speicher voll.');
+            return;
         }
+        document.dispatchEvent(new CustomEvent('logbookUpdated'));
     } catch (e) {
         // Dieser Fehler tritt auf, wenn das Sync-Limit überschritten wird.
         console.error(e);

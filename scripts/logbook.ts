@@ -164,7 +164,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             logData.push(newEntry);
         }
         saveLog(logData);
+        document.dispatchEvent(new CustomEvent('logbookUpdated'));
         renderLog();
+        showToast('Eintrag dem Logbuch hinzugefügt', 'success');
     }
 
     async function prefillArrivalFromLog(): Promise<void> {
@@ -175,6 +177,55 @@ document.addEventListener('DOMContentLoaded', async () => {
                 ankunftszeitInput.value = todayEntry.arrival;
             }
         }
+    }
+
+    /**
+     * Zum auslesen der exportierten CSV
+     * @param csvText 
+     * @returns 
+     */
+    async function parseInternalCsv(csvText: string): Promise<LogEntry[]> {
+        const lines = csvText.trim().split('\n').slice(1); // Header überspringen
+        const newLogEntries: LogEntry[] = [];
+
+        const settings = await chrome.storage.sync.get({
+            userSollzeit: '8',
+            userIsMinderjaehrig: false
+        });
+        const targetHours = parseFloat(settings.userSollzeit);
+        const isMinderjaehrig = settings.userIsMinderjaehrig;
+        const pausenDauer = isMinderjaehrig ? 60 : 45;
+
+        for (const line of lines) {
+            const values = line.split(';');
+            if (values.length < 3) continue;
+
+            const dateStr = values[0].trim();
+            const arrivalStr = values[1].trim();
+            const leavingStr = values[2].trim();
+
+            if (dateStr && arrivalStr && leavingStr) {
+                const [day, month, year] = dateStr.split('.').map(Number);
+                const dateObj = new Date(year, month - 1, day);
+                dateObj.setHours(0, 0, 0, 0);
+
+                const arrivalMinutes = timeStringToMinutes(arrivalStr);
+                const leavingMinutes = timeStringToMinutes(leavingStr);
+                const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
+                const sollzeitInMinuten = targetHours * 60;
+                const dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
+
+                newLogEntries.push({
+                    id: dateObj.getTime(),
+                    date: dateStr,
+                    arrival: arrivalStr,
+                    leaving: leavingStr,
+                    targetHours: targetHours,
+                    dailySaldoMinutes: Math.round(dailySaldoMinutes)
+                });
+            }
+        }
+        return newLogEntries;
     }
 
     function parseCsvAndGenerateLog(csvText: string): LogEntry[] {
@@ -239,6 +290,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         return newLogEntries;
     }
 
+
     async function handleFile(file: File) {
         if (!file) return;
 
@@ -252,13 +304,27 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (file.name.endsWith('.json')) {
                     importedLog = JSON.parse(content);
                 } else if (file.name.endsWith('.csv')) {
-                    importedLog = parseCsvAndGenerateLog(content);
+                    const header = content.trim().split('\n')[0].trim();
+
+                    if (header.includes('Datum') && header.includes('Kommen') && header.includes('Gehen')) {
+                        importedLog = await parseInternalCsv(content);
+                    } else if (header.includes('Datum') && header.includes('Uhrzeit') && header.includes('Typ')) {
+                        importedLog = await parseCsvAndGenerateLog(content);
+                    } else {
+                        showToast('Unbekanntes CSV-Format. Spalten nicht erkannt.', 'error');
+                        return;
+                    }
+
                 } else {
                     showToast('Ungültiger Dateityp. Bitte eine .json oder .csv Datei auswählen.', 'error');
                     return;
                 }
 
-                if (Array.isArray(importedLog) && importedLog.every(entry => 'id' in entry && 'date' in entry)) {
+                const isValidLog = Array.isArray(importedLog) && importedLog.every(
+                    (entry: any) => typeof entry === 'object' && entry !== null && 'id' in entry && 'date' in entry
+                );
+
+                if (isValidLog) {
                     const merge = await showConfirm(
                         "Logbuch importieren",
                         "Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen?<br>Bestehende Tage werden dabei überschrieben."
@@ -268,7 +334,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         const logMap = new Map<number, LogEntry>();
 
                         currentLog.forEach(entry => logMap.set(entry.id, entry));
-                        importedLog.forEach(entry => logMap.set(entry.id, entry));
+                        (importedLog as LogEntry[]).forEach(entry => logMap.set(entry.id, entry));
 
                         const mergedLog = Array.from(logMap.values());
 
@@ -277,7 +343,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                         showToast('Logbuch erfolgreich importiert und zusammengeführt.', 'success');
                     }
                 } else {
-                    showToast('Die ausgewählte Datei hat kein gültiges Logbuch-Format.', 'error');
+                    if (importedLog && importedLog.length > 0) {
+                        showToast('Die ausgewählte Datei hat kein gültiges Logbuch-Format.', 'error');
+                    }
                 }
             } catch (error) {
                 console.error("Import error:", error);
@@ -307,6 +375,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             );
             if (confirmed) {
                 await saveLog([]);
+                document.dispatchEvent(new CustomEvent('logbookUpdated'));
                 await renderLog();
                 showToast("Logbuch wurde geleert.", "info");
             }
@@ -449,6 +518,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     logData[entryIndex].dailySaldoMinutes = Math.round(tagesDifferenz);
 
                     await saveLog(logData);
+                    document.dispatchEvent(new CustomEvent('logbookUpdated'));
                     await renderLog(true);
                 }
             }
