@@ -19,7 +19,7 @@ declare global {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // DOM-Elemente holen und typisieren
     const startPlus0Btn = document.getElementById('start-countdown-plus0') as HTMLButtonElement;
     const startWunschBtn = document.getElementById('start-countdown-wunsch') as HTMLButtonElement;
@@ -40,13 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} zielzeitInMinuten - Die Zielzeit in Minuten seit Mitternacht.
      * @param {string} titel - Der Titel, der über dem Countdown angezeigt wird.
      */
-    function startCountdown(zielzeitInMinuten: number, titel: string): void {
-        const useWindow = localStorage.getItem('userCountdownWindow') === 'true';
-
-        if (useWindow) {
+    async function startCountdown(zielzeitInMinuten: number, titel: string): Promise<void> {
+        const settings = await chrome.storage.sync.get({ userCountdownWindow: false });
+        if (settings.userCountdownWindow) {
             const url = `countdown.html?zielzeit=${zielzeitInMinuten}&titel=${encodeURIComponent(titel)}`;
             window.open(url, 'Countdown', 'width=400,height=200,menubar=no,toolbar=no,location=no,resizable=yes,scrollbars=no,status=no');
-            document.body.style.overflowY = 'auto';
             return;
         } else {
             if (!countdownModal || !countdownTitleEl) return;
@@ -152,8 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Lausche auf Änderungen im Logbuch, um die Buttons zu aktualisieren
-    document.addEventListener('logbookUpdated', checkLogbookEntryForToday);
+    document.addEventListener('logbookUpdated', () => {
+        if (countdownInterval) clearInterval(countdownInterval);
+        countdownTimerEl.textContent = "00:00:00";
+        checkLogbookEntryForToday();
+    });
 
     // Führe die Prüfung direkt beim Laden der Seite aus
-    checkLogbookEntryForToday();
+    await checkLogbookEntryForToday();
 });
