@@ -789,3 +789,156 @@ body.dark-mode .sun-icon {
         height: 600px;
     }
 }
+
+/* style.css */
+
+/* ===================================================================
+   9. Toast-Benachrichtigungen
+   =================================================================== */
+#toast-container {
+    position: fixed;
+    top: 15px;
+    left: 18px;
+    right: 2rem;
+    z-index: 1005;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.toast {
+    background-color: var(--card-background-color);
+    color: var(--text-color);
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px var(--shadow-color);
+    border-left: 5px solid var(--primary-color);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast.hide {
+    opacity: 0;
+    transform: translateX(100%);
+}
+
+.toast.toast-success {
+    border-left-color: var(--success-color);
+}
+
+.toast.toast-error {
+    border-left-color: var(--error-color);
+}
+
+.toast.toast-info {
+    border-left-color: #17a2b8;
+}
+
+
+/* ===================================================================
+   10. Custom Modal (NEU)
+   =================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    -webkit-backdrop-filter: blur(5px);
+    backdrop-filter: blur(5px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    opacity: 1;
+}
+
+.modal-content-custom {
+    background: var(--card-background-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.modal-overlay.show .modal-content-custom {
+    transform: scale(1);
+}
+
+
+#modal-title {
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+#modal-message {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+}
+
+#modal-input-container {
+    margin-bottom: 1.5rem;
+}
+
+.modal-radio-group {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.modal-radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.modal-radio-group input {
+    accent-color: var(--primary-color);
+}
+
+.modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.modal-buttons button {
+    width: auto;
+    min-width: 100px;
+    padding: 0.75rem 1.5rem;
+}
+
+.modal-buttons .btn-secondary {
+    background-color: #6c757d;
+}
+.modal-buttons .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.modal-buttons .btn-danger {
+    background-color: var(--error-color);
+}
+.modal-buttons .btn-danger:hover {
+    background-color: #c82333;
+}

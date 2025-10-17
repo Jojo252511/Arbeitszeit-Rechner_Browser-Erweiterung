@@ -9,7 +9,7 @@
  * @author Jörn Unverzagt
  */
 
-import { timeStringToMinutes } from './utils.js';
+import { timeStringToMinutes, showToast } from './utils.js';
 import { getTodayLogEntry } from './logbook-data.js';
 
 // Mache TypeScript die globale Variable aus calculator1.ts bekannt
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
             countdownModal.style.display = 'flex';
             countdownTitleEl.textContent = titel;
         }
-        
+
         if (!countdownModal || !countdownTitleEl) return;
         countdownModal.style.display = 'flex';
         countdownTitleEl.textContent = titel;
@@ -72,6 +72,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 clearInterval(countdownInterval);
                 countdownTimerEl.textContent = "00:00:00";
                 countdownTimerEl.style.color = 'var(--success-color)';
+
+                chrome.notifications.create({
+                    type: 'basic',
+                    iconUrl: '../icon128.png',
+                    title: 'Feierabend!',
+                    message: 'Dein Countdown ist abgelaufen. Zeit, die Arbeit zu beenden!',
+                    priority: 2
+                });
                 return;
             }
 
@@ -86,13 +94,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     /**
-     * Schließt das Countdown-Fenster und stoppt den Timer.
+     * Schließt das Countdown-Fenster.
      */
     function closeCountdown(): void {
         if (!countdownModal) return;
         countdownModal.style.display = 'none';
         document.body.style.overflowY = 'auto';
-        clearInterval(countdownInterval);
+        //clearInterval(countdownInterval);
         countdownTimerEl.style.color = 'var(--primary-color)';
     }
 
@@ -129,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflowY = 'hidden';
             startCountdown(window.feierabendZeit, "Restzeit bis Feierabend");
         } else {
-            alert("Bitte berechne zuerst im 'Wann kann ich gehen?'-Rechner deinen Feierabend.");
+            showToast("Bitte berechne zuerst im 'Wann kann ich gehen?'-Rechner deinen Feierabend.", "error");
         }
     });
 
@@ -139,13 +147,13 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.overflowY = 'hidden';
             startCountdown(wunschInMinuten, "Restzeit bis zur Wunsch-Gehzeit");
         } else {
-            alert("Bitte gib zuerst im 'Plus / Minus'-Rechner eine Wunsch-Gehzeit ein.");
+            showToast("Bitte gib zuerst im 'Plus / Minus'-Rechner eine Wunsch-Gehzeit ein.", "error");
         }
     });
 
     // Lausche auf Änderungen im Logbuch, um die Buttons zu aktualisieren
     document.addEventListener('logbookUpdated', checkLogbookEntryForToday);
-    
+
     // Führe die Prüfung direkt beim Laden der Seite aus
     checkLogbookEntryForToday();
 });

@@ -39,6 +39,14 @@ document.addEventListener('DOMContentLoaded', () => {
             clearInterval(countdownInterval);
             countdownTimerEl.textContent = "00:00:00";
             countdownTimerEl.style.color = 'var(--success-color)';
+
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: '../icon128.png',
+                title: 'Feierabend!',
+                message: 'Dein Countdown ist abgelaufen. Zeit, die Arbeit zu beenden!',
+                priority: 2
+            });
             return;
         }
 

@@ -6,7 +6,8 @@
   "description": "Ein persönlicher Arbeitszeit-Rechner als Browser Side Panel.",
   "permissions": [
     "storage",
-    "sidePanel"
+    "sidePanel",
+    "notifications"
   ],
   "options_page": "options.html",
   "action": {

@@ -6,7 +6,7 @@
  * @author Joern Unverzagt
  */
 
-import { formatMinutesToString, timeStringToMinutes } from './utils.js';
+import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt } from './utils.js';
 import { LOGBOOK_KEY, type LogEntry, getLog, getTodayLogEntry } from './logbook-data.js';
 
 declare const Chart: any;
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const printLogBtn = document.getElementById('print-log-btn') as HTMLButtonElement;
 
     let logbookChart: Chart | null = null;
-    
+
     function saveLog(logData: LogEntry[]): void {
         localStorage.setItem(LOGBOOK_KEY, JSON.stringify(logData));
         document.dispatchEvent(new CustomEvent('logbookUpdated'));
@@ -144,11 +144,22 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function addLogEntry(newEntry: LogEntry): void {
+    /**
+     * Fügt einen neuen Logbucheintrag hinzu oder überschreibt einen bestehenden Eintrag.
+     * @param newEntry 
+     * @returns 
+     */
+    async function addLogEntry(newEntry: LogEntry): Promise<void> {
         const logData = getLog();
         const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
         if (existingEntryIndex > -1) {
-            if (!confirm(`Es existiert bereits ein Eintrag für heute. Möchtest du ihn überschreiben?`)) { return; }
+            // ALT: if (!confirm(`...`)) { return; }
+            const overwrite = await showConfirm(
+                "Eintrag überschreiben?",
+                "Es existiert bereits ein Eintrag für heute.<br>Möchtest du ihn wirklich überschreiben?"
+            );
+            if (!overwrite) return;
+
             logData[existingEntryIndex] = newEntry;
         } else {
             logData.push(newEntry);
@@ -175,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const typeIndex = header.indexOf('Typ');
 
         if (dateIndex === -1 || timeIndex === -1 || typeIndex === -1) {
-            alert('CSV-Datei konnte nicht verarbeitet werden. Benötigte Spalten: Datum, Uhrzeit, Typ');
+            showToast('CSV-Datei konnte nicht verarbeitet werden. Benötigte Spalten: Datum, Uhrzeit, Typ', 'error');
             return [];
         }
 
@@ -228,12 +239,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return newLogEntries;
     }
-    
+
     function handleFile(file: File) {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 let importedLog: LogEntry[] = [];
                 const content = e.target?.result as string;
@@ -244,12 +255,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (file.name.endsWith('.csv')) {
                     importedLog = parseCsvAndGenerateLog(content);
                 } else {
-                    alert('Ungültiger Dateityp. Bitte eine .json oder .csv Datei auswählen.');
+                    showToast('Ungültiger Dateityp. Bitte eine .json oder .csv Datei auswählen.', 'error');
                     return;
                 }
 
                 if (Array.isArray(importedLog) && importedLog.every(entry => 'id' in entry && 'date' in entry)) {
-                    if (confirm('Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen? Bestehende Tage werden überschrieben.')) {
+                    const merge = await showConfirm(
+                        "Logbuch importieren",
+                        "Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen?<br>Bestehende Tage werden dabei überschrieben."
+                    );
+                    if (merge) {
                         const currentLog = getLog();
                         const logMap = new Map<number, LogEntry>();
 
@@ -260,14 +275,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         saveLog(mergedLog);
                         renderLog();
-                        alert('Logbuch erfolgreich importiert und zusammengeführt.');
+                        showToast('Logbuch erfolgreich importiert und zusammengeführt.', 'success');
                     }
                 } else {
-                    alert('Die ausgewählte Datei hat kein gültiges Logbuch-Format.');
+                    showToast('Die ausgewählte Datei hat kein gültiges Logbuch-Format.', 'error');
                 }
             } catch (error) {
                 console.error("Import error:", error);
-                alert('Fehler beim Lesen oder Parsen der Datei.');
+                showToast('Fehler beim Lesen oder Parsen der Datei.', 'error');
             }
         };
         reader.readAsText(file);
@@ -277,7 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
         printLogBtn.addEventListener('click', () => {
             const logData = getLog();
             if (logData.length === 0) {
-                alert('Das Logbuch ist leer. Es gibt nichts zu drucken.');
+                showToast('Das Logbuch ist leer. Es gibt nichts zu drucken.', 'info')
                 return;
             }
             window.open('/Print/index.html', '_blank');
@@ -285,23 +300,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (clearLogbookBtn) {
-        clearLogbookBtn.addEventListener('click', () => {
-            if (confirm('Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?')) {
+        clearLogbookBtn.addEventListener('click', async () => {
+            const confirmed = await showConfirm(
+                "Logbuch leeren",
+                "Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?",
+                true
+            );
+            if (confirmed) {
                 localStorage.removeItem(LOGBOOK_KEY);
                 renderLog();
+                showToast("Logbuch wurde geleert.", "info");
             }
         });
     }
-
     if (exportLogbookBtn) {
-        exportLogbookBtn.addEventListener('click', () => {
+        exportLogbookBtn.addEventListener('click', async () => {
             const logData = getLog();
             if (logData.length === 0) {
-                alert('Das Logbuch ist leer. Es gibt nichts zu exportieren.');
+                showToast('Das Logbuch ist leer. Es gibt nichts zu exportieren.', 'info');
                 return;
             }
 
-            const format = prompt("In welchem Format möchten Sie exportieren? (json oder csv)", "json")?.toLowerCase();
+            const format = await showPrompt(
+                "Exportformat wählen",
+                "In welchem Format möchtest du das Logbuch exportieren?",
+                ['json', 'csv']
+            );
+
+            if (format === null) { // Benutzer hat auf "Abbrechen" geklickt
+                return;
+            }
 
             if (format === 'json') {
                 const jsonString = JSON.stringify(logData, null, 2);
@@ -333,7 +361,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             } else if (format !== null) {
-                alert("Ungültiges Format. Bitte 'json' oder 'csv' eingeben.");
+                showToast("Ungültiges Format. Bitte 'json' oder 'csv' eingeben.", "error");
             }
         });
     }
@@ -404,7 +432,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const newArrival = arrivalInput.value;
                     const newLeaving = leavingInput.value;
-                    
+
                     const arrivalMinutes = timeStringToMinutes(newArrival);
                     const leavingMinutes = timeStringToMinutes(newLeaving);
                     const targetHours = logData[entryIndex].targetHours;
@@ -426,7 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (target.classList.contains('cancel-edit-btn')) {
-            renderLog(true); 
+            renderLog(true);
         }
     });
 
