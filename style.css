@@ -542,6 +542,10 @@ input:checked+.slider:before {
     color: #6c757d;
 }
 
+.positive-saldo {
+    color: var(--success-color);
+}
+
 .ergebnis.success {
     background-color: #e9f7ef;
     color: var(--success-color);

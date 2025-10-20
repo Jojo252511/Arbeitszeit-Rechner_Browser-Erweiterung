@@ -70,8 +70,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 datasets: [{
                     label: 'Tagessaldo',
                     data: dataPoints,
-                    backgroundColor: dataPoints.map(value => value < 0 ? 'rgba(220, 53, 69, 0.7)' : 'rgba(0, 123, 255, 0.7)'),
-                    borderColor: dataPoints.map(value => value < 0 ? 'rgba(220, 53, 69, 1)' : 'rgba(0, 123, 255, 1)'),
+                    backgroundColor: dataPoints.map(value => value < 0 ? '#dc3545b3' : '#01ac4eb3'),
+                    borderColor: dataPoints.map(value => value < 0 ? '#dc3545ff' : '#01ac4eb5'),
                     borderWidth: 1
                 }]
             },
@@ -128,7 +128,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             let arrival = entry.arrival;
             let leaving = entry.leaving;
             let saldoDisplay = `${entry.dailySaldoMinutes >= 0 ? '+' : ''}${formatMinutesToString(entry.dailySaldoMinutes)}`;
-            let saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
+            let saldoStyle = '';
+            if (entry.dailySaldoMinutes == 0) {
+                saldoStyle = '';
+            } else {
+                saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : ' class="positive-saldo"';
+            }
 
             // Logik für Sondertage
             if (entry.label && entry.label !== 'Arbeit') {
