@@ -658,8 +658,15 @@ input:checked+.slider:before {
 .weather-widget {
     display: flex;
     align-items: center;
+    justify-self: center;
+    margin-top: 15px;
+}
+
+.weather-widget-content {
+    display: flex;
+    align-items: center;
+    justify-self: center;
     gap: 0.5rem;
-    margin-left: 4rem;
     color: var(--text-color);
     font-size: 0.9rem;
     opacity: 0.8;

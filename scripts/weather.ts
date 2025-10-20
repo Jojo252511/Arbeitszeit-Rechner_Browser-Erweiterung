@@ -13,7 +13,7 @@ export function initializeWeather(): void {
 
     const mainContainer = document.getElementById('main-container');
     if ("geolocation" in navigator) {
-        if(mainContainer) {mainContainer.style.marginTop = '8rem';}
+        if(mainContainer) {mainContainer.style.marginTop = '9rem';}
         navigator.geolocation.getCurrentPosition(fetchWeather, handleLocationError);
     } else {
         if(mainContainer) {mainContainer.style.marginTop = '6rem';}
@@ -46,6 +46,7 @@ function handleLocationError(error: GeolocationPositionError): void {
 function updateWeatherUI(data: any): void {
     const widget = document.getElementById('weather-widget') as HTMLDivElement;
     const icon = document.getElementById('weather-icon') as HTMLImageElement;
+    const locationName = document.getElementById('weather-location-name') as HTMLSpanElement;
     const temp = document.getElementById('weather-temp') as HTMLSpanElement;
     const desc = document.getElementById('weather-desc') as HTMLSpanElement;
 
@@ -53,6 +54,7 @@ function updateWeatherUI(data: any): void {
 
     const iconCode = data.weather[0].icon;
     icon.src = `https://openweathermap.org/img/wn/${iconCode}.png`;
+    locationName.textContent = data.name + ":";
     temp.textContent = `${Math.round(data.main.temp)}°C`;
     desc.textContent = data.weather[0].description;
 

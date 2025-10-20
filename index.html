@@ -29,7 +29,7 @@
     <script type="module" src="./dist/darkmode.js" defer></script>
     <script type="module" src="./dist/countdown.js" defer></script>
     <script type="module" src="./dist/logbook.js" defer></script>
-    <script type="module" src="./dist/weeather.ts" defer></script>
+    <script type="module" src="./dist/weather.ts" defer></script>
 
     <script src="./scripts/chart.umd.js" defer></script>
     <script src="./scripts/jspdf.umd.min.js" defer></script>
@@ -41,9 +41,12 @@
         <div class="banner-content">
             <h1>Arbeitszeit-Rechner</h1>
             <div id="weather-widget" class="weather-widget" style="display: none;">
-                <img id="weather-icon" src="" alt="Wetter">
-                <span id="weather-temp"></span>
-                <span id="weather-desc"></span>
+                <div class="weather-widget-content">
+                    <img id="weather-icon" src="" alt="Wetter">
+                    <span><strong id="weather-location-name"></strong></span>
+                    <span id="weather-temp"></span>
+                    <span id="weather-desc"></span>
+                </div>
             </div>
         </div>
     </div>
