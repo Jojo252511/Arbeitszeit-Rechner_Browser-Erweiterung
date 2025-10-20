@@ -1,27 +1,29 @@
 // scripts/weather.ts
 
 import { showToast } from './utils.js';
-
-const API_KEY = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL'; // <-- HIER DEINEN API-SCHLÜSSEL EINTRAGEN
+import { WEATHER_API_KEY } from './config.js';
 
 // Diese Funktion startet den gesamten Prozess
 export function initializeWeather(): void {
-    if (!API_KEY || API_KEY === "DEIN_PERSÖNLICHER_API_SCHLÜSSEL") {
+    if (!WEATHER_API_KEY || WEATHER_API_KEY === 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER') {
         console.warn("Kein Wetter-API-Schlüssel eingetragen.");
         showToast('Kein Wetter-API-Schlüssel eingetragen.', 'info')
         return;
     }
 
+    const mainContainer = document.getElementById('main-container');
     if ("geolocation" in navigator) {
+        if(mainContainer) {mainContainer.style.marginTop = '8rem';}
         navigator.geolocation.getCurrentPosition(fetchWeather, handleLocationError);
     } else {
+        if(mainContainer) {mainContainer.style.marginTop = '6rem';}
         console.warn("Geolocation wird von diesem Browser nicht unterstützt.");
     }
 }
 
 async function fetchWeather(position: GeolocationPosition): Promise<void> {
     const { latitude, longitude } = position.coords;
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&units=metric&lang=de`;
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${WEATHER_API_KEY}&units=metric&lang=de`;
 
     try {
         const response = await fetch(apiUrl);

@@ -4,15 +4,22 @@
 Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen Pakete installiert und der TypeScript-Code kompiliert werden.
 
 1. Repository klonen oder ZIP-Datei entpacken
-Lade das Projekt herunter und öffne den Ordner in einem Terminal deiner Wahl.
+    Lade das Projekt herunter und öffne den Ordner in einem Terminal deiner Wahl.
 
 2. Abhängigkeiten installieren
-Führe den folgenden Befehl aus, um alle für das Projekt notwendigen Pakete (wie z.B. Chart.js) zu installieren:
+    Führe den folgenden Befehl aus, um alle für das Projekt notwendigen Pakete (wie z.B. Chart.js) zu installieren:
     ```bash
     npm install
     ```
-3. TypeScript kompilieren
-Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, damit der Browser ihn ausführen kann. Die fertigen Dateien werden im dist-Ordner abgelegt.
+3. Weather API Konfiguration
+    Erstelle eine neue Datei im Ordner scripts (`scripts/config.ts`)
+    Kopiere folgendes in diese Datei und trage deinen OpenWeatherMap-API-Schlüssel passend ein
+    ```ts
+    export const WEATHER_API_KEY = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER'; 
+    ```
+
+4. TypeScript kompilieren
+    Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, damit der Browser ihn ausführen kann. Die fertigen Dateien werden im dist-Ordner abgelegt.
     ```bash
     npx tsc
     ```
