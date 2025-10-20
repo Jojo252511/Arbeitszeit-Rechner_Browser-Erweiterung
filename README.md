@@ -1,6 +1,6 @@
 # Arbeitszeit-Rechner_Browser-Erweiterung
 
-## Vorbereitung für Installation
+## Vorbereitung für Installation (Source code (.ts))
 Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen Pakete installiert und der TypeScript-Code kompiliert werden.
 
 1. Repository klonen oder ZIP-Datei entpacken
@@ -15,8 +15,9 @@ Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen
     Erstelle eine neue Datei im Ordner scripts (`scripts/config.ts`)
     Kopiere folgendes in diese Datei und trage deinen [OpenWeatherMap-API-Schlüssel](https://openweathermap.org/) passend ein
     ```ts
-    export const WEATHER_API_KEY = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER'; 
+    export const WEATHER_API_KEY: string = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER'; 
     ```
+    *Wenn du die Kompilierte Version nutzt musst du nur den API-Schlüssel in die `dist/config.js` eintragen*
 
 4. TypeScript kompilieren
     Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, damit der Browser ihn ausführen kann. Die fertigen Dateien werden im dist-Ordner abgelegt.
@@ -24,6 +25,15 @@ Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen
     npx tsc
     ```
 
+## Vorbereitung für Installation (Kompilierte Version)
+Diese Version kann nach dem entpacken der ZIP direkt in dem Browser eingefügt werden jedoch muss, damit das Wetter funktioniert der API-Key gesetzt werden.
+
+1. Weather API Konfiguration
+    Trage deinen [OpenWeatherMap-API-Schlüssel](https://openweathermap.org/) in die `dist/config.js` passend ein
+    ```js
+    export const WEATHER_API_KEY = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER'; 
+    ```
+  
 ---
 
 ## Installation als Browser-Erweiterung
@@ -43,8 +53,15 @@ Eine detaillierte Video-Anleitung findest du hier: [Video-Tutorial auf YouTube](
 ### Wie funktioniert der Arbeitszeit-Rechner?
 Der Rechner ermittelt anhand deiner Ankunftszeit, der täglichen Soll-Arbeitszeit und deiner aktuellen Überstunden, wann du frühestens gehen kannst. Standardmäßig wird eine Pause von 45 Minuten berücksichtigt, die du anpassen kannst, wenn du minderjährig bist.
 
+### Wie trage ich Urlaub oder Krankheitstage ein?
+Um Urlaub oder Krankheit einzutragen wähle die passende Option im ersten Rechner unter "Weitere Optionen".
+
 ### Wie gebe ich meine aktuellen Überstunden ein?
 Gib deine aktuellen Überstunden als Dezimalzahl ein. Zum Beispiel: `1,5` für 1 Stunde und 30 Minuten oder `-2,25` für -2 Stunden und 15 Minuten. Wenn du keine Überstunden hast, lasse das Feld leer oder gib `0` ein.
+
+### Wie trage ich einen Überstundenabbautag ein?
+Um einen Tag an dem Überstundenabbau genutzt wurde einzutragen wähle die ensprechende Option im ersten Rechner unter "Weitere Optionen".  
+*Achte darauf das deine Sollzeit korrekt gewählt ist*
 
 ### Was passiert, wenn ich die Pause für Minderjährige aktiviere?
 Wenn du die Option "60 Minuten Pause (für Minderjährige)" aktivierst, wird die Standardpause von 45 Minuten auf 60 Minuten erhöht. Dies ist relevant für minderjährige Arbeitnehmer, die längere Pausenregelungen haben.
