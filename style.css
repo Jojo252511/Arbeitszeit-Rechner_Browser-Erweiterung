@@ -288,6 +288,9 @@ input[type="time"] {
     margin: 0 1rem;
     box-shadow: 0 4px 15px var(--shadow-color);
     text-align: center;
+
+    align-items: flex-start;
+    display: flow-root;
 }
 
 .banner-content a {
@@ -652,6 +655,27 @@ input:checked+.slider:before {
     background-color: rgba(0, 123, 255, 0.05) !important;
 }
 
+.weather-widget {
+    display: flex;
+    align-items: center;
+    justify-self: center;
+    margin-top: 15px;
+}
+
+.weather-widget-content {
+    display: flex;
+    align-items: center;
+    justify-self: center;
+    gap: 0.5rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.weather-widget img {
+    width: 32px;
+    height: 32px;
+}
 
 /* ===================================================================
    6. Optionsseite (options.html)

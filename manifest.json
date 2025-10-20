@@ -7,7 +7,8 @@
   "permissions": [
     "storage",
     "sidePanel",
-    "notifications"
+    "notifications",
+    "geolocation"
   ],
   "options_page": "options.html",
   "action": {

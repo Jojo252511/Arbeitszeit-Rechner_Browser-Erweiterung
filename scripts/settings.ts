@@ -7,6 +7,7 @@
  */
 
 import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, showToast } from './utils.js';
+import {initializeWeather} from './weather.js';
 
 /**
  * @file Enthält die gesamte Logik für das Einstellungs-Modal im Side Panel.
@@ -30,6 +31,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const calculatorCard = document.getElementById('calculator-card') as HTMLDivElement;
     const calculatorIframe = document.getElementById('calculator-iframe') as HTMLIFrameElement;
     const countdownWindowToggle = document.getElementById('countdown-window-toggle') as HTMLInputElement;
+
+    // Läd das Wetter
+    initializeWeather();
 
     /**
      * Steuert die Sichtbarkeit des Taschenrechner-iFrames.
