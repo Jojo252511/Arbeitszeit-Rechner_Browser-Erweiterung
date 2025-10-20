@@ -506,6 +506,13 @@ input:checked+.slider:before {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+.more-options {
+   width: 100%;
+   text-align: center;
+   margin-top: 1.5rem;
+
+}
+
 .ergebnis {
     margin-top: 1.5rem;
     padding: 1rem;

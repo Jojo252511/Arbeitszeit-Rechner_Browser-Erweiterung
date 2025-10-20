@@ -262,3 +262,26 @@ export function showPrompt(title: string, message: string, choices: string[]): P
     const inputs = { type: 'radio' as const, name: 'export-format', choices: choices };
     return showModal({ title, message, buttons, inputs });
 }
+
+/**
+ * ======================================================
+ * -------------------- Verwendung ----------------------
+ * ======================================================
+ * 
+ * 
+ * -------------------- showConfirm ---------------------
+ * 
+ * showConfirm("Titel", "Beschreibung/Text");
+ * 
+ * 
+ * -------------------- showPrompt ---------------------
+ * 
+ * showPrompt("Titel", "Beschreibung/Text", ['Auswahl1', 'Auswahl2', 'Auswahl3']);
+ * 
+ * 
+ * -------------------- showModal ----------------------
+ * 
+ * Wird über die anderen zwei Funtionen aufgerufen
+ * 
+ * 
+ */

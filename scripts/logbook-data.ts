@@ -18,6 +18,7 @@ export interface LogEntry {
     leaving: string;
     targetHours: number;
     dailySaldoMinutes: number;
+    label: string;
 }
 
 
