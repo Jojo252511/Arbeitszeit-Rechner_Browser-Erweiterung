@@ -114,17 +114,23 @@ export const berechneRestzeitBis = (zielZeitString: string): string | null => {
 };
 
 /**
- * Speichert den neuen Überstundensaldo im Local Storage und löst ein Event aus.
+ * Speichert den neuen Überstundensaldo und löst ein Event aus.
  * @param {number} time - Der neue Überstundensaldo als Dezimalzahl.
  */
 export async function saveUeberH(time: number): Promise<void> {
     const timeAsString = String(time.toFixed(2));
-    localStorage.setItem('userUeberstunden', timeAsString);
+    await chrome.storage.sync.set({ 'userUeberstunden': timeAsString });
+
+    const result = await chrome.storage.sync.get('userUeberstunden');
+    const savedValue = result.userUeberstunden;
+
     const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
-    const savedUeberstunden = localStorage.getItem('userUeberstunden');
-    if (savedUeberstunden !== null) {
-        hauptUeberstundenInput.value = savedUeberstunden;
+    
+    // Prüfen, ob das Input-Feld und der Wert existieren.
+    if (hauptUeberstundenInput && savedValue !== undefined) {
+        hauptUeberstundenInput.value = savedValue;
     }
+    
     // Löst ein Event aus, damit andere Teile der Anwendung reagieren können.
     document.dispatchEvent(new CustomEvent('ueberstundenUpdated', { detail: { newSaldo: timeAsString } }));
 }
