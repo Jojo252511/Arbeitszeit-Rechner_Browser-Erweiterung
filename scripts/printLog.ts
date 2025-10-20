@@ -38,11 +38,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             const row = document.createElement('tr');
             const saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
             const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
+            const label = entry.label;
             row.innerHTML = `
                 <td>${entry.date}</td>
                 <td>${entry.arrival} Uhr</td>
                 <td>${entry.leaving} Uhr</td>
                 <td${saldoStyle}>${saldoPrefix}${formatMinutesToString(entry.dailySaldoMinutes)}</td>
+                <td>${label}</td>
             `;
             printLogBody.appendChild(row);
         });
