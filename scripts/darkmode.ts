@@ -2,13 +2,10 @@
 
 /**
  * @module darkmode
- * @description Steuert die Dark-Mode-Funktionalität.
+ * @description Steuert die Dark-Mode-Funktionalität und synchronisiert die Einstellung.
  * @author Joern Unverzagt
  */
 
-/**
- * @file Steuert die Dark-Mode-Funktionalität.
- */
 document.addEventListener('DOMContentLoaded', async () => {
     const toggleButton = document.getElementById('dark-mode-toggle') as HTMLButtonElement;
     const body = document.body;
@@ -26,22 +23,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     
     if (toggleButton) {
-        toggleButton.addEventListener('click', () => {
+        toggleButton.addEventListener('click', async () => {
             const isDarkMode = body.classList.contains('dark-mode');
-            if (isDarkMode) {
-                applyTheme('light');
-                localStorage.setItem('theme', 'light');
-            } else {
-                applyTheme('dark');
-                localStorage.setItem('theme', 'dark');
-            }
+            const newTheme = isDarkMode ? 'light' : 'dark';
+            applyTheme(newTheme);
+            await chrome.storage.sync.set({ theme: newTheme });
         });
     }
     
-    const savedTheme = localStorage.getItem('theme');
+    const settings = await chrome.storage.sync.get('theme');
+    const savedTheme = settings.theme;
+
     if (savedTheme) {
         applyTheme(savedTheme);
     } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         applyTheme('dark');
+        await chrome.storage.sync.set({ theme: 'dark' });
     }
 });

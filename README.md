@@ -12,7 +12,7 @@ Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen
     npm install
     ```
 3. Weather API Konfiguration
-    Erstelle eine neue Datei im Ordner scripts (`scripts/config.ts`)
+    Erstelle oder öffne die Datei im Ordner scripts (`scripts/config.ts`)
     Kopiere folgendes in diese Datei und trage deinen [OpenWeatherMap-API-Schlüssel](https://openweathermap.org/) passend ein
     ```ts
     export const WEATHER_API_KEY: string = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER'; 
