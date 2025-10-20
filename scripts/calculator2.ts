@@ -124,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
             arrival: ankunftszeit,
             leaving: wunschGehzeit,
             targetHours: sollzeit,
-            dailySaldoMinutes: Math.round(tagesDifferenz)
+            dailySaldoMinutes: Math.round(tagesDifferenz),
+            label: "Arbeit"
         };
 
         const saveLogButton = document.createElement('button');

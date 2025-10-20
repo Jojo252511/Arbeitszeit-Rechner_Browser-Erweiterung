@@ -8,7 +8,7 @@
  * @author Joern Unverzagt
  */
 
-import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis, saveUeberH } from './utils.js';
+import { getKernzeitUndGleitzeit, timeStringToMinutes, minutesToTimeString, formatMinutesToString, showResult, berechneRestzeitBis, saveUeberH, showDayTypePrompt } from './utils.js';
 import { type LogEntry } from './logbook-data.js'; // Importiert die Struktur eines Log-Eintrags
 
 declare global {
@@ -21,7 +21,6 @@ declare global {
  * @file Enthält die Logik für den ersten Rechner "Wann kann ich gehen?".
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // NEU: Weise den Konstanten die korrekten HTML-Typen zu
     const berechneGehzeitBtn = document.getElementById('berechne-gehzeit') as HTMLButtonElement;
     const ergebnisGehzeitEl = document.getElementById('ergebnis-gehzeit') as HTMLDivElement;
     const hauptSollzeitSelect = document.getElementById('sollzeit') as HTMLSelectElement;
@@ -29,22 +28,112 @@ document.addEventListener('DOMContentLoaded', () => {
     const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
     const nowAnkunftBtn = document.getElementById('now-ankunft') as HTMLButtonElement;
     const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
+    const moreOptionsLink = document.getElementById('calculator1-more') as HTMLAnchorElement;
 
-    if (!berechneGehzeitBtn || !ergebnisGehzeitEl) {
-        console.error("Haupt-Elemente für Rechner 1 konnten nicht gefunden werden.");
-        return;
-    }
+    let resultMessage = '';
     
-    if (nowAnkunftBtn && ankunftszeitInput) {
-        nowAnkunftBtn.addEventListener('click', () => {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            ankunftszeitInput.value = `${hours}:${minutes}`;
-        });
+    nowAnkunftBtn?.addEventListener('click', () => {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        ankunftszeitInput.value = `${hours}:${minutes}`;
+    });
+
+    berechneGehzeitBtn?.addEventListener('click', () => {
+        handleDayEntry('Arbeit'); 
+    });
+
+    // NEU: Ruft unser wiederverwendbares Modal auf
+    moreOptionsLink?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const choices = [
+            { value: 'Arbeit', text: 'Normaler Arbeitstag' },
+            { value: 'Krank', text: 'Krankheitstag' },
+            { value: 'Urlaub', text: 'Urlaubstag' },
+            { value: 'Überstundenabbau', text: 'Überstundenabbau' },
+        ];
+
+        const selectedType = await showDayTypePrompt(
+            "Art des Eintrags wählen",
+            "Wähle aus, welche Art von Tag du eintragen möchtest.",
+            choices
+        );
+
+        if (selectedType) {
+            handleDayEntry(selectedType);
+        }
+    });
+
+    
+    /**
+     * Zentrale Funktion, die je nach gewähltem Typ einen Logbucheintrag erstellt.
+     */
+    function handleDayEntry(type: string) {
+        // --- Holt alle benötigten Werte aus der UI ---
+        const sollzeitSelect = document.getElementById('sollzeit') as HTMLSelectElement;
+        const minderjaehrigCheckbox = document.getElementById('pause-minderjaehrig') as HTMLInputElement;
+        const ueberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
+
+        const sollzeit = parseFloat(sollzeitSelect.value);
+        const ankunftszeit = ankunftszeitInput.value;
+        const isMinderjaehrig = minderjaehrigCheckbox.checked;
+        const aktuelleUeberstunden = parseFloat(ueberstundenInput.value) || 0;
+        
+        let logEntry: LogEntry;
+
+        const baseEntry = {
+            id: new Date().setHours(0, 0, 0, 0),
+            date: new Date().toLocaleDateString('de-DE'),
+            targetHours: sollzeit,
+        };
+
+        switch (type) {
+            case 'Arbeit':
+                calculateWorkingDay();
+                break;
+            case 'Krank':
+            case 'Urlaub':
+                logEntry = {
+                    ...baseEntry,
+                    arrival: '00:00',
+                    leaving: '00:00',
+                    dailySaldoMinutes: 0,
+                    label: type,
+                };
+                resultMessage = `Ein <strong>${type}stag</strong> wird eingetragen.`;
+                break;
+            
+            case 'Überstundenabbau':
+                logEntry = {
+                    ...baseEntry,
+                    arrival: '00:00',
+                    leaving: '00:00',
+                    dailySaldoMinutes: -(sollzeit * 60),
+                    label: type,
+                };
+                const saldoStr = formatMinutesToString(logEntry.dailySaldoMinutes);
+                resultMessage = `<strong>Überstundenabbau</strong> wird mit <strong>${saldoStr}</strong> eingetragen.`;
+                break;
+            
+            default:
+                return;
+        }
+
+        showResult(ergebnisGehzeitEl, resultMessage);
+
+        const saveLogButton = document.createElement('button');
+        saveLogButton.textContent = 'Tag im Logbuch speichern';
+        saveLogButton.className = 'save-saldo-btn';
+        saveLogButton.onclick = () => {
+            document.dispatchEvent(new CustomEvent('saveLogEntry', { detail: logEntry }));
+            saveLogButton.disabled = true;
+            saveLogButton.textContent = 'Gespeichert!';
+        };
+        ergebnisGehzeitEl.appendChild(saveLogButton);
     }
 
-    berechneGehzeitBtn.addEventListener('click', () => {
+    function calculateWorkingDay() {
         const sollzeit = parseFloat(hauptSollzeitSelect.value);
         const ankunftszeit = ankunftszeitInput.value;
         const isMinderjaehrig = hauptMinderjaehrigCheckbox.checked;
@@ -108,7 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (ankunftInMinutenTotal < zeiten.gleitzeitStart) {
             nachricht += `<br><small>(Berechnung ab Gleitzeitbeginn 06:45 Uhr)</small>`;
         }
-
+        
+        resultMessage = nachricht;
         showResult(ergebnisGehzeitEl, nachricht);
 
         const logEntry: LogEntry = {
@@ -117,7 +207,8 @@ document.addEventListener('DOMContentLoaded', () => {
             arrival: ankunftszeit,
             leaving: minutesToTimeString(finaleGehzeitInMinuten),
             targetHours: sollzeit,
-            dailySaldoMinutes: Math.round(tagesDifferenz)
+            dailySaldoMinutes: Math.round(tagesDifferenz),
+            label: "Arbeit"
         };
 
         const saveLogButton = document.createElement('button');
@@ -132,5 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         ergebnisGehzeitEl.appendChild(saveLogButton);
+    }
+
+    berechneGehzeitBtn.addEventListener('click', () => {
+       calculateWorkingDay();
     });
 });

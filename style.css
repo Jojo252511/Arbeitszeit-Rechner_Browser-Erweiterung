@@ -11,6 +11,7 @@
     --success-color: #28a745;
     --error-color: #dc3545;
     --shadow-color: rgba(0, 0, 0, 0.08);
+    --special-day-color: #6c757d;
 }
 
 * {
@@ -642,6 +643,11 @@ input:checked+.slider:before {
 #logbook-table td.logbook-actions {
     width: 120px;
     text-align: right;
+}
+
+.special-day-row td {
+    color: var(--special-day-color);
+    font-style: italic;
 }
 
 .logbook-container .time-input {

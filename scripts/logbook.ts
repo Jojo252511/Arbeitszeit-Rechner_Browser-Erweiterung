@@ -123,8 +123,26 @@ document.addEventListener('DOMContentLoaded', async () => {
         logData.forEach((entry) => {
             const row = document.createElement('tr');
             row.dataset.entryId = entry.id.toString();
-            const saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
-            const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
+
+            // Standardwerte für normale Arbeitstage
+            let arrival = entry.arrival;
+            let leaving = entry.leaving;
+            let saldoDisplay = `${entry.dailySaldoMinutes >= 0 ? '+' : ''}${formatMinutesToString(entry.dailySaldoMinutes)}`;
+            let saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
+
+            // Logik für Sondertage
+            if (entry.label && entry.label !== 'Arbeit') {
+                arrival = '00:00';
+                leaving = '00:00';
+                saldoDisplay = '0';
+                saldoStyle = '';
+                row.classList.add('special-day-row');
+            }
+            const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Überstundenabbau"];
+            const labelSelectHtml = `
+            <select class="label-select">
+                ${labelOptions.map(opt => `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`).join('')}
+            </select>`;
             const actionsHtml = editMode
                 ? `
                 <button type="button" class="small-btn save-edit-btn" data-entry-id="${entry.id}">Speichern</button>
@@ -134,13 +152,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             row.innerHTML = `
                 <td>${entry.date}</td>
-                <td><span class="time-display">${entry.arrival}</span><input type="time" class="time-input" value="${entry.arrival}" style="display: none;"> Uhr</td>
-                <td><span class="time-display">${entry.leaving}</span><input type="time" class="time-input" value="${entry.leaving}" style="display: none;"> Uhr</td>
-                <td${saldoStyle}>${saldoPrefix}${formatMinutesToString(entry.dailySaldoMinutes)}</td>
+                <td><span class="time-display">${arrival}</span><input type="time" class="time-input" value="${arrival}" style="display: none;"> Uhr</td>
+                <td><span class="time-display">${leaving}</span><input type="time" class="time-input" value="${leaving}" style="display: none;"> Uhr</td>
+                <td${saldoStyle}>${saldoDisplay}</td>
+                <td><span class="label-display">${entry.label || 'Arbeit'}</span>${editMode ? labelSelectHtml : ''}</td>
                 <td class="logbook-actions">${actionsHtml}</td>
             `;
             logbookBody.appendChild(row);
         });
+        // Logik, um im Edit-Mode die richtigen Elemente anzuzeigen
+        if (editMode) {
+        logbookBody.querySelectorAll('.label-display').forEach(el => (el as HTMLElement).style.display = 'none');
+    }
     }
 
     /**
@@ -207,6 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const dateStr = values[0].trim();
             const arrivalStr = values[1].trim();
             const leavingStr = values[2].trim();
+            const label = values[4] ? values[4].trim() : 'Arbeit';
 
             if (dateStr && arrivalStr && leavingStr) {
                 const [day, month, year] = dateStr.split('.').map(Number);
@@ -217,7 +241,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const leavingMinutes = timeStringToMinutes(leavingStr);
                 const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
                 const sollzeitInMinuten = targetHours * 60;
-                const dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
+                let dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
+
+                if(label == "Krank" || label == "Urlaub") {
+                    dailySaldoMinutes = 0;
+                }
 
                 newLogEntries.push({
                     id: dateObj.getTime(),
@@ -225,7 +253,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     arrival: arrivalStr,
                     leaving: leavingStr,
                     targetHours: targetHours,
-                    dailySaldoMinutes: Math.round(dailySaldoMinutes)
+                    dailySaldoMinutes: Math.round(dailySaldoMinutes),
+                    label: label
                 });
             }
         }
@@ -287,7 +316,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     arrival: data.Kommen,
                     leaving: data.Gehen,
                     targetHours: targetHours,
-                    dailySaldoMinutes: Math.round(dailySaldoMinutes)
+                    dailySaldoMinutes: Math.round(dailySaldoMinutes),
+                    label: ""
                 });
             }
         }
@@ -415,11 +445,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             } else if (format === 'csv') {
-                const header = 'Datum;Kommen;Gehen;Tagessaldo\n';
+                const header = 'Datum;Kommen;Gehen;Tagessaldo;Typ\n';
                 const rows = logData.map(entry => {
                     const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
                     const formattedSaldo = saldoPrefix + formatMinutesToString(entry.dailySaldoMinutes);
-                    return `${entry.date};${entry.arrival};${entry.leaving};"${formattedSaldo}"`;
+                    return `${entry.date};${entry.arrival};${entry.leaving};"${formattedSaldo}";${entry.label || 'Arbeit'}`;
                 }).join('\n');
 
                 const csvString = header + rows;
@@ -491,6 +521,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Speicherbutton beim bearbeiten vom Logbuch
+     */
     logbookBody.addEventListener('click', async (event) => {
         const target = event.target as HTMLElement;
 
@@ -501,6 +534,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const logData = await getLog();
                 const entryIndex = logData.findIndex(e => e.id === entryId);
                 if (entryIndex > -1) {
+                    const labelSelect = row.querySelector('.label-select') as HTMLSelectElement;
+                    const newLabel = labelSelect.value;
+
                     const arrivalInput = row.querySelector('input[type="time"]') as HTMLInputElement;
                     const leavingInput = row.querySelectorAll('input[type="time"]')[1] as HTMLInputElement;
 
@@ -517,10 +553,17 @@ document.addEventListener('DOMContentLoaded', async () => {
                     const sollzeitInMinuten = targetHours * 60;
                     const tagesDifferenz = gearbeiteteMinuten - sollzeitInMinuten;
 
-                    logData[entryIndex].arrival = newArrival;
-                    logData[entryIndex].leaving = newLeaving;
-                    logData[entryIndex].dailySaldoMinutes = Math.round(tagesDifferenz);
-
+                    if (newLabel !== 'Arbeit') {
+                        logData[entryIndex].label = newLabel;
+                        logData[entryIndex].arrival = '00:00';
+                        logData[entryIndex].leaving = '00:00';
+                        logData[entryIndex].dailySaldoMinutes = 0;
+                    } else {
+                        logData[entryIndex].label = newLabel;
+                        logData[entryIndex].arrival = newArrival;
+                        logData[entryIndex].leaving = newLeaving;
+                        logData[entryIndex].dailySaldoMinutes = Math.round(tagesDifferenz);
+                    }
                     await saveLog(logData);
                     document.dispatchEvent(new CustomEvent('logbookUpdated'));
                     await renderLog(true);
