@@ -998,3 +998,88 @@ body.dark-mode .sun-icon {
 .modal-buttons .btn-danger:hover {
     background-color: #c82333;
 }
+
+/* style.css */
+
+/* ===================================================================
+   11. Neues Logbuch-Design (NEU)
+   =================================================================== */
+
+/* Container für die Liste */
+.logbook-list-container {
+    max-height: 400px; /* Behält die Scroll-Höhe bei */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* Abstand zwischen den Einträgen */
+    padding-right: 5px; /* Platz für die Scrollbar */
+}
+
+/* Jeder einzelne Log-Eintrag (die "Karte") */
+.log-item {
+    display: grid;
+    grid-template-areas:
+        "icon date type saldo"
+        "icon details details details";
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    background-color: var(--background-color); /* Leichter Hintergrund zur Abhebung */
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border-left: 5px solid; /* Der farbige linke Rand */
+    gap: 0.25rem 1rem;
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: pointer;
+}
+
+/* Styling basierend auf dem Typ des Eintrags */
+.log-item[data-label="Arbeit"] { border-left-color: var(--primary-color); }
+.log-item[data-label="Urlaub"],
+.log-item[data-label="Feiertag"] { border-left-color: #ffc107; } /* Gelb */
+.log-item[data-label="Krank"] { border-left-color: #fd7e14; } /* Orange */
+.log-item[data-label="Überstundenabbau"] { border-left-color: #6f42c1; } /* Lila */
+
+
+/* Positionierung der einzelnen Elemente im Grid */
+.log-item-icon { grid-area: icon; font-size: 1.2rem; opacity: 0.7; }
+.log-item-date { grid-area: date; font-weight: 600; }
+.log-item-type { grid-area: type; font-size: 0.8rem; color: #6c757d; justify-self: end; }
+.log-item-saldo { grid-area: saldo; font-weight: 600; font-size: 0.9rem; justify-self: end; }
+.log-item-details { grid-area: details; font-size: 0.85rem; color: #6c757d; }
+
+/* Dark Mode Anpassungen */
+body.dark-mode .log-item {
+    background-color: #2a2a2a;
+}
+body.dark-mode .log-item[data-label="Urlaub"],
+body.dark-mode .log-item[data-label="Feiertag"] { border-left-color: #ffca2c; }
+body.dark-mode .log-item[data-label="Krank"] { border-left-color: #fd8a2c; }
+body.dark-mode .log-item[data-label="Überstundenabbau"] { border-left-color: #8a63d2; }
+
+#edit-log-modal {
+    opacity: 1;
+}
+
+.modal-content-custom h3 {
+    margin-bottom: 2rem;
+}
+
+.edit-log-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    text-align: left;
+}
+
+#edit-log-date-display {
+    color: var(--special-day-color);
+    margin-top: -1rem;
+}
+
+#edit-log-times {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
