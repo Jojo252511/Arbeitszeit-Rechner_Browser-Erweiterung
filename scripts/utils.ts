@@ -122,9 +122,9 @@ export async function saveUeberH(time: number): Promise<void> {
     localStorage.setItem('userUeberstunden', timeAsString);
     const hauptUeberstundenInput = document.getElementById('aktuelle-ueberstunden') as HTMLInputElement;
     const savedUeberstunden = localStorage.getItem('userUeberstunden');
-        if (savedUeberstunden !== null) {
-            hauptUeberstundenInput.value = savedUeberstunden;
-        }
+    if (savedUeberstunden !== null) {
+        hauptUeberstundenInput.value = savedUeberstunden;
+    }
     // Löst ein Event aus, damit andere Teile der Anwendung reagieren können.
     document.dispatchEvent(new CustomEvent('ueberstundenUpdated', { detail: { newSaldo: timeAsString } }));
 }
@@ -174,22 +174,26 @@ interface ModalButton {
     class: string;
 }
 
+interface RadioChoice {
+    value: string;
+    text: string;
+}
+
 interface ModalOptions {
     title: string;
     message: string;
     buttons: ModalButton[];
-    inputs?: { type: 'radio'; name: string; choices: string[] };
+    inputs?: { type: 'radio'; name: string; choices: (string | RadioChoice)[] };
 }
 
-function showModal(options: ModalOptions): Promise<any> {
+function showModal<T>(options: ModalOptions): Promise<T | null> {
     return new Promise((resolve) => {
         const overlay = document.getElementById('custom-modal-overlay') as HTMLDivElement;
         const titleEl = document.getElementById('modal-title') as HTMLHeadingElement;
         const messageEl = document.getElementById('modal-message') as HTMLParagraphElement;
         const inputContainer = document.getElementById('modal-input-container') as HTMLDivElement;
         const buttonContainer = document.getElementById('modal-button-container') as HTMLDivElement;
-        
-        // Diese Konstante hilft TypeScript beim Verstehen des Typs
+
         const modalInputs = options.inputs;
 
         titleEl.textContent = options.title;
@@ -201,21 +205,37 @@ function showModal(options: ModalOptions): Promise<any> {
             if (modalInputs.type === 'radio') {
                 const radioGroup = document.createElement('div');
                 radioGroup.className = 'modal-radio-group';
+                radioGroup.style.flexDirection = 'column';
+                radioGroup.style.alignItems = 'start';
+                radioGroup.style.marginLeft = '30%';
+
+
                 modalInputs.choices.forEach((choice, index) => {
+                    const value = typeof choice === 'string' ? choice : choice.value;
+                    const text = typeof choice === 'string' ? choice.toUpperCase() : choice.text;
+
                     const label = document.createElement('label');
                     const radio = document.createElement('input');
                     radio.type = 'radio';
                     radio.name = modalInputs.name;
-                    radio.value = choice;
+                    radio.value = value;
                     if (index === 0) radio.checked = true;
-                    
+
                     label.appendChild(radio);
-                    label.appendChild(document.createTextNode(choice.toUpperCase()));
+                    label.appendChild(document.createTextNode(text));
                     radioGroup.appendChild(label);
                 });
                 inputContainer.appendChild(radioGroup);
             }
         }
+
+        const closeModal = (value: T | null) => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                resolve(value);
+            }, 300);
+        };
 
         options.buttons.forEach(btnInfo => {
             const button = document.createElement('button');
@@ -223,20 +243,13 @@ function showModal(options: ModalOptions): Promise<any> {
             button.className = btnInfo.class;
             button.onclick = () => {
                 let result = btnInfo.value;
-                // Hier war der Fehler: Wir prüfen jetzt wieder auf modalInputs
-                if (modalInputs && result) { 
+                if (modalInputs && result) {
                     if (modalInputs.type === 'radio') {
                         const selected = inputContainer.querySelector<HTMLInputElement>(`input[name="${modalInputs.name}"]:checked`);
-                        if (selected) {
-                            result = selected.value;
-                        }
+                        result = selected ? selected.value : null;
                     }
                 }
-                overlay.classList.remove('show');
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    resolve(result);
-                }, 300);
+                closeModal(result);
             };
             buttonContainer.appendChild(button);
         });
@@ -251,14 +264,64 @@ export function showConfirm(title: string, message: string, danger: boolean = fa
         { text: 'Abbrechen', value: false, class: 'btn-secondary' },
         { text: 'OK', value: true, class: danger ? 'btn-danger' : '' }
     ];
-    return showModal({ title, message, buttons });
+    return showModal<boolean>({ title, message, buttons }).then(val => val ?? false);
 }
 
 export function showPrompt(title: string, message: string, choices: string[]): Promise<string | null> {
     const buttons: ModalButton[] = [
         { text: 'Abbrechen', value: null, class: 'btn-secondary' },
-        { text: 'Exportieren', value: true, class: '' } 
+        { text: 'Exportieren', value: true, class: '' }
     ];
-    const inputs = { type: 'radio' as const, name: 'export-format', choices: choices };
+    const inputs = { type: 'radio' as const, name: 'export-format', choices };
+    return showModal<string | null>({ title, message, buttons, inputs });
+}
+
+export function showDayTypePrompt(title: string, message: string, choices: RadioChoice[]): Promise<string | null> {
+    const buttons: ModalButton[] = [
+        { text: 'Abbrechen', value: null, class: 'btn-secondary' },
+        { text: 'OK', value: true, class: '' }
+    ];
+    const inputs = { type: 'radio' as const, name: 'day-type', choices };
+    return showModal<string | null>({ title, message, buttons, inputs });
+}
+
+
+export function showRadioPrompt(title: string, message: string, choices: { value: string; text: string }[]): Promise<string | null> {
+    const buttons: ModalButton[] = [
+        { text: 'Abbrechen', value: null, class: 'btn-secondary' },
+        { text: 'OK', value: true, class: '' }
+    ];
+    const inputs = { type: 'radio' as const, name: 'day-type', choices: choices.map(c => c.value) };
+
+    const originalShowModal = showModal;
+
+    const radioGroup = document.querySelector('.modal-radio-group');
+    if (radioGroup) {
+
+    }
+
     return showModal({ title, message, buttons, inputs });
 }
+
+/**
+ * ======================================================
+ * -------------------- Verwendung ----------------------
+ * ======================================================
+ * 
+ * 
+ * -------------------- showConfirm ---------------------
+ * 
+ * showConfirm("Titel", "Beschreibung/Text");
+ * 
+ * 
+ * -------------------- showPrompt ---------------------
+ * 
+ * showPrompt("Titel", "Beschreibung/Text", ['Auswahl1', 'Auswahl2', 'Auswahl3']);
+ * 
+ * 
+ * -------------------- showModal ----------------------
+ * 
+ * Wird über die anderen zwei Funtionen aufgerufen
+ * 
+ * 
+ */

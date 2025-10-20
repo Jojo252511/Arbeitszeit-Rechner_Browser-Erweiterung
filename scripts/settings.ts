@@ -152,7 +152,7 @@ saveSettingsBtn.addEventListener('click', async () => {
         // warten, damit der Nutzer die Toast-Nachricht sieht
         setTimeout(() => {
             window.location.reload();
-        }, 2000);
+        }, 1200);
     });
     await loadSettings();
 });
