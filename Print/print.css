@@ -190,7 +190,9 @@ h1 {
 }
 
 /* Querformat für A4-Seiten */
+/*
 @page {
     size: A4 landscape;
     margin: 1cm;
 }
+*/
