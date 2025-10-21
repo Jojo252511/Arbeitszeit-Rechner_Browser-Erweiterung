@@ -1033,6 +1033,7 @@ body.dark-mode .sun-icon {
 .log-item[data-label="Urlaub"],
 .log-item[data-label="Feiertag"] { border-left-color: #ffc107; } /* Gelb */
 .log-item[data-label="Krank"] { border-left-color: #fd7e14; } /* Orange */
+.log-item[data-label="Berufsschule"] { border-left-color: #17a2b8; } /* Blaugrün */
 .log-item[data-label="Überstundenabbau"] { border-left-color: #6f42c1; } /* Lila */
 
 

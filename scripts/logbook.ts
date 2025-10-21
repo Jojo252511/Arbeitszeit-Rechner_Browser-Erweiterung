@@ -147,6 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'Urlaub': 'fa-solid fa-umbrella-beach',
             'Krank': 'fa-solid fa-notes-medical',
             'Feiertag': 'fa-solid fa-calendar-star',
+            'Berufsschule': 'fa-solid fa-school',
             'Überstundenabbau': 'fa-solid fa-hourglass-half',
         };
 
@@ -179,7 +180,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         currentEditEntryId = entry.id;
         editLogDateDisplay.textContent = `Bearbeite Eintrag vom ${entry.date}`;
 
-        const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Überstundenabbau"];
+        const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Berufsschule", "Überstundenabbau"];
         editLogTypeSelect.innerHTML = labelOptions.map(opt =>
             `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`
         ).join('');
