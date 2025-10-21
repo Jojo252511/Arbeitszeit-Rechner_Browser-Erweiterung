@@ -51,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { value: 'Arbeit', text: 'Normaler Arbeitstag' },
             { value: 'Krank', text: 'Krankheitstag' },
             { value: 'Urlaub', text: 'Urlaubstag' },
+            { value: 'Berufsschule', text: 'Berufsschule' },
             { value: 'Überstundenabbau', text: 'Überstundenabbau' },
         ];
 
@@ -103,7 +104,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 resultMessage = `Ein <strong>${type}stag</strong> wird eingetragen.`;
                 break;
-            
+            case 'Berufsschule':
+                logEntry = {
+                    ...baseEntry,
+                    arrival: '00:00',
+                    leaving: '00:00',
+                    dailySaldoMinutes: 0,
+                    label: type,
+                };
+                resultMessage = `Ein <strong>${type}stag</strong> wird für heute eingetragen.`;
+                break;
             case 'Überstundenabbau':
                 logEntry = {
                     ...baseEntry,

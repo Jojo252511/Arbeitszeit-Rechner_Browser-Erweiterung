@@ -1,6 +1,12 @@
 // scripts/logbook.ts
 
-import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt} from './utils.js';
+/**
+ * @module logbook
+ * @description Verwaltung und Anzeige des Arbeitszeit-Logbuchs, inklusive Bearbeitung, Import/Export und Chart-Visualisierung.
+ * @author Joern Unverzagt
+ */
+
+import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt } from './utils.js';
 import { type LogEntry, getLog, saveLog, getTodayLogEntry } from './logbook-data.js';
 
 // Deklariere die globalen Bibliotheken für TypeScript
@@ -8,7 +14,9 @@ declare const html2canvas: any;
 declare const jspdf: any;
 declare const Chart: any;
 
-
+/**
+ * Initialisiert alle Funktionen des Logbuchs, sobald das DOM geladen ist.
+ */
 document.addEventListener('DOMContentLoaded', async () => {
     // --- DOM-Elemente holen ---
     const logbookList = document.getElementById('logbook-list') as HTMLDivElement;
@@ -30,10 +38,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editLogLeavingInput = document.getElementById('edit-log-leaving') as HTMLInputElement;
     const editLogTimesContainer = document.getElementById('edit-log-times') as HTMLDivElement;
 
-    let currentEditEntryId: number | null = null; // Speichert die ID des Eintrags, der gerade bearbeitet wird
+    let currentEditEntryId: number | null = null;
 
-   let logbookChart: Chart | null = null;
+    let logbookChart: Chart | null = null;
 
+    /**
+     * Rendert das Balkendiagramm für die Tagessalden der letzten 7 Tage.
+     * @param {LogEntry[]} logData - Das gesamte Logbuch-Array.
+     */
     function renderChart(logData: LogEntry[]): void {
         const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
         if (!chartContainer || !Chart) return;
@@ -115,12 +127,15 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+    /**
+       * Rendert die Logbuch-Liste im neuen Karten-Design.
+       */
     async function renderLog(): Promise<void> {
         if (!logbookList) return;
         logbookList.innerHTML = '';
         const logData = await getLog();
         logData.sort((a, b) => b.id - a.id);
-        await renderChart(logData); 
+        await renderChart(logData);
 
         if (logData.length === 0) {
             logbookList.innerHTML = '<p style="text-align: center; color: #6c757d;">Noch keine Einträge vorhanden.</p>';
@@ -132,6 +147,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'Urlaub': 'fa-solid fa-umbrella-beach',
             'Krank': 'fa-solid fa-notes-medical',
             'Feiertag': 'fa-solid fa-calendar-star',
+            'Berufsschule': 'fa-solid fa-school',
             'Überstundenabbau': 'fa-solid fa-hourglass-half',
         };
 
@@ -142,7 +158,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const label = entry.label || 'Arbeit';
             item.dataset.label = label;
             item.title = "Doppelklick zum bearbeiten";
-            
+
             const iconClass = icons[label] || 'fa-solid fa-question-circle';
             const isWorkDay = label === 'Arbeit';
             const saldoDisplay = isWorkDay ? `${entry.dailySaldoMinutes >= 0 ? '+' : ''}${formatMinutesToString(entry.dailySaldoMinutes)}` : '';
@@ -160,16 +176,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // --- Funktionen zum Steuern des Modals ---
     const openEditModal = (entry: LogEntry) => {
         currentEditEntryId = entry.id;
         editLogDateDisplay.textContent = `Bearbeite Eintrag vom ${entry.date}`;
 
-        const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Überstundenabbau"];
-        editLogTypeSelect.innerHTML = labelOptions.map(opt => 
+        const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Berufsschule", "Überstundenabbau"];
+        editLogTypeSelect.innerHTML = labelOptions.map(opt =>
             `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`
         ).join('');
-        
+
         editLogArrivalInput.value = entry.arrival;
         editLogLeavingInput.value = entry.leaving;
 
@@ -186,9 +201,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         editLogTimesContainer.style.display = type === 'Arbeit' ? 'flex' : 'none';
     };
 
-    // --- Event-Listener ---
 
-    // KORREKTUR: Listener für Doppelklick ('dblclick') auf der gesamten Liste
+
+    /**
+     * Startet Bearbeitungsmodus Logbuch
+     */
     logbookList.addEventListener('dblclick', async (event) => {
         const target = event.target as HTMLElement;
         const logItem = target.closest('.log-item') as HTMLDivElement;
@@ -205,6 +222,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    /**
+     * Eventlistener für Jetzt Button
+     */
     nowEditLogCome.addEventListener('click', async (event) => {
         const input = document.getElementById('edit-log-arrival') as HTMLInputElement;
         if (input) {
@@ -212,29 +232,41 @@ document.addEventListener('DOMContentLoaded', async () => {
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const timeNow = `${hours}:${minutes}`;
-            
+
             input.value = timeNow;
         }
     });
 
+    /**
+     * Eventlistener für Jetzt Button
+     */
     nowEditLogGo.addEventListener('click', async (event) => {
         const input = document.getElementById('edit-log-leaving') as HTMLInputElement;
         if (input) {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
-             const minutes = String(now.getMinutes()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
             const timeNow = `${hours}:${minutes}`;
 
             input.value = timeNow;
         }
     });
 
+    /**
+     * 
+     */
     editLogTypeSelect.addEventListener('change', () => {
         toggleTimeInputs(editLogTypeSelect.value);
     });
 
+    /**
+     * 
+     */
     editLogCancelBtn.addEventListener('click', closeEditModal);
 
+    /**
+     * 
+     */
     editLogSaveBtn.addEventListener('click', async () => {
         if (currentEditEntryId === null) return;
 
@@ -268,13 +300,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeEditModal();
         showToast('Eintrag erfolgreich gespeichert!', 'success');
     });
-    
-   
+
+
     /**
-     * Fügt einen neuen Logbucheintrag hinzu oder überschreibt einen bestehenden Eintrag.
-     * @param newEntry 
-     * @returns 
-     */
+         * Fügt einen neuen Eintrag zum Logbuch hinzu oder überschreibt einen existierenden für denselben Tag.
+         * @param {LogEntry} newEntry - Der neue Logbuch-Eintrag.
+         */
     async function addLogEntry(newEntry: LogEntry): Promise<void> {
         const logData = await getLog();
         const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
@@ -296,6 +327,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         showToast('Eintrag dem Logbuch hinzugefügt', 'success');
     }
 
+    /**
+         * Füllt das "Ankunftszeit"-Feld mit der heutigen Ankunftszeit aus dem Logbuch, falls vorhanden.
+         */
     async function prefillArrivalFromLog(): Promise<void> {
         const todayEntry = await getTodayLogEntry();
         if (todayEntry) {
@@ -306,15 +340,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /**
+     * Lauscht auf Logbuch änderungen
+     */
     document.addEventListener('logbookUpdated', () => {
         prefillArrivalFromLog();
     });
 
     /**
-     * Zum auslesen der exportierten CSV
-     * @param csvText 
-     * @returns 
-     */
+        * Parst eine CSV-Datei mit dem internen Export-Format (Datum;Kommen;Gehen;...).
+        * @param {string} csvText - Der Inhalt der CSV-Datei.
+        * @returns {Promise<LogEntry[]>} Ein Array von LogEntry-Objekten.
+        */
     async function parseInternalCsv(csvText: string): Promise<LogEntry[]> {
         const lines = csvText.trim().split('\n').slice(1); // Header überspringen
         const newLogEntries: LogEntry[] = [];
@@ -365,6 +402,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         return newLogEntries;
     }
 
+    /**
+         * Parst eine CSV-Datei von externen Zeiterfassungssystemen (Datum;Uhrzeit;Typ).
+         * @param {string} csvText - Der Inhalt der CSV-Datei.
+         * @returns {Promise<LogEntry[]>} Ein Array von LogEntry-Objekten.
+         */
     function parseCsvAndGenerateLog(csvText: string): LogEntry[] {
         const lines = csvText.trim().split('\n');
         const header = lines[0].split(';').map(h => h.trim());
@@ -429,6 +471,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 
+    /**
+        * Verarbeitet eine importierte Datei (JSON oder CSV) und fügt die Daten dem Logbuch hinzu.
+        * @param {File} file - Die zu importierende Datei.
+        */
     async function handleFile(file: File) {
         if (!file) return;
 
@@ -493,6 +539,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         reader.readAsText(file);
     }
 
+    /**
+     * Öffnet die Druckansicht
+     */
     if (printLogBtn) {
         printLogBtn.addEventListener('click', async () => {
             const logData = await getLog();
@@ -504,6 +553,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Löscht das Logbuch
+     */
     if (clearLogbookBtn) {
         clearLogbookBtn.addEventListener('click', async () => {
             const confirmed = await showConfirm(
@@ -519,6 +571,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
+    /**
+     * startet Logbuch export
+     */
     if (exportLogbookBtn) {
         exportLogbookBtn.addEventListener('click', async () => {
             const logData = await getLog();
@@ -574,6 +629,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * startet Logbuch import
+     */
     if (importLogbookBtn) {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
@@ -592,6 +650,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Drag and Drop Funktion
+     */
     if (logbookCard) {
         logbookCard.addEventListener('dragover', (event) => {
             event.preventDefault();
@@ -617,6 +678,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Speicher Button beim Logbuch bearbeiten
+     */
     document.addEventListener('saveLogEntry', async (event: Event) => {
         const customEvent = event as CustomEvent<LogEntry>;
         await addLogEntry(customEvent.detail);
