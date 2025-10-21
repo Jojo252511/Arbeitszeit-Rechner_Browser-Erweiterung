@@ -142,11 +142,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         const entryToEdit = logData.find(e => e.id === entryId);
         if (entryToEdit) openEditModal(entryToEdit);
     });
-
-    editLogTypeSelect.addEventListener('change', () => toggleTimeInputs(editLogTypeSelect.value));
-    editLogCancelBtn.addEventListener('click', closeEditModal);
-
-    editLogSaveBtn.addEventListener('click', async () => {
+    if (editLogTypeSelect) {
+         editLogTypeSelect.addEventListener('change', () => toggleTimeInputs(editLogTypeSelect.value));
+    }
+    if(editLogCancelBtn) {
+        editLogCancelBtn.addEventListener('click', closeEditModal);
+    }
+   
+    if (editLogSaveBtn) {
+        editLogSaveBtn.addEventListener('click', async () => {
         if (currentEditEntryId === null) return;
         const logData = await getLog();
         const entryIndex = logData.findIndex(e => e.id === currentEditEntryId);
@@ -172,6 +176,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         closeEditModal();
         showToast('Eintrag erfolgreich gespeichert!', 'success');
     });
+    }
+    
 
     nowEditLogGo.addEventListener('click', () => {
         const input = document.getElementById('edit-log-leaving') as HTMLInputElement;

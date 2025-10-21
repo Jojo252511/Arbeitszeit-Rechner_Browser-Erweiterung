@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Metadaten -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Joern Unverzagt">
+
+    <!-- Titel der Seite -->
+    <title>Arbeitszeit- & Überstunden-Rechner</title>
+
+    <!-- CSS-Dateien -->
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+
+    <!-- JavaScript-Dateien -->
+   
+    <script type="module" src="./dist/logbook.js" defer></script>
+  
+</head>
+<body>
+     <main class="container" id="main-container">
+     <!------------------------- Logbuch ------------------------------>
+        <div class="card" id="logbook-card">
+            <h2>Logbuch</h2>
+            <div class="chart-container">
+                <canvas id="logbook-chart"></canvas>
+            </div>
+            <div id="logbook-controls">
+                <button type="button" id="export-logbook-btn" class="small-btn" title="Logbuch exportieren">
+                    <i class="fa-solid fa-file-export"></i>
+                </button>
+                <button type="button" id="import-logbook-btn" class="small-btn" title="Logbuch importieren">
+                    <i class="fa-solid fa-file-import"></i>
+                </button>
+                <button type="button" id="print-log-btn" class="small-btn" title="Logbuch drucken">
+                    <i class="fa-solid fa-print"></i>
+                </button>
+                <button type="button" id="clear-logbook-btn" class="small-btn" title="Logbuch leeren">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+            <hr>
+            <div class="logbook-list-container" id="logbook-list">
+
+            </div>
+        </div>
+     </main>
+     <!-------------------------- Bearbeitungs Mordal Log ---------------->
+    <div class="modal-overlay" id="edit-log-modal" style="display: none;">
+        <div class="modal-content-custom">
+            <h3>Eintrag bearbeiten</h3>
+            <p id="edit-log-date-display"></p>
+            
+            <div class="edit-log-form">
+                <div class="form-group">
+                    <label for="edit-log-type">Typ:</label>
+                    <select id="edit-log-type"></select>
+                </div>
+                <div class="form-group" id="edit-log-times">
+                    <label for="edit-log-arrival">Kommen:</label>
+                    <div class="time-input-wrapper">
+                        <input type="time" id="edit-log-arrival">
+                        <button type="button" id="now-wunsch-log-edit-come" class="now-btn" title="Aktuelle Uhrzeit eintragen">
+                            <i class="fa-regular fa-clock" title="Jetzt"></i>
+                        </button>
+                    </div>
+
+                    <label for="edit-log-leaving">Gehen:</label>
+                    <div class="time-input-wrapper">
+                        <input type="time" id="edit-log-leaving">
+                        <button type="button" id="now-wunsch-log-edit-go" class="now-btn" title="Aktuelle Uhrzeit eintragen">
+                            <i class="fa-regular fa-clock" title="Jetzt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 1.5rem;">
+                <button type="button" id="edit-log-cancel-btn" class="btn-secondary">Abbrechen</button>
+                <button type="button" id="edit-log-save-btn">Speichern</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
