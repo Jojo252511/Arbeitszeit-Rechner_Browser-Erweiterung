@@ -15,9 +15,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const clearLogbookBtn = document.getElementById('clear-logbook-btn') as HTMLButtonElement;
     const exportLogbookBtn = document.getElementById('export-logbook-btn') as HTMLButtonElement;
     const importLogbookBtn = document.getElementById('import-logbook-btn') as HTMLButtonElement;
-    const editLogbookBtn = document.getElementById('edit-logbook-btn') as HTMLButtonElement;
     const logbookCard = document.getElementById('logbook-card') as HTMLDivElement;
     const printLogBtn = document.getElementById('print-log-btn') as HTMLButtonElement;
+    const nowEditLogGo = document.getElementById('now-wunsch-log-edit-go') as HTMLButtonElement;
+    const nowEditLogCome = document.getElementById('now-wunsch-log-edit-come') as HTMLButtonElement;
 
     // --- Elemente für das Bearbeiten-Modal ---
     const editLogModal = document.getElementById('edit-log-modal') as HTMLDivElement;
@@ -201,6 +202,30 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (entryToEdit) {
             openEditModal(entryToEdit);
+        }
+    });
+
+    nowEditLogCome.addEventListener('click', async (event) => {
+        const input = document.getElementById('edit-log-arrival') as HTMLInputElement;
+        if (input) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeNow = `${hours}:${minutes}`;
+            
+            input.value = timeNow;
+        }
+    });
+
+    nowEditLogGo.addEventListener('click', async (event) => {
+        const input = document.getElementById('edit-log-leaving') as HTMLInputElement;
+        if (input) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+             const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeNow = `${hours}:${minutes}`;
+
+            input.value = timeNow;
         }
     });
 

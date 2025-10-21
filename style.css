@@ -236,29 +236,24 @@ button:disabled:hover {
     position: relative;
 }
 
-input[type="time"] {
-    padding-right: 3rem !important;
-}
-
 .now-btn {
     position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
+    right: 0;
     background: none;
     border: none;
     color: #999;
     font-size: 1.2rem;
     cursor: pointer;
     padding: 0.5rem;
-    width: auto;
-    height: auto;
+    width: 50px;
+    height: 100%;
     line-height: 1;
+    background-color: var(--primary-color);
+    color: #ffffff;
 }
 
 .now-btn:hover {
-    color: var(--primary-color);
-    background: none;
+    background-color: var(--primary-hover-color);
 }
 
 
