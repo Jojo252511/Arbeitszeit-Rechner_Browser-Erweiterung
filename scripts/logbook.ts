@@ -1,30 +1,38 @@
 // scripts/logbook.ts
 
-/**
- * @module logbook
- * @description Verwaltung und Anzeige des Arbeitszeit-Logbuchs mit Import/Export-Funktionalität.
- * @author Joern Unverzagt
- */
-
-import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt } from './utils.js';
-import { LOGBOOK_KEY, type LogEntry, getLog, saveLog, getTodayLogEntry } from './logbook-data.js';
+import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt} from './utils.js';
+import { type LogEntry, getLog, saveLog, getTodayLogEntry } from './logbook-data.js';
 
 // Deklariere die globalen Bibliotheken für TypeScript
 declare const html2canvas: any;
 declare const jspdf: any;
-
 declare const Chart: any;
 
+
 document.addEventListener('DOMContentLoaded', async () => {
-    const logbookBody = document.getElementById('logbook-body') as HTMLTableSectionElement;
+    // --- DOM-Elemente holen ---
+    const logbookList = document.getElementById('logbook-list') as HTMLDivElement;
     const clearLogbookBtn = document.getElementById('clear-logbook-btn') as HTMLButtonElement;
     const exportLogbookBtn = document.getElementById('export-logbook-btn') as HTMLButtonElement;
     const importLogbookBtn = document.getElementById('import-logbook-btn') as HTMLButtonElement;
-    const editLogbookBtn = document.getElementById('edit-logbook-btn') as HTMLButtonElement;
     const logbookCard = document.getElementById('logbook-card') as HTMLDivElement;
     const printLogBtn = document.getElementById('print-log-btn') as HTMLButtonElement;
+    const nowEditLogGo = document.getElementById('now-wunsch-log-edit-go') as HTMLButtonElement;
+    const nowEditLogCome = document.getElementById('now-wunsch-log-edit-come') as HTMLButtonElement;
 
-    let logbookChart: Chart | null = null;
+    // --- Elemente für das Bearbeiten-Modal ---
+    const editLogModal = document.getElementById('edit-log-modal') as HTMLDivElement;
+    const editLogSaveBtn = document.getElementById('edit-log-save-btn') as HTMLButtonElement;
+    const editLogCancelBtn = document.getElementById('edit-log-cancel-btn') as HTMLButtonElement;
+    const editLogDateDisplay = document.getElementById('edit-log-date-display') as HTMLParagraphElement;
+    const editLogTypeSelect = document.getElementById('edit-log-type') as HTMLSelectElement;
+    const editLogArrivalInput = document.getElementById('edit-log-arrival') as HTMLInputElement;
+    const editLogLeavingInput = document.getElementById('edit-log-leaving') as HTMLInputElement;
+    const editLogTimesContainer = document.getElementById('edit-log-times') as HTMLDivElement;
+
+    let currentEditEntryId: number | null = null; // Speichert die ID des Eintrags, der gerade bearbeitet wird
+
+   let logbookChart: Chart | null = null;
 
     function renderChart(logData: LogEntry[]): void {
         const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
@@ -70,8 +78,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 datasets: [{
                     label: 'Tagessaldo',
                     data: dataPoints,
-                    backgroundColor: dataPoints.map(value => value < 0 ? 'rgba(220, 53, 69, 0.7)' : 'rgba(0, 123, 255, 0.7)'),
-                    borderColor: dataPoints.map(value => value < 0 ? 'rgba(220, 53, 69, 1)' : 'rgba(0, 123, 255, 1)'),
+                    backgroundColor: dataPoints.map(value => value < 0 ? '#dc3545b3' : '#01ac4eb3'),
+                    borderColor: dataPoints.map(value => value < 0 ? '#dc3545ff' : '#01ac4eb5'),
                     borderWidth: 1
                 }]
             },
@@ -107,65 +115,161 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-
-    async function renderLog(editMode = false): Promise<void> {
-        if (!logbookBody) return;
-        logbookBody.innerHTML = '';
+    async function renderLog(): Promise<void> {
+        if (!logbookList) return;
+        logbookList.innerHTML = '';
         const logData = await getLog();
         logData.sort((a, b) => b.id - a.id);
-        renderChart(logData);
+        await renderChart(logData); 
 
         if (logData.length === 0) {
-            logbookBody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Noch keine Einträge. Zum Importieren Datei hierher ziehen.</td></tr>';
+            logbookList.innerHTML = '<p style="text-align: center; color: #6c757d;">Noch keine Einträge vorhanden.</p>';
             return;
         }
 
+        const icons: { [key: string]: string } = {
+            'Arbeit': 'fa-solid fa-briefcase',
+            'Urlaub': 'fa-solid fa-umbrella-beach',
+            'Krank': 'fa-solid fa-notes-medical',
+            'Feiertag': 'fa-solid fa-calendar-star',
+            'Überstundenabbau': 'fa-solid fa-hourglass-half',
+        };
+
         logData.forEach((entry) => {
-            const row = document.createElement('tr');
-            row.dataset.entryId = entry.id.toString();
+            const item = document.createElement('div');
+            item.className = 'log-item';
+            item.dataset.entryId = entry.id.toString();
+            const label = entry.label || 'Arbeit';
+            item.dataset.label = label;
+            item.title = "Doppelklick zum bearbeiten";
+            
+            const iconClass = icons[label] || 'fa-solid fa-question-circle';
+            const isWorkDay = label === 'Arbeit';
+            const saldoDisplay = isWorkDay ? `${entry.dailySaldoMinutes >= 0 ? '+' : ''}${formatMinutesToString(entry.dailySaldoMinutes)}` : '';
+            const saldoColor = entry.dailySaldoMinutes < 0 ? 'var(--error-color)' : 'var(--success-color)';
+            const detailsDisplay = isWorkDay ? `${entry.arrival} - ${entry.leaving} Uhr` : 'Ganztägig';
 
-            // Standardwerte für normale Arbeitstage
-            let arrival = entry.arrival;
-            let leaving = entry.leaving;
-            let saldoDisplay = `${entry.dailySaldoMinutes >= 0 ? '+' : ''}${formatMinutesToString(entry.dailySaldoMinutes)}`;
-            let saldoStyle = entry.dailySaldoMinutes < 0 ? ' class="negative-saldo"' : '';
-
-            // Logik für Sondertage
-            if (entry.label && entry.label !== 'Arbeit') {
-                arrival = '00:00';
-                leaving = '00:00';
-                saldoDisplay = '0';
-                saldoStyle = '';
-                row.classList.add('special-day-row');
-            }
-            const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Überstundenabbau"];
-            const labelSelectHtml = `
-            <select class="label-select">
-                ${labelOptions.map(opt => `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`).join('')}
-            </select>`;
-            const actionsHtml = editMode
-                ? `
-                <button type="button" class="small-btn save-edit-btn" data-entry-id="${entry.id}">Speichern</button>
-                <button type="button" class="small-btn cancel-edit-btn">Abbrechen</button>
-            `
-                : '';
-
-            row.innerHTML = `
-                <td>${entry.date}</td>
-                <td><span class="time-display">${arrival}</span><input type="time" class="time-input" value="${arrival}" style="display: none;"> Uhr</td>
-                <td><span class="time-display">${leaving}</span><input type="time" class="time-input" value="${leaving}" style="display: none;"> Uhr</td>
-                <td${saldoStyle}>${saldoDisplay}</td>
-                <td><span class="label-display">${entry.label || 'Arbeit'}</span>${editMode ? labelSelectHtml : ''}</td>
-                <td class="logbook-actions">${actionsHtml}</td>
+            item.innerHTML = `
+                <div class="log-item-icon"><i class="${iconClass}"></i></div>
+                <div class="log-item-date">${entry.date}</div>
+                <div class="log-item-type">${label}</div>
+                <div class="log-item-saldo" style="color: ${isWorkDay ? saldoColor : 'inherit'};">${saldoDisplay}</div>
+                <div class="log-item-details">${detailsDisplay}</div>
             `;
-            logbookBody.appendChild(row);
+            logbookList.appendChild(item);
         });
-        // Logik, um im Edit-Mode die richtigen Elemente anzuzeigen
-        if (editMode) {
-        logbookBody.querySelectorAll('.label-display').forEach(el => (el as HTMLElement).style.display = 'none');
-    }
     }
 
+    // --- Funktionen zum Steuern des Modals ---
+    const openEditModal = (entry: LogEntry) => {
+        currentEditEntryId = entry.id;
+        editLogDateDisplay.textContent = `Bearbeite Eintrag vom ${entry.date}`;
+
+        const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Überstundenabbau"];
+        editLogTypeSelect.innerHTML = labelOptions.map(opt => 
+            `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`
+        ).join('');
+        
+        editLogArrivalInput.value = entry.arrival;
+        editLogLeavingInput.value = entry.leaving;
+
+        toggleTimeInputs(entry.label || 'Arbeit');
+        editLogModal.style.display = 'flex';
+    };
+
+    const closeEditModal = () => {
+        editLogModal.style.display = 'none';
+        currentEditEntryId = null;
+    };
+
+    const toggleTimeInputs = (type: string) => {
+        editLogTimesContainer.style.display = type === 'Arbeit' ? 'flex' : 'none';
+    };
+
+    // --- Event-Listener ---
+
+    // KORREKTUR: Listener für Doppelklick ('dblclick') auf der gesamten Liste
+    logbookList.addEventListener('dblclick', async (event) => {
+        const target = event.target as HTMLElement;
+        const logItem = target.closest('.log-item') as HTMLDivElement;
+        if (!logItem) return;
+
+        const entryId = parseInt(logItem.dataset.entryId || '0', 10);
+        if (isNaN(entryId)) return;
+
+        const logData = await getLog();
+        const entryToEdit = logData.find(e => e.id === entryId);
+
+        if (entryToEdit) {
+            openEditModal(entryToEdit);
+        }
+    });
+
+    nowEditLogCome.addEventListener('click', async (event) => {
+        const input = document.getElementById('edit-log-arrival') as HTMLInputElement;
+        if (input) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeNow = `${hours}:${minutes}`;
+            
+            input.value = timeNow;
+        }
+    });
+
+    nowEditLogGo.addEventListener('click', async (event) => {
+        const input = document.getElementById('edit-log-leaving') as HTMLInputElement;
+        if (input) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+             const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeNow = `${hours}:${minutes}`;
+
+            input.value = timeNow;
+        }
+    });
+
+    editLogTypeSelect.addEventListener('change', () => {
+        toggleTimeInputs(editLogTypeSelect.value);
+    });
+
+    editLogCancelBtn.addEventListener('click', closeEditModal);
+
+    editLogSaveBtn.addEventListener('click', async () => {
+        if (currentEditEntryId === null) return;
+
+        const logData = await getLog();
+        const entryIndex = logData.findIndex(e => e.id === currentEditEntryId);
+        if (entryIndex === -1) return;
+
+        const entryToUpdate = logData[entryIndex];
+        const newLabel = editLogTypeSelect.value;
+        entryToUpdate.label = newLabel;
+
+        if (newLabel === 'Arbeit') {
+            const newArrival = editLogArrivalInput.value;
+            const newLeaving = editLogLeavingInput.value;
+            entryToUpdate.arrival = newArrival;
+            entryToUpdate.leaving = newLeaving;
+
+            const settings = await chrome.storage.sync.get({ userIsMinderjaehrig: false });
+            const pausenDauer = settings.userIsMinderjaehrig ? 60 : 45;
+            const gearbeiteteMinuten = timeStringToMinutes(newLeaving) - timeStringToMinutes(newArrival) - pausenDauer;
+            const sollzeitInMinuten = entryToUpdate.targetHours * 60;
+            entryToUpdate.dailySaldoMinutes = Math.round(gearbeiteteMinuten - sollzeitInMinuten);
+        } else {
+            entryToUpdate.arrival = '00:00';
+            entryToUpdate.leaving = '00:00';
+            entryToUpdate.dailySaldoMinutes = 0;
+        }
+
+        await saveLog(logData);
+        await renderLog();
+        closeEditModal();
+        showToast('Eintrag erfolgreich gespeichert!', 'success');
+    });
+    
+   
     /**
      * Fügt einen neuen Logbucheintrag hinzu oder überschreibt einen bestehenden Eintrag.
      * @param newEntry 
@@ -203,7 +307,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     document.addEventListener('logbookUpdated', () => {
-       prefillArrivalFromLog();
+        prefillArrivalFromLog();
     });
 
     /**
@@ -243,7 +347,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const sollzeitInMinuten = targetHours * 60;
                 let dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
 
-                if(label == "Krank" || label == "Urlaub") {
+                if (label == "Krank" || label == "Urlaub") {
                     dailySaldoMinutes = 0;
                 }
 
@@ -513,69 +617,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    if (editLogbookBtn) {
-        editLogbookBtn.addEventListener('click', () => {
-            logbookBody.classList.toggle('edit-mode');
-            const isEditMode = logbookBody.classList.contains('edit-mode');
-            renderLog(isEditMode);
-        });
-    }
-
-    /**
-     * Speicherbutton beim bearbeiten vom Logbuch
-     */
-    logbookBody.addEventListener('click', async (event) => {
-        const target = event.target as HTMLElement;
-
-        if (target.classList.contains('save-edit-btn')) {
-            const row = target.closest('tr');
-            if (row) {
-                const entryId = parseInt(row.dataset.entryId || '0', 10);
-                const logData = await getLog();
-                const entryIndex = logData.findIndex(e => e.id === entryId);
-                if (entryIndex > -1) {
-                    const labelSelect = row.querySelector('.label-select') as HTMLSelectElement;
-                    const newLabel = labelSelect.value;
-
-                    const arrivalInput = row.querySelector('input[type="time"]') as HTMLInputElement;
-                    const leavingInput = row.querySelectorAll('input[type="time"]')[1] as HTMLInputElement;
-
-                    const newArrival = arrivalInput.value;
-                    const newLeaving = leavingInput.value;
-
-                    const arrivalMinutes = timeStringToMinutes(newArrival);
-                    const leavingMinutes = timeStringToMinutes(newLeaving);
-                    const targetHours = logData[entryIndex].targetHours;
-
-                    const isMinderjaehrig = (localStorage.getItem('userIsMinderjaehrig') === 'true');
-                    const pausenDauer = isMinderjaehrig ? 60 : 45;
-                    const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
-                    const sollzeitInMinuten = targetHours * 60;
-                    const tagesDifferenz = gearbeiteteMinuten - sollzeitInMinuten;
-
-                    if (newLabel !== 'Arbeit') {
-                        logData[entryIndex].label = newLabel;
-                        logData[entryIndex].arrival = '00:00';
-                        logData[entryIndex].leaving = '00:00';
-                        logData[entryIndex].dailySaldoMinutes = 0;
-                    } else {
-                        logData[entryIndex].label = newLabel;
-                        logData[entryIndex].arrival = newArrival;
-                        logData[entryIndex].leaving = newLeaving;
-                        logData[entryIndex].dailySaldoMinutes = Math.round(tagesDifferenz);
-                    }
-                    await saveLog(logData);
-                    document.dispatchEvent(new CustomEvent('logbookUpdated'));
-                    await renderLog(true);
-                }
-            }
-        }
-
-        if (target.classList.contains('cancel-edit-btn')) {
-            renderLog(true);
-        }
-    });
-
     document.addEventListener('saveLogEntry', async (event: Event) => {
         const customEvent = event as CustomEvent<LogEntry>;
         await addLogEntry(customEvent.detail);
@@ -663,4 +704,3 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
     }
 });
-
