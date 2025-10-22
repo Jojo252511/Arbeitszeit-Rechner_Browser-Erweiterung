@@ -25,7 +25,8 @@
       "resources": [
         "countdown.html",
         "/Print/",
-        "/Print/index.html"
+        "/Print/index.html",
+        "Logbook.html"
       ],
       "matches": [
         "<all_urls>"

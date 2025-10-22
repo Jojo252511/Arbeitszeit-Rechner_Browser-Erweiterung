@@ -75,9 +75,12 @@ async function parseInternalCsv(csvText: string): Promise<LogEntry[]> {
     for (const line of lines) {
         const values = line.split(';');
         if (values.length < 3) continue;
-        const [dateStr, arrivalStr, leavingStr, , label] = values.map(v => v.trim());
+        const [dateStr, arrivalStrRaw, leavingStrRaw, , label] = values.map(v => v.trim());
 
-        if (dateStr && arrivalStr && leavingStr) {
+        if (dateStr && arrivalStrRaw && leavingStrRaw) {
+            const arrivalStr = arrivalStrRaw.substring(0, 5);
+            const leavingStr = leavingStrRaw.substring(0, 5);
+
             const [day, month, year] = dateStr.split('.').map(Number);
             const dateObj = new Date(year, month - 1, day);
             dateObj.setHours(0, 0, 0, 0);
@@ -86,7 +89,8 @@ async function parseInternalCsv(csvText: string): Promise<LogEntry[]> {
             const leavingMinutes = timeStringToMinutes(leavingStr);
             const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
             const sollzeitInMinuten = targetHours * 60;
-            const dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
+            const ausnahmeTage = ["Krank", "Urlaub", "Feiertag", "Berufsschule"];
+            const dailySaldoMinutes = !ausnahmeTage.includes(label) ? (gearbeiteteMinuten - sollzeitInMinuten) : 0;
 
             newLogEntries.push({
                 id: dateObj.getTime(), date: dateStr, arrival: arrivalStr, leaving: leavingStr,
