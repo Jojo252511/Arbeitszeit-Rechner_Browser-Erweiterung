@@ -1075,7 +1075,7 @@ body.dark-mode .sun-icon {
 
 /* Styling basierend auf dem Typ des Eintrags */
 .log-item[data-label="Arbeit"] { border-left-color: var(--primary-color); }
-.log-item[data-label="Urlaub"],
+.log-item[data-label="Urlaub"] { border-left-color: #ff0000; }
 .log-item[data-label="Feiertag"] { border-left-color: #ffc107; } /* Gelb */
 .log-item[data-label="Krank"] { border-left-color: #fd7e14; } /* Orange */
 .log-item[data-label="Berufsschule"] { border-left-color: #17a2b8; } /* Blaugrün */
