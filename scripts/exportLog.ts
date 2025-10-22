@@ -57,49 +57,79 @@ function exportAsCsv(logData: LogEntry[]): void {
 }
 
 async function exportAsPdf(): Promise<void> {
-    showToast('PDF wird generiert...', 'info', 2000);
+    showToast('PDF wird generiert (Seite 1)...', 'info', 10000);
     const iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.left = '-9999px';
-    iframe.src = '/Print/index.html';
+    iframe.width = "800"; 
+    iframe.src = '/Logbook.html';
     document.body.appendChild(iframe);
 
+    const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
     iframe.onload = async () => {
+        await wait(750); 
+
         try {
             const printDocument = iframe.contentDocument;
             if (!printDocument) throw new Error("Iframe-Inhalt konnte nicht geladen werden.");
             
-            const printContent = printDocument.getElementById('print-content');
-            if (!printContent) throw new Error("Druckbarer Inhalt nicht im Iframe gefunden.");
+            const titleElement = printDocument.querySelector('#logbook-card h2') as HTMLElement;
+            const logItems = printDocument.querySelectorAll('.log-item') as NodeListOf<HTMLElement>;
 
-            const printControls = printDocument.querySelector('.print-controls') as HTMLElement;
-            if (printControls) printControls.style.display = 'none';
-
-            const canvas = await html2canvas(printContent, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-            
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jspdf.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const ratio = canvas.width / canvas.height;
-            
-            let imgWidth = pdfWidth;
-            let imgHeight = imgWidth / ratio;
-            
-            if (imgHeight > pdfHeight) {
-                imgHeight = pdfHeight;
-                imgWidth = imgHeight * ratio;
+            if (!titleElement || logItems.length === 0) {
+                throw new Error("Logbuch-Titel oder -Einträge nicht im Iframe gefunden.");
             }
-
-            const x = (pdfWidth - imgWidth) / 2;
-            const y = (pdfHeight - imgHeight) / 2;
             
-            pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
+            const pdf = new jspdf.jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pdfPageWidth = pdf.internal.pageSize.getWidth();
+            const pdfPageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 15;
+            const contentWidth = pdfPageWidth - (margin * 2);
+            const pageBreakThreshold = pdfPageHeight - margin; 
+            
+            let currentY = margin;
+            let pageCount = 1;
+
+            const titleCanvas = await html2canvas(titleElement, { scale: 2, backgroundColor: '#ffffff' });
+            const titleRatio = titleCanvas.width / titleCanvas.height;
+            const titleHeight = contentWidth / titleRatio;
+            
+            pdf.addImage(titleCanvas.toDataURL('image/png'), 'PNG', margin, currentY, contentWidth, titleHeight);
+            currentY += titleHeight + 5;
+
+            for (let i = 0; i < logItems.length; i++) {
+                const item = logItems[i];
+                
+                if (i > 0 && i % 15 === 0) { 
+                     showToast(`PDF wird generiert (Seite ${pageCount})...`, 'info', 3000);
+                }
+
+                const canvas = await html2canvas(item, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    useCORS: true,
+                });
+
+                const ratio = canvas.width / canvas.height;
+                const scaledHeight = contentWidth / ratio;
+                const itemGap = 2; 
+
+                if (currentY + scaledHeight + itemGap > pageBreakThreshold) {
+                    pdf.addPage();
+                    pageCount++;
+                    currentY = margin;
+                }
+                pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, currentY, contentWidth, scaledHeight);
+                currentY += scaledHeight + itemGap;
+            }
             pdf.save('Arbeitszeit-Logbuch.pdf');
+            showToast('PDF erfolgreich exportiert!', 'success');
+
         } catch (error) {
             console.error("PDF generation error:", error);
-            showToast('Ein Fehler ist beim Erstellen des PDFs aufgetreten.', 'error');
+            const errorMsg = (error instanceof Error) ? error.message : 'Ein Fehler ist beim Erstellen des PDFs aufgetreten.';
+            showToast(errorMsg, 'error', 4000);
         } finally {
             document.body.removeChild(iframe);
         }

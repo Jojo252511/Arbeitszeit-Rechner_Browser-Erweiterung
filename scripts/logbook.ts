@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'Arbeit': 'fa-solid fa-briefcase',
             'Urlaub': 'fa-solid fa-umbrella-beach',
             'Krank': 'fa-solid fa-notes-medical',
-            'Feiertag': 'fa-solid fa-calendar-star',
+            'Feiertag': 'fa-solid fa-calendar-xmark',
             'Berufsschule': 'fa-solid fa-school',
             'Überstundenabbau': 'fa-solid fa-hourglass-half',
         };
