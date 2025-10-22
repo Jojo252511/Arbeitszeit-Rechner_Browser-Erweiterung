@@ -29,7 +29,7 @@
     <script type="module" src="./dist/darkmode.js" defer></script>
     <script type="module" src="./dist/countdown.js" defer></script>
     <script type="module" src="./dist/logbook.js" defer></script>
-    <script type="module" src="./dist/weather.ts" defer></script>
+    <script type="module" src="./dist/weather.js" defer></script>
 
     <script src="./scripts/chart.umd.js" defer></script>
     <script src="./scripts/jspdf.umd.min.js" defer></script>
@@ -40,7 +40,7 @@
     <div class="top-banner">
         <div class="banner-content">
             <h1>Arbeitszeit-Rechner</h1>
-            <div id="weather-widget" class="weather-widget" style="display: none;">
+            <div id="weather-widget" class="weather-widget" style="display: none;" title="Wetter | Click to Search">
                 <div class="weather-widget-content">
                     <img id="weather-icon" src="" alt="Wetter">
                     <span><strong id="weather-location-name"></strong></span>
@@ -189,7 +189,6 @@
             </form>
             <div id="ergebnis-gehzeit" class="ergebnis"></div>
         </div>
-
         <!------------------------- Rechner2 ------------------------------>
         <div class="card">
             <h2>Plus / Minus bei Wunsch-Gehzeit</h2>
@@ -227,6 +226,33 @@
                 </div>
             </div>
         </div>
+
+        <!------------------------- Logbuch ------------------------------>
+        <div class="card" id="logbook-card">
+            <h2>Logbuch</h2>
+            <div class="chart-container">
+                <canvas id="logbook-chart"></canvas>
+            </div>
+            <div id="logbook-controls">
+                <button type="button" id="export-logbook-btn" class="small-btn" title="Logbuch exportieren">
+                    <i class="fa-solid fa-file-export"></i>
+                </button>
+                <button type="button" id="import-logbook-btn" class="small-btn" title="Logbuch importieren">
+                    <i class="fa-solid fa-file-import"></i>
+                </button>
+                <button type="button" id="print-log-btn" class="small-btn" title="Logbuch drucken">
+                    <i class="fa-solid fa-print"></i>
+                </button>
+                <button type="button" id="clear-logbook-btn" class="small-btn" title="Logbuch leeren">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+            <hr>
+            <div class="logbook-list-container" id="logbook-list">
+
+            </div>
+        </div>
+
         <!------------------------- Rechner3 ------------------------------>
         <div class="card">
             <h2>Überstunden-Planer</h2>
@@ -260,31 +286,6 @@
                 <button type="button" id="berechne-gesamt-plus">Ergebnis berechnen</button>
             </form>
             <div id="ergebnis-gesamt-plus" class="ergebnis"></div>
-        </div>
-
-        <!------------------------- Logbuch ------------------------------>
-        <div class="card" id="logbook-card">
-            <h2>Logbuch</h2>
-            <div class="chart-container">
-                <canvas id="logbook-chart"></canvas>
-            </div>
-            <div id="logbook-controls">
-                <button type="button" id="export-logbook-btn" class="small-btn" title="Logbuch exportieren">
-                    <i class="fa-solid fa-file-export"></i>
-                </button>
-                <button type="button" id="import-logbook-btn" class="small-btn" title="Logbuch importieren">
-                    <i class="fa-solid fa-file-import"></i>
-                </button>
-                <button type="button" id="print-log-btn" class="small-btn" title="Logbuch drucken">
-                    <i class="fa-solid fa-print"></i>
-                </button>
-                <button type="button" id="clear-logbook-btn" class="small-btn" title="Logbuch leeren">
-                    <i class="fa-solid fa-trash"></i>
-                </button>
-            </div>
-            <div class="logbook-list-container" id="logbook-list">
-
-            </div>
         </div>
 
         <!------------------------- Taschenrechner ------------------------------>

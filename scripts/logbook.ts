@@ -2,21 +2,16 @@
 
 /**
  * @module logbook
- * @description Verwaltung und Anzeige des Arbeitszeit-Logbuchs, inklusive Bearbeitung, Import/Export und Chart-Visualisierung.
+ * @description Hauptmodul für die Interaktion mit dem Logbuch-UI.
  * @author Joern Unverzagt
  */
 
-import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm, showPrompt } from './utils.js';
+import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm } from './utils.js';
 import { type LogEntry, getLog, saveLog, getTodayLogEntry } from './logbook-data.js';
+import { renderChart } from './diagramLog.js';
+import { handleExport } from './exportLog.js';
+import { handleFileImport } from './importLog.js';
 
-// Deklariere die globalen Bibliotheken für TypeScript
-declare const html2canvas: any;
-declare const jspdf: any;
-declare const Chart: any;
-
-/**
- * Initialisiert alle Funktionen des Logbuchs, sobald das DOM geladen ist.
- */
 document.addEventListener('DOMContentLoaded', async () => {
     // --- DOM-Elemente holen ---
     const logbookList = document.getElementById('logbook-list') as HTMLDivElement;
@@ -40,102 +35,15 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let currentEditEntryId: number | null = null;
 
-    let logbookChart: Chart | null = null;
-
     /**
-     * Rendert das Balkendiagramm für die Tagessalden der letzten 7 Tage.
-     * @param {LogEntry[]} logData - Das gesamte Logbuch-Array.
+     * Rendert die Logbuch-Liste im Karten-Design.
      */
-    function renderChart(logData: LogEntry[]): void {
-        const chartContainer = document.querySelector('.chart-container') as HTMLDivElement;
-        if (!chartContainer || !Chart) return;
-
-        if (logData.length === 0) {
-            chartContainer.style.display = 'none';
-            if (logbookChart) {
-                logbookChart.destroy();
-                logbookChart = null;
-            }
-            return;
-        }
-        chartContainer.style.display = 'block';
-
-        const canvas = document.getElementById('logbook-chart') as HTMLCanvasElement;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const labels: string[] = [];
-        const dataPoints: number[] = [];
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date(today);
-            date.setDate(date.getDate() - i);
-            const label = date.toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: '2-digit' });
-            labels.push(label);
-            const dateId = date.getTime();
-            const entryForDay = logData.find(entry => entry.id === dateId);
-            dataPoints.push(entryForDay ? entryForDay.dailySaldoMinutes : 0);
-        }
-
-        if (logbookChart) {
-            logbookChart.destroy();
-        }
-
-        logbookChart = new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Tagessaldo',
-                    data: dataPoints,
-                    backgroundColor: dataPoints.map(value => value < 0 ? '#dc3545b3' : '#01ac4eb3'),
-                    borderColor: dataPoints.map(value => value < 0 ? '#dc3545ff' : '#01ac4eb5'),
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        callbacks: {
-                            label: function (context: any) {
-                                let label = context.dataset.label || '';
-                                if (label) { label += ': '; }
-                                if (context.parsed.y !== null) {
-                                    const totalMinutes = context.parsed.y;
-                                    const prefix = totalMinutes >= 0 ? '+' : '';
-                                    label += prefix + formatMinutesToString(totalMinutes);
-                                }
-                                return label;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {},
-                    y: {
-                        title: { display: true, text: 'Saldo in Minuten' },
-                        suggestedMax: 60,
-                        suggestedMin: -60,
-                        ticks: { stepSize: 30 }
-                    }
-                }
-            }
-        });
-    }
-    /**
-       * Rendert die Logbuch-Liste im neuen Karten-Design.
-       */
     async function renderLog(): Promise<void> {
         if (!logbookList) return;
         logbookList.innerHTML = '';
         const logData = await getLog();
         logData.sort((a, b) => b.id - a.id);
-        await renderChart(logData);
+        renderChart(logData);
 
         if (logData.length === 0) {
             logbookList.innerHTML = '<p style="text-align: center; color: #6c757d;">Noch keine Einträge vorhanden.</p>';
@@ -146,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'Arbeit': 'fa-solid fa-briefcase',
             'Urlaub': 'fa-solid fa-umbrella-beach',
             'Krank': 'fa-solid fa-notes-medical',
-            'Feiertag': 'fa-solid fa-calendar-star',
+            'Feiertag': 'fa-solid fa-calendar-xmark',
             'Berufsschule': 'fa-solid fa-school',
             'Überstundenabbau': 'fa-solid fa-hourglass-half',
         };
@@ -157,8 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             item.dataset.entryId = entry.id.toString();
             const label = entry.label || 'Arbeit';
             item.dataset.label = label;
-            item.title = "Doppelklick zum bearbeiten";
-
+            
             const iconClass = icons[label] || 'fa-solid fa-question-circle';
             const isWorkDay = label === 'Arbeit';
             const saldoDisplay = isWorkDay ? `${entry.dailySaldoMinutes >= 0 ? '+' : ''}${formatMinutesToString(entry.dailySaldoMinutes)}` : '';
@@ -176,18 +83,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
+    /**
+     * Fügt einen neuen Eintrag zum Logbuch hinzu oder überschreibt einen existierenden.
+     */
+    async function addLogEntry(newEntry: LogEntry): Promise<void> {
+        const logData = await getLog();
+        const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
+        if (existingEntryIndex > -1) {
+            const overwrite = await showConfirm("Eintrag überschreiben?", "Es existiert bereits ein Eintrag für heute.<br>Möchtest du ihn wirklich überschreiben?");
+            if (!overwrite) return;
+            logData[existingEntryIndex] = newEntry;
+        } else {
+            logData.push(newEntry);
+        }
+        await saveLog(logData);
+        await renderLog();
+    }
+
+    async function prefillArrivalFromLog(): Promise<void> {
+        const todayEntry = await getTodayLogEntry();
+        if (todayEntry) {
+            const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
+            if (ankunftszeitInput && !ankunftszeitInput.value) {
+                ankunftszeitInput.value = todayEntry.arrival;
+            }
+        }
+    }
+
     const openEditModal = (entry: LogEntry) => {
         currentEditEntryId = entry.id;
-        editLogDateDisplay.textContent = `Bearbeite Eintrag vom ${entry.date}`;
-
+        editLogDateDisplay.textContent = `Eintrag vom ${entry.date}`;
         const labelOptions = ["Arbeit", "Urlaub", "Krank", "Feiertag", "Berufsschule", "Überstundenabbau"];
-        editLogTypeSelect.innerHTML = labelOptions.map(opt =>
-            `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`
-        ).join('');
-
+        editLogTypeSelect.innerHTML = labelOptions.map(opt => `<option value="${opt}" ${entry.label === opt ? 'selected' : ''}>${opt}</option>`).join('');
         editLogArrivalInput.value = entry.arrival;
         editLogLeavingInput.value = entry.leaving;
-
         toggleTimeInputs(entry.label || 'Arbeit');
         editLogModal.style.display = 'flex';
     };
@@ -201,92 +130,40 @@ document.addEventListener('DOMContentLoaded', async () => {
         editLogTimesContainer.style.display = type === 'Arbeit' ? 'flex' : 'none';
     };
 
+    // --- Event-Listener ---
 
-
-    /**
-     * Startet Bearbeitungsmodus Logbuch
-     */
     logbookList.addEventListener('dblclick', async (event) => {
         const target = event.target as HTMLElement;
         const logItem = target.closest('.log-item') as HTMLDivElement;
         if (!logItem) return;
-
         const entryId = parseInt(logItem.dataset.entryId || '0', 10);
         if (isNaN(entryId)) return;
-
         const logData = await getLog();
         const entryToEdit = logData.find(e => e.id === entryId);
-
-        if (entryToEdit) {
-            openEditModal(entryToEdit);
-        }
+        if (entryToEdit) openEditModal(entryToEdit);
     });
-
-    /**
-     * Eventlistener für Jetzt Button
-     */
-    nowEditLogCome.addEventListener('click', async (event) => {
-        const input = document.getElementById('edit-log-arrival') as HTMLInputElement;
-        if (input) {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const timeNow = `${hours}:${minutes}`;
-
-            input.value = timeNow;
-        }
-    });
-
-    /**
-     * Eventlistener für Jetzt Button
-     */
-    nowEditLogGo.addEventListener('click', async (event) => {
-        const input = document.getElementById('edit-log-leaving') as HTMLInputElement;
-        if (input) {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const timeNow = `${hours}:${minutes}`;
-
-            input.value = timeNow;
-        }
-    });
-
-    /**
-     * 
-     */
-    editLogTypeSelect.addEventListener('change', () => {
-        toggleTimeInputs(editLogTypeSelect.value);
-    });
-
-    /**
-     * 
-     */
-    editLogCancelBtn.addEventListener('click', closeEditModal);
-
-    /**
-     * 
-     */
-    editLogSaveBtn.addEventListener('click', async () => {
+    if (editLogTypeSelect) {
+         editLogTypeSelect.addEventListener('change', () => toggleTimeInputs(editLogTypeSelect.value));
+    }
+    if(editLogCancelBtn) {
+        editLogCancelBtn.addEventListener('click', closeEditModal);
+    }
+   
+    if (editLogSaveBtn) {
+        editLogSaveBtn.addEventListener('click', async () => {
         if (currentEditEntryId === null) return;
-
         const logData = await getLog();
         const entryIndex = logData.findIndex(e => e.id === currentEditEntryId);
         if (entryIndex === -1) return;
-
         const entryToUpdate = logData[entryIndex];
         const newLabel = editLogTypeSelect.value;
         entryToUpdate.label = newLabel;
-
         if (newLabel === 'Arbeit') {
-            const newArrival = editLogArrivalInput.value;
-            const newLeaving = editLogLeavingInput.value;
-            entryToUpdate.arrival = newArrival;
-            entryToUpdate.leaving = newLeaving;
-
+            entryToUpdate.arrival = editLogArrivalInput.value;
+            entryToUpdate.leaving = editLogLeavingInput.value;
             const settings = await chrome.storage.sync.get({ userIsMinderjaehrig: false });
             const pausenDauer = settings.userIsMinderjaehrig ? 60 : 45;
-            const gearbeiteteMinuten = timeStringToMinutes(newLeaving) - timeStringToMinutes(newArrival) - pausenDauer;
+            const gearbeiteteMinuten = timeStringToMinutes(entryToUpdate.leaving) - timeStringToMinutes(entryToUpdate.arrival) - pausenDauer;
             const sollzeitInMinuten = entryToUpdate.targetHours * 60;
             entryToUpdate.dailySaldoMinutes = Math.round(gearbeiteteMinuten - sollzeitInMinuten);
         } else {
@@ -294,477 +171,86 @@ document.addEventListener('DOMContentLoaded', async () => {
             entryToUpdate.leaving = '00:00';
             entryToUpdate.dailySaldoMinutes = 0;
         }
-
         await saveLog(logData);
         await renderLog();
         closeEditModal();
         showToast('Eintrag erfolgreich gespeichert!', 'success');
     });
-
-
-    /**
-         * Fügt einen neuen Eintrag zum Logbuch hinzu oder überschreibt einen existierenden für denselben Tag.
-         * @param {LogEntry} newEntry - Der neue Logbuch-Eintrag.
-         */
-    async function addLogEntry(newEntry: LogEntry): Promise<void> {
-        const logData = await getLog();
-        const existingEntryIndex = logData.findIndex(entry => entry.date === newEntry.date);
-        if (existingEntryIndex > -1) {
-            // ALT: if (!confirm(`...`)) { return; }
-            const overwrite = await showConfirm(
-                "Eintrag überschreiben?",
-                "Es existiert bereits ein Eintrag für heute.<br>Möchtest du ihn wirklich überschreiben?"
-            );
-            if (!overwrite) return;
-
-            logData[existingEntryIndex] = newEntry;
-        } else {
-            logData.push(newEntry);
-        }
-        saveLog(logData);
-        document.dispatchEvent(new CustomEvent('logbookUpdated'));
-        renderLog();
-        showToast('Eintrag dem Logbuch hinzugefügt', 'success');
     }
+    
 
-    /**
-         * Füllt das "Ankunftszeit"-Feld mit der heutigen Ankunftszeit aus dem Logbuch, falls vorhanden.
-         */
-    async function prefillArrivalFromLog(): Promise<void> {
-        const todayEntry = await getTodayLogEntry();
-        if (todayEntry) {
-            const ankunftszeitInput = document.getElementById('ankunftszeit') as HTMLInputElement;
-            if (ankunftszeitInput && !ankunftszeitInput.value) {
-                ankunftszeitInput.value = todayEntry.arrival;
-            }
+    nowEditLogGo.addEventListener('click', () => {
+        const input = document.getElementById('edit-log-leaving') as HTMLInputElement;
+        if (input) {
+            const now = new Date();
+            input.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
-    }
-
-    /**
-     * Lauscht auf Logbuch änderungen
-     */
-    document.addEventListener('logbookUpdated', () => {
-        prefillArrivalFromLog();
     });
 
-    /**
-        * Parst eine CSV-Datei mit dem internen Export-Format (Datum;Kommen;Gehen;...).
-        * @param {string} csvText - Der Inhalt der CSV-Datei.
-        * @returns {Promise<LogEntry[]>} Ein Array von LogEntry-Objekten.
-        */
-    async function parseInternalCsv(csvText: string): Promise<LogEntry[]> {
-        const lines = csvText.trim().split('\n').slice(1); // Header überspringen
-        const newLogEntries: LogEntry[] = [];
-
-        const settings = await chrome.storage.sync.get({
-            userSollzeit: '8',
-            userIsMinderjaehrig: false
-        });
-        const targetHours = parseFloat(settings.userSollzeit);
-        const isMinderjaehrig = settings.userIsMinderjaehrig;
-        const pausenDauer = isMinderjaehrig ? 60 : 45;
-
-        for (const line of lines) {
-            const values = line.split(';');
-            if (values.length < 3) continue;
-
-            const dateStr = values[0].trim();
-            const arrivalStr = values[1].trim();
-            const leavingStr = values[2].trim();
-            const label = values[4] ? values[4].trim() : 'Arbeit';
-
-            if (dateStr && arrivalStr && leavingStr) {
-                const [day, month, year] = dateStr.split('.').map(Number);
-                const dateObj = new Date(year, month - 1, day);
-                dateObj.setHours(0, 0, 0, 0);
-
-                const arrivalMinutes = timeStringToMinutes(arrivalStr);
-                const leavingMinutes = timeStringToMinutes(leavingStr);
-                const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
-                const sollzeitInMinuten = targetHours * 60;
-                let dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
-
-                if (label == "Krank" || label == "Urlaub") {
-                    dailySaldoMinutes = 0;
-                }
-
-                newLogEntries.push({
-                    id: dateObj.getTime(),
-                    date: dateStr,
-                    arrival: arrivalStr,
-                    leaving: leavingStr,
-                    targetHours: targetHours,
-                    dailySaldoMinutes: Math.round(dailySaldoMinutes),
-                    label: label
-                });
-            }
+    nowEditLogCome.addEventListener('click', () => {
+        const input = document.getElementById('edit-log-arrival') as HTMLInputElement;
+        if (input) {
+            const now = new Date();
+            input.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         }
-        return newLogEntries;
-    }
+    });
 
-    /**
-         * Parst eine CSV-Datei von externen Zeiterfassungssystemen (Datum;Uhrzeit;Typ).
-         * @param {string} csvText - Der Inhalt der CSV-Datei.
-         * @returns {Promise<LogEntry[]>} Ein Array von LogEntry-Objekten.
-         */
-    function parseCsvAndGenerateLog(csvText: string): LogEntry[] {
-        const lines = csvText.trim().split('\n');
-        const header = lines[0].split(';').map(h => h.trim());
-        const dateIndex = header.indexOf('Datum');
-        const timeIndex = header.indexOf('Uhrzeit');
-        const typeIndex = header.indexOf('Typ');
+    document.addEventListener('saveLogEntry', (event: Event) => {
+        const customEvent = event as CustomEvent<LogEntry>;
+        addLogEntry(customEvent.detail);
+    });
 
-        if (dateIndex === -1 || timeIndex === -1 || typeIndex === -1) {
-            showToast('CSV-Datei konnte nicht verarbeitet werden. Benötigte Spalten: Datum, Uhrzeit, Typ', 'error');
-            return [];
+    clearLogbookBtn?.addEventListener('click', async () => {
+        const confirmed = await showConfirm("Logbuch leeren", "Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?", true);
+        if (confirmed) {
+            await saveLog([]);
+            await renderLog();
+            showToast("Logbuch wurde geleert.", "info");
         }
-
-        const dailyData: { [key: string]: { Kommen?: string, Gehen?: string } } = {};
-
-        for (let i = 1; i < lines.length; i++) {
-            const values = lines[i].split(';');
-            const date = values[dateIndex].trim();
-            const time = values[timeIndex].trim();
-            const type = values[typeIndex].trim();
-
-            if (!dailyData[date]) {
-                dailyData[date] = {};
-            }
-
-            if (type === 'Kommen') {
-                dailyData[date].Kommen = time;
-            } else if (type === 'Gehen') {
-                dailyData[date].Gehen = time;
-            }
-        }
-
-        const newLogEntries: LogEntry[] = [];
-        const targetHours = parseFloat(localStorage.getItem('userSollzeit') || '8');
-        const isMinderjaehrig = localStorage.getItem('userIsMinderjaehrig') === 'true';
-        const pausenDauer = isMinderjaehrig ? 60 : 45;
-
-        for (const dateStr in dailyData) {
-            const data = dailyData[dateStr];
-            if (data.Kommen && data.Gehen) {
-                const [day, month, year] = dateStr.split('.').map(Number);
-                const dateObj = new Date(year, month - 1, day);
-                dateObj.setHours(0, 0, 0, 0);
-
-                const arrivalMinutes = timeStringToMinutes(data.Kommen);
-                const leavingMinutes = timeStringToMinutes(data.Gehen);
-                const gearbeiteteMinuten = leavingMinutes - arrivalMinutes - pausenDauer;
-                const sollzeitInMinuten = targetHours * 60;
-                const dailySaldoMinutes = gearbeiteteMinuten - sollzeitInMinuten;
-
-                newLogEntries.push({
-                    id: dateObj.getTime(),
-                    date: dateStr,
-                    arrival: data.Kommen,
-                    leaving: data.Gehen,
-                    targetHours: targetHours,
-                    dailySaldoMinutes: Math.round(dailySaldoMinutes),
-                    label: ""
-                });
-            }
-        }
-        return newLogEntries;
-    }
-
-
-    /**
-        * Verarbeitet eine importierte Datei (JSON oder CSV) und fügt die Daten dem Logbuch hinzu.
-        * @param {File} file - Die zu importierende Datei.
-        */
-    async function handleFile(file: File) {
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            try {
-                let importedLog: LogEntry[] = [];
-                const content = e.target?.result as string;
-                if (!content) throw new Error("File content is empty.");
-
-                if (file.name.endsWith('.json')) {
-                    importedLog = JSON.parse(content);
-                } else if (file.name.endsWith('.csv')) {
-                    const header = content.trim().split('\n')[0].trim();
-
-                    if (header.includes('Datum') && header.includes('Kommen') && header.includes('Gehen')) {
-                        importedLog = await parseInternalCsv(content);
-                    } else if (header.includes('Datum') && header.includes('Uhrzeit') && header.includes('Typ')) {
-                        importedLog = await parseCsvAndGenerateLog(content);
-                    } else {
-                        showToast('Unbekanntes CSV-Format. Spalten nicht erkannt.', 'error');
-                        return;
-                    }
-
-                } else {
-                    showToast('Ungültiger Dateityp. Bitte eine .json oder .csv Datei auswählen.', 'error');
-                    return;
-                }
-
-                const isValidLog = Array.isArray(importedLog) && importedLog.every(
-                    (entry: any) => typeof entry === 'object' && entry !== null && 'id' in entry && 'date' in entry
-                );
-
-                if (isValidLog) {
-                    const merge = await showConfirm(
-                        "Logbuch importieren",
-                        "Möchtest du die importierten Daten mit dem aktuellen Logbuch zusammenführen?<br>Bestehende Tage werden dabei überschrieben."
-                    );
-                    if (merge) {
-                        const currentLog = await getLog();
-                        const logMap = new Map<number, LogEntry>();
-
-                        currentLog.forEach(entry => logMap.set(entry.id, entry));
-                        (importedLog as LogEntry[]).forEach(entry => logMap.set(entry.id, entry));
-
-                        const mergedLog = Array.from(logMap.values());
-
-                        await saveLog(mergedLog);
-                        await renderLog();
-                        showToast('Logbuch erfolgreich importiert und zusammengeführt.', 'success');
-                    }
-                } else {
-                    if (importedLog && importedLog.length > 0) {
-                        showToast('Die ausgewählte Datei hat kein gültiges Logbuch-Format.', 'error');
-                    }
-                }
-            } catch (error) {
-                console.error("Import error:", error);
-                showToast('Fehler beim Lesen oder Parsen der Datei.', 'error');
-            }
-        };
-        reader.readAsText(file);
-    }
-
-    /**
-     * Öffnet die Druckansicht
-     */
-    if (printLogBtn) {
-        printLogBtn.addEventListener('click', async () => {
-            const logData = await getLog();
-            if (logData.length === 0) {
-                showToast('Das Logbuch ist leer. Es gibt nichts zu drucken.', 'info')
-                return;
-            }
-            window.open('/Print/index.html', '_blank');
-        });
-    }
-
-    /**
-     * Löscht das Logbuch
-     */
-    if (clearLogbookBtn) {
-        clearLogbookBtn.addEventListener('click', async () => {
-            const confirmed = await showConfirm(
-                "Logbuch leeren",
-                "Bist du sicher, dass du alle Logbuch-Einträge unwiderruflich löschen möchtest?",
-                true
-            );
-            if (confirmed) {
-                await saveLog([]);
-                document.dispatchEvent(new CustomEvent('logbookUpdated'));
-                await renderLog();
-                showToast("Logbuch wurde geleert.", "info");
-            }
-        });
-    }
-    /**
-     * startet Logbuch export
-     */
-    if (exportLogbookBtn) {
-        exportLogbookBtn.addEventListener('click', async () => {
-            const logData = await getLog();
-            if (logData.length === 0) {
-                showToast('Das Logbuch ist leer. Es gibt nichts zu exportieren.', 'info');
-                return;
-            }
-
-            const format = await showPrompt(
-                "Exportformat wählen",
-                "In welchem Format möchtest du das Logbuch exportieren?",
-                ['json', 'csv', 'pdf']
-            );
-
-            if (format === null) { // Benutzer hat auf "Abbrechen" geklickt
-                return;
-            }
-
-            if (format === 'json') {
-                const jsonString = JSON.stringify(logData, null, 2);
-                const blob = new Blob([jsonString], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'arbeitszeit-logbuch.json';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } else if (format === 'csv') {
-                const header = 'Datum;Kommen;Gehen;Tagessaldo;Typ\n';
-                const rows = logData.map(entry => {
-                    const saldoPrefix = entry.dailySaldoMinutes >= 0 ? '+' : '';
-                    const formattedSaldo = saldoPrefix + formatMinutesToString(entry.dailySaldoMinutes);
-                    return `${entry.date};${entry.arrival};${entry.leaving};"${formattedSaldo}";${entry.label || 'Arbeit'}`;
-                }).join('\n');
-
-                const csvString = header + rows;
-                const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'arbeitszeit-logbuch.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-            } else if (format === 'pdf') {
-                await generatePdf();
-            } else if (format !== null) {
-                showToast("Ungültiges Format. Bitte 'json' oder 'csv' eingeben.", "error");
-            }
-        });
-    }
-
-    /**
-     * startet Logbuch import
-     */
-    if (importLogbookBtn) {
+    });
+    
+    exportLogbookBtn?.addEventListener('click', handleExport);
+    
+    importLogbookBtn?.addEventListener('click', () => {
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = '.json,.csv';
-        fileInput.style.display = 'none';
-
         fileInput.onchange = (event) => {
             const file = (event.target as HTMLInputElement).files?.[0];
-            handleFile(file!);
-            fileInput.value = '';
+            if (file) handleFileImport(file);
         };
-        document.body.appendChild(fileInput);
-
-        importLogbookBtn.addEventListener('click', () => {
-            fileInput.click();
-        });
-    }
-
-    /**
-     * Drag and Drop Funktion
-     */
-    if (logbookCard) {
-        logbookCard.addEventListener('dragover', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            logbookCard.classList.add('drag-over');
-        });
-
-        logbookCard.addEventListener('dragleave', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            logbookCard.classList.remove('drag-over');
-        });
-
-        logbookCard.addEventListener('drop', (event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            logbookCard.classList.remove('drag-over');
-
-            const files = event.dataTransfer?.files;
-            if (files && files.length > 0) {
-                handleFile(files[0]);
-            }
-        });
-    }
-
-    /**
-     * Speicher Button beim Logbuch bearbeiten
-     */
-    document.addEventListener('saveLogEntry', async (event: Event) => {
-        const customEvent = event as CustomEvent<LogEntry>;
-        await addLogEntry(customEvent.detail);
+        fileInput.click();
     });
 
-    // Erster Aufruf beim laden
+    logbookCard?.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        logbookCard.classList.add('drag-over');
+    });
+
+    logbookCard?.addEventListener('dragleave', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        logbookCard.classList.remove('drag-over');
+    });
+
+    logbookCard?.addEventListener('drop', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        logbookCard.classList.remove('drag-over');
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+            handleFileImport(files[0]);
+        }
+    });
+
+    printLogBtn?.addEventListener('click', () => {
+        window.open('/Print/index.html', '_blank');
+    });
+
+    document.addEventListener('logbookUpdated', () => renderLog());
+
+    // --- Initialisierung ---
     await renderLog();
     await prefillArrivalFromLog();
-
-    /**
-     * Funktion für den PDF Export (BETA)
-     */
-    async function generatePdf() {
-        showToast('PDF wird generiert...', 'info', 2000);
-
-        // 1. Erstelle ein unsichtbares Iframe, um die Druckansicht zu laden
-        const iframe = document.createElement('iframe');
-        iframe.style.position = 'absolute';
-        iframe.style.left = '-9999px';
-        iframe.src = '/Print/index.html';
-        document.body.appendChild(iframe);
-
-        // 2. Warte, bis der Inhalt des Iframes geladen ist
-        iframe.onload = async () => {
-            try {
-                const printDocument = iframe.contentDocument;
-                if (!printDocument) {
-                    showToast('PDF-Erstellung fehlgeschlagen (Iframe-Inhalt).', 'error');
-                    return;
-                }
-
-                const printContent = printDocument.getElementById('print-content');
-                if (!printContent) {
-                    showToast('PDF-Erstellung fehlgeschlagen (print-content).', 'error');
-                    return;
-                }
-
-                const printControls = printDocument.querySelector('.print-controls') as HTMLElement;
-                if (printControls) printControls.style.display = 'none';
-
-                // 3. Nutze html2canvas, um das Element zu "fotografieren"
-                const canvas = await html2canvas(printContent, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
-
-                // 4. Erstelle das PDF mit jsPDF
-                const imgData = canvas.toDataURL('image/png');
-                const pdf = new jspdf.jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
-                });
-
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                const canvasWidth = canvas.width;
-                const canvasHeight = canvas.height;
-                const ratio = canvasWidth / canvasHeight;
-
-                let imgWidth = pdfWidth;
-                let imgHeight = imgWidth / ratio;
-
-                if (imgHeight > pdfHeight) {
-                    imgHeight = pdfHeight;
-                    imgWidth = imgHeight * ratio;
-                }
-
-                const x = (pdfWidth - imgWidth) / 2;
-                const y = (pdfHeight - imgHeight) / 2;
-
-                pdf.addImage(imgData, 'PNG', x, y, imgWidth, imgHeight);
-
-                // 5. Speichere das PDF
-                pdf.save('Arbeitszeit-Logbuch.pdf');
-
-            } catch (error) {
-                console.error("PDF generation error:", error);
-                showToast('Ein Fehler ist beim Erstellen des PDFs aufgetreten.', 'error');
-            } finally {
-                // 6. Räume das Iframe wieder auf
-                document.body.removeChild(iframe);
-            }
-        };
-    }
 });

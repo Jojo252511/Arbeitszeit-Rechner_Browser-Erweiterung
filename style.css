@@ -12,6 +12,7 @@
     --error-color: #dc3545;
     --shadow-color: rgba(0, 0, 0, 0.08);
     --special-day-color: #6c757d;
+    --more-color: #0000ff;
 }
 
 * {
@@ -596,6 +597,10 @@ input:checked+.slider:before {
     display: none;
 }
 
+#calculator1-more {
+    color: var(--more-color);
+}
+
 
 /* --- Logbuch & Chart --- */
 .chart-container {
@@ -671,7 +676,17 @@ input:checked+.slider:before {
     display: flex;
     align-items: center;
     justify-self: center;
-    margin-top: 15px;
+    margin-top: 25px;
+}
+
+#weather-widget {
+    background-color: #cccc;
+    color: #000;
+    width: 100%;
+    justify-content: center;
+    border-radius: 5px;
+    padding: 5px;
+    cursor: pointer;
 }
 
 .weather-widget-content {
@@ -679,9 +694,10 @@ input:checked+.slider:before {
     align-items: center;
     justify-self: center;
     gap: 0.5rem;
-    color: var(--text-color);
+    color: #000;
     font-size: 0.9rem;
     opacity: 0.8;
+
 }
 
 .weather-widget img {
@@ -752,7 +768,17 @@ body.dark-mode {
     --primary-color: #2997ff;
     --primary-hover-color: #53acff;
     --shadow-color: rgba(0, 0, 0, 0.25);
+    --more-color: #9292ea;
 }
+
+body.dark-mode .log-item {
+    background-color: #2a2a2a;
+}
+body.dark-mode .log-item[data-label="Urlaub"],
+body.dark-mode .log-item[data-label="Feiertag"] { border-left-color: #ffca2c; }
+body.dark-mode .log-item[data-label="Krank"] { border-left-color: #fd8a2c; }
+body.dark-mode .log-item[data-label="Überstundenabbau"] { border-left-color: #8a63d2; }
+
 
 body.dark-mode .ergebnis.success {
     background-color: #1c3d26;
@@ -1010,6 +1036,25 @@ body.dark-mode .sun-icon {
     padding-right: 5px; /* Platz für die Scrollbar */
 }
 
+.logbook-list-container::-webkit-scrollbar {
+    width: 15px;
+}
+
+.logbook-list-container::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 15px;
+}
+
+.logbook-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 15px;
+    border: 2px solid var(--background-color);
+}
+
+.logbook-list-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--primary-hover-color);
+}
+
 /* Jeder einzelne Log-Eintrag (die "Karte") */
 .log-item {
     display: grid;
@@ -1030,7 +1075,7 @@ body.dark-mode .sun-icon {
 
 /* Styling basierend auf dem Typ des Eintrags */
 .log-item[data-label="Arbeit"] { border-left-color: var(--primary-color); }
-.log-item[data-label="Urlaub"],
+.log-item[data-label="Urlaub"] { border-left-color: #ff0000; }
 .log-item[data-label="Feiertag"] { border-left-color: #ffc107; } /* Gelb */
 .log-item[data-label="Krank"] { border-left-color: #fd7e14; } /* Orange */
 .log-item[data-label="Berufsschule"] { border-left-color: #17a2b8; } /* Blaugrün */
@@ -1044,14 +1089,6 @@ body.dark-mode .sun-icon {
 .log-item-saldo { grid-area: saldo; font-weight: 600; font-size: 0.9rem; justify-self: end; }
 .log-item-details { grid-area: details; font-size: 0.85rem; color: #6c757d; }
 
-/* Dark Mode Anpassungen */
-body.dark-mode .log-item {
-    background-color: #2a2a2a;
-}
-body.dark-mode .log-item[data-label="Urlaub"],
-body.dark-mode .log-item[data-label="Feiertag"] { border-left-color: #ffca2c; }
-body.dark-mode .log-item[data-label="Krank"] { border-left-color: #fd8a2c; }
-body.dark-mode .log-item[data-label="Überstundenabbau"] { border-left-color: #8a63d2; }
 
 #edit-log-modal {
     opacity: 1;

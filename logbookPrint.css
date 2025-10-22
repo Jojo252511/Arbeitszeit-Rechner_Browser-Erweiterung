@@ -1,0 +1,86 @@
+/* ===================================================================
+   Logbuch Print Style (A4 Hochkant)
+   =================================================================== */
+
+@media print {
+
+    /* --- 1. Seiteneinrichtung & Globale Resets --- */
+
+    @page {
+        size: A4 portrait; /* A4 Hochformat */
+        margin: 2cm;      /* Standard-Druckränder */
+        justify-content: center;
+    }
+
+    body {
+        font-family: Arial, Helvetica, sans-serif; /* Druckfreundliche Schriftart */
+        font-size: 10pt;                           /* Lesbare Schriftgröße */
+        background-color: #ffffff !important;      /* Immer weißer Hintergrund */
+        color: #000000 !important;                /* Immer schwarzer Text */
+        padding: 0;
+        margin: 0;
+        display: block;  /* Flex/Grid-Layout vom Body zurücksetzen */
+        min-width: 0;    /* min-width aus style.css überschreiben */
+        max-width: 100%;
+        width: 100%;
+    }
+
+    /* Alle Übergänge, Schatten und Transformationen entfernen */
+    *, *::before, *::after {
+        transition: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    /* --- 2. Layout-Container zurücksetzen --- */
+
+    /* Haupt-Container auf 100% Breite setzen und Grid entfernen */
+    .container {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        gap: 0;
+        margin-top: 0 !important;
+    }
+
+    /* Logbuch-Karte zurücksetzen (kein Rand, kein Schatten, kein Padding) */
+    .card, #logbook-card {
+        border: none !important;
+        padding: 0 !important;
+        background-color: #ffffff !important;
+    }
+
+       /* Styling für jeden Log-Eintrag */
+    .log-item {
+        background-color: #f9f9f9 !important; /* Leichter Hintergrund zur Trennung */
+        border: 1px solid #ddd;           /* Dünner Rand statt nur links */
+        border-left-width: 5px;           /* Linken Rand (Farbcode) beibehalten */
+        page-break-inside: avoid;         /* WICHTIG: Verhindert Seitenumbrüche *innerhalb* eines Eintrags */
+        margin-bottom: 0.5rem;            /* Abstand zwischen Einträgen */
+        color: #000 !important;
+    }
+
+      /* Logbuch-Titel zentrieren und Farbe erzwingen */
+    #logbook-card h2 {
+        text-align: center;
+        color: #000000 !important;
+        margin-bottom: 1.5rem;
+        font-size: 1.5rem;
+    }
+
+
+} /* Ende @media print */
+
+#logbook-list {
+    max-height: max-content;
+}
+
+#logbook-controls {
+    display: none;
+}
+
+.chart-container {
+    display: none;
+}

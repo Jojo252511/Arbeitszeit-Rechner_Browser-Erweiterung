@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 datasets: [{
                     label: 'Tagessaldo in Minuten',
                     data: dataPoints,
-                    backgroundColor: dataPoints.map(value => value < 0 ? 'rgba(220, 53, 69, 0.7)' : 'rgba(0, 123, 255, 0.7)'),
+                    backgroundColor: dataPoints.map(value => value < 0 ? '#dc3545b3' : '#01ac4eb3'),
                 }]
             },
             options: {
