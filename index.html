@@ -229,7 +229,7 @@
 
         <!------------------------- Logbuch ------------------------------>
         <div class="card" id="logbook-card">
-            <h2>Logbuch</h2>
+            <a href="/Logbook.html" target="_blank" style="text-decoration: none;"><h2>Logbuch</h2></a>
             <div class="chart-container">
                 <canvas id="logbook-chart"></canvas>
             </div>
@@ -258,9 +258,9 @@
             <h2>Überstunden-Planer</h2>
 
             <form id="ueberstunden-ziel-form">
-                <h3 class="sub-heading">Wie viel Plus pro Tag für ein Ziel?</h3>
+                <h3 class="sub-heading">Wie viel Plus/Minus pro Tag für ein Ziel?</h3>
                 <div class="form-group">
-                    <label for="stunden-ziel">Wie viele Stunden aufbauen?</label>
+                    <label for="stunden-ziel">Wie viele Stunden aufbauen (+) / abbauen (-)?</label>
                     <input type="number" id="stunden-ziel" min="0" step="0.1" placeholder="z.B. 5">
                 </div>
                 <div class="form-group">
@@ -276,7 +276,7 @@
             <form id="ueberstunden-ergebnis-form">
                 <h3 class="sub-heading">Wie viel kommt am Ende raus?</h3>
                 <div class="form-group">
-                    <label for="taegliches-plus">Tägliches Plus (in Minuten):</label>
+                    <label for="taegliches-plus">Tägliches Zeit (in Minuten):</label>
                     <input type="number" id="taegliches-plus" min="0" placeholder="z.B. 30">
                 </div>
                 <div class="form-group">

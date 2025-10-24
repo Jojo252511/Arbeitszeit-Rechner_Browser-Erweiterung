@@ -9,6 +9,22 @@ declare global {
     }
 }
 
+// --- Typdefinitionen für mehr Klarheit ---
+export interface UserInputs {
+    sollzeit: number;
+    ankunftszeit: string;
+    isMinderjaehrig: boolean;
+    aktuelleUeberstunden: number;
+}
+
+interface CalculationResults {
+    finaleGehzeitInMinuten: number;
+    tagesDifferenz: number;
+    neuerGesamtSaldo: number;
+    logEntry: LogEntry;
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- DOM-Elemente ---
     const berechneGehzeitBtn = document.getElementById('berechne-gehzeit') as HTMLButtonElement;
@@ -20,21 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const nowAnkunftBtn = document.getElementById('now-ankunft') as HTMLButtonElement;
     const moreOptionsLink = document.getElementById('calculator1-more') as HTMLAnchorElement;
 
-    // --- Typdefinitionen für mehr Klarheit ---
-    interface UserInputs {
-        sollzeit: number;
-        ankunftszeit: string;
-        isMinderjaehrig: boolean;
-        aktuelleUeberstunden: number;
-    }
-
-    interface CalculationResults {
-        finaleGehzeitInMinuten: number;
-        tagesDifferenz: number;
-        neuerGesamtSaldo: number;
-        logEntry: LogEntry;
-    }
-
+ 
     /**
      * Sammelt alle Benutzereingaben aus dem Formular.
      */

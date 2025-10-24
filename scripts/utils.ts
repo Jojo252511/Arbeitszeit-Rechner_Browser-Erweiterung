@@ -44,6 +44,17 @@ export const getKernzeitUndGleitzeit = (): ZeitPunkte => {
 };
 
 /**
+ * Gibt die Soll-Arbeitszeit in Stunden als Zahl zurück.
+ * Holt den Wert aus chrome.storage.sync und gibt 8 als Standard zurück.
+ * @returns {Promise<number>} Die Soll-Arbeitszeit in Stunden. '0' = keine Sollzeit gesetzt.
+ */
+export async function getSollArbeitszeit(): Promise<number> {
+    const settings = await chrome.storage.sync.get({ userSollzeit: '0' });
+    const sollzeitString = settings.userSollzeit;
+    return parseFloat(sollzeitString);
+}
+
+/**
  * Wandelt einen Zeit-String im Format "HH:MM" in die Gesamtminuten seit Mitternacht um.
  * @param {string} timeString - Der Zeit-String (z.B. "08:30").
  * @returns {number} Die Gesamtanzahl der Minuten.
