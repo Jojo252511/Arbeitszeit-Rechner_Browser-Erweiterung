@@ -1,12 +1,12 @@
 // scripts/calculator3.ts
 
 /**
- * @module calculator3
+ * @module Calculator3 - Überstunden-Planer
+ * @description Berechnet das tägliche Plus/Minus an Überstunden, um ein bestimmtes Ziel zu erreichen,
  * @author Joern Unverzagt
- * @description Logik für den dritten Rechner "Überstunden-Planer".
  */
 
-import { formatMinutesToString, showResult } from './utils.js';
+import { formatMinutesToString, showResult, getSollArbeitszeit } from './utils.js';
 
 /**
  * @file Enthält die Logik für den dritten Rechner "Überstunden-Planer".
@@ -19,20 +19,41 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (!berechneTaeglichesPlusBtn || !berechneGesamtPlusBtn) return;
 
-    berechneTaeglichesPlusBtn.addEventListener('click', () => {
+    berechneTaeglichesPlusBtn.addEventListener('click', async () => {
         const stundenZielInput = document.getElementById('stunden-ziel') as HTMLInputElement;
         const tageZielInput = document.getElementById('tage-ziel') as HTMLInputElement;
+
+        const settings = await chrome.storage.sync.get({ userUeberstunden: '0' });
+        const aktuelleUeberstunden = parseFloat(settings.userUeberstunden) || 0;
 
         const stundenZiel = parseFloat(stundenZielInput.value);
         const tageZiel = parseInt(tageZielInput.value, 10);
 
-        if (isNaN(stundenZiel) || isNaN(tageZiel) || tageZiel <= 0 || stundenZiel < 0) {
+        if (isNaN(stundenZiel) || isNaN(tageZiel) || tageZiel <= 0) {
             showResult(ergebnisTaeglichesPlusEl, "Bitte gib gültige Zahlen ein.", 'error'); return;
         }
+        if (stundenZiel < 0 && Math.abs(stundenZiel) > aktuelleUeberstunden) {
+            showResult(ergebnisTaeglichesPlusEl, `Du kannst nicht mehr Stunden abbauen (${Math.abs(stundenZiel)}h), als du hast (${aktuelleUeberstunden.toFixed(2)}h).`, 'error');
+            return;
+        }
         const taeglichesPlusMinuten = (stundenZiel * 60) / tageZiel;
-        if (taeglichesPlusMinuten < 1) { showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Täglich weniger als 1min", 'error'); return; }
-        if (taeglichesPlusMinuten > 600) { showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Täglich mehr als 10h", 'error'); return; }
-        showResult(ergebnisTaeglichesPlusEl, `Du musst täglich <strong>+${formatMinutesToString(taeglichesPlusMinuten)}</strong> machen.`);
+        if (taeglichesPlusMinuten > 600 || taeglichesPlusMinuten < -600 ) { // +/- 10 Stunden pro Tag
+                showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Mehr als 10 Stunden pro Tag.", 'error');
+                return;
+        }
+
+        const sollArbeitszeit = await getSollArbeitszeit();
+        if (sollArbeitszeit != 0) {
+            const sollArbeitszeitInMinuten = sollArbeitszeit * 60;
+            if (taeglichesPlusMinuten + sollArbeitszeitInMinuten > 600) { // Max 10 Stunden Arbeit pro Tag
+                showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Mehr als 10 Stunden Arbeit pro Tag.", 'error');
+                return;
+            }
+        }
+
+        const symbol = stundenZiel >= 0 ? '+' : '';
+        const aktion = stundenZiel >= 0 ? 'mehr arbeiten' : 'weniger arbeiten';
+        showResult(ergebnisTaeglichesPlusEl, `Du musst täglich <strong>${symbol}${formatMinutesToString(taeglichesPlusMinuten)}</strong> ${aktion}.`);
     });
 
     berechneGesamtPlusBtn.addEventListener('click', () => {
