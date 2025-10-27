@@ -32,9 +32,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const calculatorIframe = document.getElementById('calculator-iframe') as HTMLIFrameElement;
     const countdownWindowToggle = document.getElementById('countdown-window-toggle') as HTMLInputElement;
 
-    // Läd das Wetter
-    initializeWeather();
-
     /**
      * Steuert die Sichtbarkeit des Taschenrechner-iFrames.
      */
@@ -68,7 +65,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'userSollzeit', 'userUeberstunden', 'userIsMinderjaehrig',
             'userWunschGehzeitMode', 'userCustomWunschGehzeit', 'userRechnerAnzeigen',
             'userCountdownWindow', 'userLogbookSync', 'userGleitzeitStart', 
-            'userKernzeitStart', 'userKernzeitEnde', 'userKernzeitEndeFr'
+            'userKernzeitStart', 'userKernzeitEnde', 'userKernzeitEndeFr', 'userWeatherEnabled'
         ]);
 
         // Haupt-UI aktualisieren
@@ -88,6 +85,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         toggleCustomWunschGehzeit();
         applyRechnerVisibility();
         updateFaqTimes(settings);
+
+        // Wetter initialisieren, wenn aktiviert
+        if (settings.userWeatherEnabled !== false) {
+             initializeWeather();
+        }
     };
 
     /**
