@@ -28,6 +28,7 @@ async function loadWeatherData() {
         weatherOK = true;
         if (mainContainer) { mainContainer.style.marginTop = '10rem'; }
         navigator.geolocation.getCurrentPosition(fetchWeather, handleLocationError);
+        updateWeather();
     } else {
         weatherOK = false;
         if (mainContainer) { mainContainer.style.marginTop = '6rem'; }
@@ -52,7 +53,7 @@ async function fetchWeather(position: GeolocationPosition): Promise<void> {
         weatherLocationName = weatherData.name;
         updateWeatherUI(weatherData);
     } catch (error) {
-        console.error("Fehler beim Abrufen der Wetterdaten:", error);
+        console.error(`Fehler beim Abrufen der Wetterdaten ${latitude}|${longitude}:`, error);
         showToast("Wetterdaten konnten nicht geladen werden.", 'error');
     }
 }
@@ -87,11 +88,20 @@ function updateWeatherUI(data: any): void {
     widget.style.display = 'flex';
 }
 
-// Automatische Wetter Aktualisierung (alle 10min)
-if (weatherOK) {
-    setInterval(() => {
-        loadWeatherData();
-    }, 600000);
+/**
+ * Startet die automatische Wetteraktualisierung alle 10 Minuten
+ */
+function updateWeather() {
+    if (weatherOK) {
+        // Automatische Wetter Aktualisierung (alle 10min)
+        setInterval(() => {
+            loadWeatherData();
+            const now = new Date();
+            console.log(`${now} | Wetterdaten wurden automatisch aktualisiert.`);
+        }, 600000); // 600000 ms = 10 Minuten
+    } else {
+        console.log("Wetter-Update übersprungen, da Wetterfunktion deaktiviert oder nicht verfügbar ist.");
+    }
 }
 
 // Öffnet eine Google suche für das lokale Wetter

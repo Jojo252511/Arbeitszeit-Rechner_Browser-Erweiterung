@@ -38,12 +38,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const taeglichesPlusMinuten = (stundenZiel * 60) / tageZiel;
         if (taeglichesPlusMinuten > 600 || taeglichesPlusMinuten < -600 ) { // +/- 10 Stunden pro Tag
-                showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Mehr als 10 Stunden pro Tag.", 'error');
-                return;
+            showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Mehr als 10 Stunden pro Tag.", 'error');
+            return;
         }
 
         const sollArbeitszeit = await getSollArbeitszeit();
-        if (sollArbeitszeit != 0) {
+        if (sollArbeitszeit && sollArbeitszeit != 0) {
             const sollArbeitszeitInMinuten = sollArbeitszeit * 60;
             if (taeglichesPlusMinuten + sollArbeitszeitInMinuten > 600) { // Max 10 Stunden Arbeit pro Tag
                 showResult(ergebnisTaeglichesPlusEl, "Unrealistische Angabe: Mehr als 10 Stunden Arbeit pro Tag.", 'error');
