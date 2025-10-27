@@ -23,9 +23,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const exportSettingsBtn = document.getElementById('export-settings-btn') as HTMLButtonElement;
     const importSettingsBtn = document.getElementById('import-settings-btn') as HTMLButtonElement;
     const settingsContent = document.querySelector('.settings-content-standalone') as HTMLDivElement;
+    const weatherEnabledToggle = document.getElementById('weather-enabled-toggle-options') as HTMLInputElement;
+    const weatherOptionsContainer = document.getElementById('weather-options-container-options') as HTMLDivElement;
+    const weatherLocationModeToggle = document.getElementById('weather-location-mode-toggle-options') as HTMLInputElement;
+    const manualWeatherLocationContainer = document.getElementById('manual-weather-location-container-options') as HTMLDivElement;
+    const manualWeatherLocationInput = document.getElementById('manual-weather-location-options') as HTMLInputElement;
 
     const toggleCustomWunschGehzeit = (): void => {
         customWunschGehzeitContainer.style.display = wunschGehzeitModeToggle.checked ? 'block' : 'none';
+    };
+
+    const toggleWeatherOptions = (): void => {
+        weatherOptionsContainer.style.display = weatherEnabledToggle.checked ? 'block' : 'none';
+        toggleManualWeatherLocation(); // Auch das manuelle Feld ein-/ausblenden
+    };
+
+    const toggleManualWeatherLocation = (): void => {
+        // Zeige das manuelle Eingabefeld nur an, wenn Wetter UND manueller Modus aktiviert sind
+        manualWeatherLocationContainer.style.display = weatherEnabledToggle.checked && weatherLocationModeToggle.checked ? 'block' : 'none';
     };
 
     /**
@@ -37,7 +52,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             'userWunschGehzeitMode', 'userCustomWunschGehzeit', 'userRechnerAnzeigen',
             'userCountdownWindow', 'userLogbookSync',
             'userGleitzeitStart', 'userKernzeitStart', 'userKernzeitEnde',
-            'userKernzeitEndeFr', 'userGleitzeitEnde'
+            'userKernzeitEndeFr', 'userGleitzeitEnde',
+            'userWeatherEnabled', 'userWeatherLocationMode', 'userWeatherManualLocation'
         ]);
 
         standardSollzeitSelect.value = settings.userSollzeit || '8';
@@ -53,8 +69,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         gleitzeitEndeInput.value = settings.userGleitzeitEnde || '19:00';
         countdownWindowToggleOptions.checked = settings.userCountdownWindow === true;
         logbookSyncToggleOptions.checked = settings.userLogbookSync === true;
+        weatherEnabledToggle.checked = settings.userWeatherEnabled !== false; // Standard ist true
+        weatherLocationModeToggle.checked = settings.userWeatherLocationMode === true; // Standard ist false (auto)
+        manualWeatherLocationInput.value = settings.userWeatherManualLocation || '';
 
         toggleCustomWunschGehzeit();
+        toggleWeatherOptions();
     };
 
     saveSettingsBtn.addEventListener('click', async (): Promise<void> => {
@@ -82,7 +102,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             userKernzeitEndeFr: kernzeitEndeFrInput.value,
             userGleitzeitEnde: gleitzeitEndeInput.value,
             userCountdownWindow: countdownWindowToggleOptions.checked,
-            userLogbookSync: logbookSyncToggleOptions.checked
+            userLogbookSync: logbookSyncToggleOptions.checked,
+            userWeatherEnabled: weatherEnabledToggle.checked,
+            userWeatherLocationMode: weatherLocationModeToggle.checked,
+            userWeatherManualLocation: manualWeatherLocationInput.value
         });
 
         saveFeedback.style.opacity = '1';
@@ -90,6 +113,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     wunschGehzeitModeToggle.addEventListener('change', toggleCustomWunschGehzeit);
+    weatherEnabledToggle.addEventListener('change', toggleWeatherOptions);
+    weatherLocationModeToggle.addEventListener('change', toggleManualWeatherLocation);
 
     exportSettingsBtn?.addEventListener('click', async () => {
         const allSettings = await chrome.storage.sync.get(null);

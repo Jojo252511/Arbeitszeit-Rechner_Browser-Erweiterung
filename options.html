@@ -10,7 +10,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <script type="module" src="./dist/utils.js" defer></script>
     <script type="module" src="./dist/options.js" defer></script>
@@ -84,6 +86,36 @@
                     <span class="slider round"></span>
                 </label>
                 <span>An</span>
+            </div>
+        </div>
+        <hr>
+        <div class="form-group">
+            <label>Wetter anzeigen</label>
+            <div class="switch-container">
+                <span>Aus</span>
+                <label class="switch">
+                    <input type="checkbox" id="weather-enabled-toggle-options" title="Wetteranzeige ein-/ausschalten">
+                    <span class="slider round"></span>
+                </label>
+                <span>An</span>
+            </div>
+        </div>
+        <div id="weather-options-container-options" style="display: none;">
+            <div class="form-group">
+                <label>Standort für Wetter</label>
+                <div class="switch-container">
+                    <span>Automatisch</span>
+                    <label class="switch">
+                        <input type="checkbox" id="weather-location-mode-toggle-options"
+                            title="Zwischen automatischer und manueller Standortermittlung wechseln">
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Manuell</span>
+                </div>
+            </div>
+            <div class="form-group" id="manual-weather-location-container-options" style="display: none;">
+                <label for="manual-weather-location-options">Standort manuell eingeben:</label>
+                <input type="text" id="manual-weather-location-options" placeholder="z.B. Berlin">
             </div>
         </div>
         <hr>
