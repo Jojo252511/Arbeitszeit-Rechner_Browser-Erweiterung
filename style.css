@@ -924,7 +924,7 @@ body.dark-mode .sun-icon {
 
 
 /* ===================================================================
-   10. Custom Modal (NEU)
+   10. Custom Modal
    =================================================================== */
 .modal-overlay {
     position: fixed;
@@ -996,6 +996,30 @@ body.dark-mode .sun-icon {
 
 .modal-radio-group input {
     accent-color: var(--primary-color);
+}
+
+.modern-input {
+    width: 100%;
+    padding: 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modern-input:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.15);
+    outline: none;
+}
+
+/* Zeiten nebeneinander */
+.time-row-container {
+    display: flex;
+    gap: 1rem; /* Abstand zwischen Kommen und Gehen */
+    justify-content: space-between;
 }
 
 .modal-buttons {

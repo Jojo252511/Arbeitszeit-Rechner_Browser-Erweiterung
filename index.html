@@ -468,6 +468,49 @@
             </div>
         </div>
     </div>
+    <!-------------------------- Hinzufügen Mordal Log ---------------->
+   <div class="modal-overlay" id="add-log-modal" style="display: none;">
+        <div class="modal-content-custom">
+            <h3>Eintrag hinzufügen</h3>
+            <p class="modal-subtitle">Trage einen vergangenen oder zukünftigen Tag ein.</p>
+            
+            <div class="edit-log-form">
+                <div class="form-group">
+                    <label for="add-log-date">Datum</label>
+                    <input type="date" id="add-log-date" class="modern-input">
+                </div>
+
+                <div class="form-group">
+                    <label for="add-log-type">Art des Eintrags</label>
+                    <select id="add-log-type" class="modern-input">
+                        <option value="Arbeit" selected>Arbeit</option>
+                        <option value="Urlaub">Urlaub</option>
+                        <option value="Krank">Krank</option>
+                        <option value="Feiertag">Feiertag</option>
+                        <option value="Berufsschule">Berufsschule</option>
+                        <option value="Überstundenabbau">Überstundenabbau</option>
+                    </select>
+                </div>
+
+                <div id="add-log-times" class="time-row-container">
+                    <div class="form-group half-width">
+                        <label for="add-log-arrival">Kommen</label>
+                        <input type="time" id="add-log-arrival" class="modern-input">
+                    </div>
+
+                    <div class="form-group half-width">
+                        <label for="add-log-leaving">Gehen</label>
+                        <input type="time" id="add-log-leaving" class="modern-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons">
+                <button type="button" id="add-log-cancel-btn" class="btn-secondary">Abbrechen</button>
+                <button type="button" id="add-log-save-btn" class="btn-primary">Speichern</button>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
