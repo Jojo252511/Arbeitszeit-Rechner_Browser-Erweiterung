@@ -48,6 +48,11 @@ Eine detaillierte Video-Anleitung findest du hier: [Video-Tutorial auf YouTube](
 
 ---
 
+## Import
+ausnahmeTage = ["Krank", "Urlaub", "Feiertag", "Berufsschule"];
+
+---
+
 # Info & FAQ
 
 ### Wie funktioniert der Arbeitszeit-Rechner?

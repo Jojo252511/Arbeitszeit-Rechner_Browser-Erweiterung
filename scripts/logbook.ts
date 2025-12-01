@@ -6,7 +6,7 @@
  * @author Joern Unverzagt
  */
 
-import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm } from './utils.js';
+import { formatMinutesToString, timeStringToMinutes, showToast, showConfirm} from './utils.js';
 import { type LogEntry, getLog, saveLog, getTodayLogEntry } from './logbook-data.js';
 import { renderChart } from './diagramLog.js';
 import { handleExport } from './exportLog.js';
@@ -32,6 +32,17 @@ document.addEventListener('DOMContentLoaded', async () => {
     const editLogArrivalInput = document.getElementById('edit-log-arrival') as HTMLInputElement;
     const editLogLeavingInput = document.getElementById('edit-log-leaving') as HTMLInputElement;
     const editLogTimesContainer = document.getElementById('edit-log-times') as HTMLDivElement;
+
+    // --- DOM-Elemente für das Hinzufügen-Modal ---
+    const addLogBtn = document.getElementById('add-log-entry-btn') as HTMLButtonElement;
+    const addLogModal = document.getElementById('add-log-modal') as HTMLDivElement;
+    const addLogDateInput = document.getElementById('add-log-date') as HTMLInputElement;
+    const addLogTypeSelect = document.getElementById('add-log-type') as HTMLSelectElement;
+    const addLogArrivalInput = document.getElementById('add-log-arrival') as HTMLInputElement;
+    const addLogLeavingInput = document.getElementById('add-log-leaving') as HTMLInputElement;
+    const addLogTimesContainer = document.getElementById('add-log-times') as HTMLDivElement;
+    const addLogSaveBtn = document.getElementById('add-log-save-btn') as HTMLButtonElement;
+    const addLogCancelBtn = document.getElementById('add-log-cancel-btn') as HTMLButtonElement;
 
     let currentEditEntryId: number | null = null;
 
@@ -129,6 +140,132 @@ document.addEventListener('DOMContentLoaded', async () => {
     const toggleTimeInputs = (type: string) => {
         editLogTimesContainer.style.display = type === 'Arbeit' ? 'flex' : 'none';
     };
+
+    // --- LOGIK FÜR MANUELLES HINZUFÜGEN ---
+
+    const openAddModal = () => {
+        // Standardwerte setzen
+        addLogDateInput.valueAsDate = new Date(); // Heute
+        addLogTypeSelect.value = 'Arbeit';
+        addLogArrivalInput.value = '';
+        addLogLeavingInput.value = '';
+        toggleAddTimeInputs(); // Zeiten anzeigen/verstecken basierend auf Typ
+        if (addLogModal) {
+            addLogModal.style.display = 'flex';
+            addLogModal.style.opacity = '1';
+        }
+    };
+
+    const closeAddModal = () => {
+        if (addLogModal) addLogModal.style.display = 'none';
+    };
+
+    const toggleAddTimeInputs = () => {
+        if (addLogTimesContainer && addLogTypeSelect) {
+            addLogTimesContainer.style.display = addLogTypeSelect.value === 'Arbeit' ? 'flex' : 'none';
+        }
+    };
+
+    // Event Listener für den + Button
+    if (addLogBtn) {
+        addLogBtn.addEventListener('click', openAddModal);
+    }
+
+    // Event Listener für Typ-Änderung (Zeiten ein-/ausblenden)
+    if (addLogTypeSelect) {
+        addLogTypeSelect.addEventListener('change', toggleAddTimeInputs);
+    }
+
+    // Event Listener für Abbrechen
+    if (addLogCancelBtn) {
+        addLogCancelBtn.addEventListener('click', closeAddModal);
+    }
+
+    // Event Listener für Speichern (Die Hauptlogik)
+    if (addLogSaveBtn) {
+        addLogSaveBtn.addEventListener('click', async () => {
+            const dateValue = addLogDateInput.value;
+            if (!dateValue) {
+                showToast('Bitte ein Datum wählen.', 'error');
+                return;
+            }
+
+            // Datum von YYYY-MM-DD in DD.MM.YYYY umwandeln
+            const [year, month, day] = dateValue.split('-');
+            const formattedDate = `${day}.${month}.${year}`;
+            const dateId = new Date(parseInt(year), parseInt(month) - 1, parseInt(day)).setHours(0,0,0,0);
+
+            const type = addLogTypeSelect.value;
+            let arrival = '00:00';
+            let leaving = '00:00';
+            let dailySaldoMinutes = 0;
+
+            // Einstellungen laden für Berechnung
+            const settings = await chrome.storage.sync.get({ userSollzeit: '8', userIsMinderjaehrig: false });
+            const targetHours = parseFloat(settings.userSollzeit);
+            const sollzeitInMinuten = targetHours * 60;
+            const isMinderjaehrig = settings.userIsMinderjaehrig;
+            const pausenDauer = isMinderjaehrig ? 60 : 45;
+
+            // Berechnung basierend auf Typ
+            if (type === 'Arbeit') {
+                arrival = addLogArrivalInput.value;
+                leaving = addLogLeavingInput.value;
+
+                if (!arrival || !leaving) {
+                    showToast('Bitte Kommen- und Gehen-Zeit für Arbeitstage angeben.', 'error');
+                    return;
+                }
+
+                const arrivalMin = timeStringToMinutes(arrival);
+                const leavingMin = timeStringToMinutes(leaving);
+                
+                // Einfache Berechnung (ohne komplexe Gleitzeit/Kernzeit Logik für manuelle Einträge, 
+                // da man davon ausgeht, dass der User korrekte Zeiten einträgt)
+                const gearbeiteteMinuten = leavingMin - arrivalMin - pausenDauer;
+                dailySaldoMinutes = Math.round(gearbeiteteMinuten - sollzeitInMinuten);
+
+            } else if (type === 'Überstundenabbau') {
+                // Bei Überstundenabbau verliert man die Sollzeit an Stunden vom Gleitzeitkonto
+                dailySaldoMinutes = -Math.round(sollzeitInMinuten);
+            } else {
+                // Urlaub, Krank, Feiertag, Berufsschule = 0 Saldo (Neutral)
+                dailySaldoMinutes = 0;
+            }
+
+            const newEntry: LogEntry = {
+                id: dateId,
+                date: formattedDate,
+                arrival: arrival,
+                leaving: leaving,
+                targetHours: targetHours,
+                dailySaldoMinutes: dailySaldoMinutes,
+                label: type
+            };
+
+            // Prüfen ob Eintrag existiert
+            const logData = await getLog();
+            const existingIndex = logData.findIndex(e => e.date === formattedDate);
+
+            if (existingIndex > -1) {
+                const overwrite = await showConfirm(
+                    "Eintrag existiert bereits", 
+                    `Für den ${formattedDate} gibt es schon einen Eintrag. Überschreiben?`
+                );
+                if (!overwrite) return;
+                
+                logData[existingIndex] = newEntry;
+            } else {
+                logData.push(newEntry);
+            }
+
+            await saveLog(logData);
+            await renderLog(); // UI neu laden
+            
+            closeAddModal();
+            showToast('Eintrag erfolgreich hinzugefügt!', 'success');
+        });
+    }
 
     // --- Event-Listener ---
 
