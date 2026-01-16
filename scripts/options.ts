@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     const weatherLocationModeToggle = document.getElementById('weather-location-mode-toggle-options') as HTMLInputElement;
     const manualWeatherLocationContainer = document.getElementById('manual-weather-location-container-options') as HTMLDivElement;
     const manualWeatherLocationInput = document.getElementById('manual-weather-location-options') as HTMLInputElement;
+    const yearSpan = document.getElementById('year') as HTMLSpanElement;
+
+    /**
+     * Setzt das aktuelle Jahr im Copyright-Hinweis.
+     */
+    const currentYear = new Date().getFullYear();
+    yearSpan.textContent = currentYear.toString();
 
     const toggleCustomWunschGehzeit = (): void => {
         customWunschGehzeitContainer.style.display = wunschGehzeitModeToggle.checked ? 'block' : 'none';
