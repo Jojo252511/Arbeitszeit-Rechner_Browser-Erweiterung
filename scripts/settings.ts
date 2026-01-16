@@ -31,6 +31,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     const calculatorCard = document.getElementById('calculator-card') as HTMLDivElement;
     const calculatorIframe = document.getElementById('calculator-iframe') as HTMLIFrameElement;
     const countdownWindowToggle = document.getElementById('countdown-window-toggle') as HTMLInputElement;
+    const yearSpan = document.getElementById('year') as HTMLSpanElement;
+
+    /**
+     * Setzt das aktuelle Jahr im Copyright-Hinweis.
+     */
+    const currentYear = new Date().getFullYear();
+    yearSpan.textContent = currentYear.toString();
+    
 
     /**
      * Steuert die Sichtbarkeit des Taschenrechner-iFrames.
