@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settingsContent = document.querySelector('.settings-content-standalone') as HTMLDivElement;
     const weatherEnabledToggle = document.getElementById('weather-enabled-toggle-options') as HTMLInputElement;
     const weatherOptionsContainer = document.getElementById('weather-options-container-options') as HTMLDivElement;
+    const weatherApiKeyInput = document.getElementById('weather-api-key-options') as HTMLInputElement;
     const weatherLocationModeToggle = document.getElementById('weather-location-mode-toggle-options') as HTMLInputElement;
     const manualWeatherLocationContainer = document.getElementById('manual-weather-location-container-options') as HTMLDivElement;
     const manualWeatherLocationInput = document.getElementById('manual-weather-location-options') as HTMLInputElement;
@@ -60,7 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             'userCountdownWindow', 'userLogbookSync',
             'userGleitzeitStart', 'userKernzeitStart', 'userKernzeitEnde',
             'userKernzeitEndeFr', 'userGleitzeitEnde',
-            'userWeatherEnabled', 'userWeatherLocationMode', 'userWeatherManualLocation'
+            'userWeatherEnabled', 'userWeatherApiKey', 'userWeatherLocationMode', 'userWeatherManualLocation'
         ]);
 
         standardSollzeitSelect.value = settings.userSollzeit || '8';
@@ -77,6 +78,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         countdownWindowToggleOptions.checked = settings.userCountdownWindow === true;
         logbookSyncToggleOptions.checked = settings.userLogbookSync === true;
         weatherEnabledToggle.checked = settings.userWeatherEnabled !== false; // Standard ist true
+        if (weatherApiKeyInput) weatherApiKeyInput.value = settings.userWeatherApiKey || '';
         weatherLocationModeToggle.checked = settings.userWeatherLocationMode === true; // Standard ist false (auto)
         manualWeatherLocationInput.value = settings.userWeatherManualLocation || '';
 
@@ -111,6 +113,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             userCountdownWindow: countdownWindowToggleOptions.checked,
             userLogbookSync: logbookSyncToggleOptions.checked,
             userWeatherEnabled: weatherEnabledToggle.checked,
+            userWeatherApiKey: weatherApiKeyInput ? weatherApiKeyInput.value.trim() : '',
             userWeatherLocationMode: weatherLocationModeToggle.checked,
             userWeatherManualLocation: manualWeatherLocationInput.value
         });

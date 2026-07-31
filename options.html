@@ -110,9 +110,15 @@
         </div>
         <div id="weather-options-container-options" style="display: none;">
             <div class="form-group">
-                <label>Standort für Wetter</label>
+                <label for="weather-api-key-options">OpenWeather API-Schlüssel:
+                    <span class="info-icon" data-tooltip="Dein persönlicher OpenWeatherMap API-Key (kostenlos auf openweathermap.org)">i</span>
+                </label>
+                <input type="password" id="weather-api-key-options" placeholder="z.B. 4a8f93bc... (Optional wenn in config.ts hinterlegt)">
+            </div>
+            <div class="form-group">
+                <label>Standortermittlung</label>
                 <div class="switch-container">
-                    <span>Automatisch</span>
+                    <span>Automatisch (GPS)</span>
                     <label class="switch">
                         <input type="checkbox" id="weather-location-mode-toggle-options"
                             title="Zwischen automatischer und manueller Standortermittlung wechseln">
@@ -122,8 +128,8 @@
                 </div>
             </div>
             <div class="form-group" id="manual-weather-location-container-options" style="display: none;">
-                <label for="manual-weather-location-options">Standort manuell eingeben:</label>
-                <input type="text" id="manual-weather-location-options" placeholder="z.B. Berlin">
+                <label for="manual-weather-location-options">Standort (Stadt / Ort) manuell eingeben:</label>
+                <input type="text" id="manual-weather-location-options" placeholder="z.B. Berlin, DE">
             </div>
         </div>
         <hr>

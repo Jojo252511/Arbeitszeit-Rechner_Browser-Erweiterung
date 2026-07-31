@@ -150,16 +150,28 @@ label {
     font-size: 0.9rem;
 }
 
+input[type="text"],
+input[type="password"],
 input[type="time"],
 input[type="number"],
 select {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border: 1px solid var(--border-color);
+    background-color: var(--card-background-color);
+    color: var(--text-color);
     border-radius: 8px;
     font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 input:focus,

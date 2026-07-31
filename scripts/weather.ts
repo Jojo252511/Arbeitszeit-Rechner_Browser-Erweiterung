@@ -5,14 +5,24 @@ import { WEATHER_API_KEY } from './config.js';
 let weatherLocationName = '';
 
 
+async function getEffectiveApiKey(): Promise<string> {
+    const settings = await chrome.storage.sync.get({ userWeatherApiKey: '' });
+    if (settings.userWeatherApiKey && settings.userWeatherApiKey.trim()) {
+        return settings.userWeatherApiKey.trim();
+    }
+    if (WEATHER_API_KEY && WEATHER_API_KEY !== 'DEIN_PERSÖNLLICHER_API_SCHLÜSSEL_HIER' && WEATHER_API_KEY.trim()) {
+        return WEATHER_API_KEY.trim();
+    }
+    return '';
+}
+
 /**
  * Führt die Initialisierung der Wetterfunktion durch.
  * @returns 
  */
 export async function initializeWeather(): Promise<void> {
     const settings = await chrome.storage.sync.get({
-        userWeatherEnabled: true, // Standardmäßig aktiviert
-        WEATHER_API_KEY: null
+        userWeatherEnabled: true
     });
 
     // Prüfen, ob die Wetterfunktion überhaupt aktiviert ist
@@ -22,8 +32,10 @@ export async function initializeWeather(): Promise<void> {
         return;
     }
 
+    const apiKey = await getEffectiveApiKey();
+
     // API Key Check
-    if (!WEATHER_API_KEY || WEATHER_API_KEY === 'DEIN_PERSÖNLLICHER_API_SCHLÜSSEL_HIER' || !WEATHER_API_KEY.trim()) {
+    if (!apiKey) {
         console.warn("Kein Wetter-API-Schlüssel eingetragen.");
         showToast('Kein Wetter-API-Schlüssel eingetragen.', 'info');
         hideWeatherWidget();
@@ -68,8 +80,10 @@ async function loadWeatherData() {
  * @param position GeolocationPosition Objekt.
  */
 async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void> {
+    const apiKey = await getEffectiveApiKey();
+    if (!apiKey) return;
     const { latitude, longitude } = position.coords;
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${WEATHER_API_KEY}&units=metric&lang=de`;
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric&lang=de`;
 
     try {
         const response = await fetch(apiUrl);
@@ -94,7 +108,9 @@ async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void
  * @param locationName Der Name des Ortes.
  */
 async function fetchWeatherByLocationName(locationName: string): Promise<void> {
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locationName)}&appid=${WEATHER_API_KEY}&units=metric&lang=de`;
+    const apiKey = await getEffectiveApiKey();
+    if (!apiKey) return;
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locationName)}&appid=${apiKey}&units=metric&lang=de`;
 
     try {
         const response = await fetch(apiUrl);
