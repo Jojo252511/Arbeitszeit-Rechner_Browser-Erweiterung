@@ -186,9 +186,7 @@ function updateWeatherUI(data: any): void {
     temp.textContent = `${Math.round(data.main.temp)}°C`;
     desc.textContent = data.weather[0].description;
 
-    widget.style.display = 'flex'; // Widget anzeigen
-    const mainContainer = document.getElementById('main-container');
-    if (mainContainer) { mainContainer.style.marginTop = '10rem'; }
+    widget.style.display = 'inline-flex'; // Widget anzeigen
 }
 
 /**
