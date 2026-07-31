@@ -5,14 +5,24 @@ import { WEATHER_API_KEY } from './config.js';
 let weatherLocationName = '';
 
 
+async function getEffectiveApiKey(): Promise<string> {
+    const settings = await chrome.storage.sync.get({ userWeatherApiKey: '' });
+    if (settings.userWeatherApiKey && settings.userWeatherApiKey.trim()) {
+        return settings.userWeatherApiKey.trim();
+    }
+    if (WEATHER_API_KEY && WEATHER_API_KEY !== 'DEIN_PERSÖNLLICHER_API_SCHLÜSSEL_HIER' && WEATHER_API_KEY.trim()) {
+        return WEATHER_API_KEY.trim();
+    }
+    return '';
+}
+
 /**
  * Führt die Initialisierung der Wetterfunktion durch.
  * @returns 
  */
 export async function initializeWeather(): Promise<void> {
     const settings = await chrome.storage.sync.get({
-        userWeatherEnabled: true, // Standardmäßig aktiviert
-        WEATHER_API_KEY: null
+        userWeatherEnabled: true
     });
 
     // Prüfen, ob die Wetterfunktion überhaupt aktiviert ist
@@ -22,10 +32,11 @@ export async function initializeWeather(): Promise<void> {
         return;
     }
 
+    const apiKey = await getEffectiveApiKey();
+
     // API Key Check
-    if (!WEATHER_API_KEY || WEATHER_API_KEY === 'DEIN_PERSÖNLLICHER_API_SCHLÜSSEL_HIER' || !WEATHER_API_KEY.trim()) {
+    if (!apiKey) {
         console.warn("Kein Wetter-API-Schlüssel eingetragen.");
-        showToast('Kein Wetter-API-Schlüssel eingetragen.', 'info');
         hideWeatherWidget();
         return;
     }
@@ -39,9 +50,15 @@ export async function initializeWeather(): Promise<void> {
  */
 async function loadWeatherData() {
     const settings = await chrome.storage.sync.get({
+        userWeatherEnabled: true,
         userWeatherLocationMode: false, // false = auto, true = manual
         userWeatherManualLocation: ''
     });
+
+    if (!settings.userWeatherEnabled) {
+        hideWeatherWidget();
+        return;
+    }
 
     if (settings.userWeatherLocationMode && settings.userWeatherManualLocation.trim()) {
         // Manueller Modus
@@ -54,11 +71,10 @@ async function loadWeatherData() {
     } else if (!settings.userWeatherLocationMode) {
         // Automatischer Modus, aber Geolocation nicht verfügbar
         console.warn("Geolocation wird von diesem Browser nicht unterstützt oder wurde abgelehnt.");
-        showToast("Automatischer Standort nicht verfügbar.", 'error');
         hideWeatherWidget();
     } else {
         // Manueller Modus, aber kein Ort eingegeben
-        showToast("Bitte gib einen Ort in den Wetter-Einstellungen ein.", 'info');
+        console.warn("Kein Ort in den Wetter-Einstellungen eingetragen.");
         hideWeatherWidget();
     }
 }
@@ -68,8 +84,16 @@ async function loadWeatherData() {
  * @param position GeolocationPosition Objekt.
  */
 async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void> {
+    const settings = await chrome.storage.sync.get({ userWeatherEnabled: true });
+    if (!settings.userWeatherEnabled) {
+        hideWeatherWidget();
+        return;
+    }
+
+    const apiKey = await getEffectiveApiKey();
+    if (!apiKey) return;
     const { latitude, longitude } = position.coords;
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${WEATHER_API_KEY}&units=metric&lang=de`;
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric&lang=de`;
 
     try {
         const response = await fetch(apiUrl);
@@ -84,7 +108,6 @@ async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void
         updateWeatherUI(weatherData);
     } catch (error) {
         console.error(`Fehler beim Abrufen der Wetterdaten für Koordinaten ${latitude}|${longitude}:`, error);
-        showToast("Wetterdaten (Auto) konnten nicht geladen werden.", 'error');
         hideWeatherWidget(); // Widget ausblenden bei Fehler
     }
 }
@@ -94,7 +117,15 @@ async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void
  * @param locationName Der Name des Ortes.
  */
 async function fetchWeatherByLocationName(locationName: string): Promise<void> {
-    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locationName)}&appid=${WEATHER_API_KEY}&units=metric&lang=de`;
+    const settings = await chrome.storage.sync.get({ userWeatherEnabled: true });
+    if (!settings.userWeatherEnabled) {
+        hideWeatherWidget();
+        return;
+    }
+
+    const apiKey = await getEffectiveApiKey();
+    if (!apiKey) return;
+    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locationName)}&appid=${apiKey}&units=metric&lang=de`;
 
     try {
         const response = await fetch(apiUrl);
@@ -113,8 +144,6 @@ async function fetchWeatherByLocationName(locationName: string): Promise<void> {
         updateWeatherUI(weatherData);
     } catch (error) {
         console.error(`Fehler beim Abrufen der Wetterdaten für Ort "${locationName}":`, error);
-        const errorMsg = (error instanceof Error) ? error.message : "Wetterdaten (Manuell) konnten nicht geladen werden.";
-        showToast(errorMsg, 'error');
         hideWeatherWidget(); // Widget ausblenden bei Fehler
     }
 }
@@ -126,10 +155,7 @@ async function fetchWeatherByLocationName(locationName: string): Promise<void> {
  */
 function handleLocationError(error: GeolocationPositionError): void {
     console.warn(`Fehler bei der Standortermittlung: ${error.message}`);
-    showToast("Automatischer Standort konnte nicht ermittelt werden.", 'error');
     hideWeatherWidget();
-    const mainContainer = document.getElementById('main-container');
-    if (mainContainer) { mainContainer.style.marginTop = '6rem'; } // Margin zurücksetzen
 }
 
 /**
@@ -160,9 +186,7 @@ function updateWeatherUI(data: any): void {
     temp.textContent = `${Math.round(data.main.temp)}°C`;
     desc.textContent = data.weather[0].description;
 
-    widget.style.display = 'flex'; // Widget anzeigen
-    const mainContainer = document.getElementById('main-container');
-    if (mainContainer) { mainContainer.style.marginTop = '10rem'; }
+    widget.style.display = 'inline-flex'; // Widget anzeigen
 }
 
 /**

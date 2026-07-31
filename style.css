@@ -71,7 +71,7 @@ body::-webkit-scrollbar-thumb:hover {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
-    margin: 7.5rem 1.5rem 1.5rem 1.5rem;
+    margin: 8rem 1.5rem 1.5rem 1.5rem;
 }
 
 .faq-li {
@@ -150,16 +150,28 @@ label {
     font-size: 0.9rem;
 }
 
+input[type="text"],
+input[type="password"],
 input[type="time"],
 input[type="number"],
 select {
     width: 100%;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border: 1px solid var(--border-color);
+    background-color: var(--card-background-color);
+    color: var(--text-color);
     border-radius: 8px;
     font-family: 'Poppins', sans-serif;
-    font-size: 1rem;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    font-size: 0.95rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+input[type="text"]::placeholder,
+input[type="password"]::placeholder {
+    color: #a0aec0;
+    font-size: 0.9rem;
+    opacity: 0.8;
 }
 
 input:focus,
@@ -283,13 +295,14 @@ button:disabled:hover {
 .banner-content {
     pointer-events: auto;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
     font-size: 0.95rem;
     background-color: var(--card-background-color);
     border-radius: 12px;
-    padding: 0.8rem 5.5rem;
+    padding: 0.6rem 5.5rem;
     margin: 0 1rem;
     box-shadow: 0 4px 15px var(--shadow-color);
     text-align: center;
@@ -678,36 +691,44 @@ input:checked+.slider:before {
 }
 
 .weather-widget {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    justify-self: center;
-    margin-top: 25px;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.05);
+    color: var(--text-color);
+    border-radius: 20px;
+    padding: 0.2rem 0.75rem;
+    cursor: pointer;
+    margin-top: 0.2rem;
+    transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
-#weather-widget {
-    background-color: #cccc;
-    color: #000;
-    width: 100%;
-    justify-content: center;
-    border-radius: 5px;
-    padding: 5px;
-    cursor: pointer;
+.weather-widget:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+    transform: scale(1.02);
+}
+
+body.dark-mode .weather-widget {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: var(--text-color);
+}
+
+body.dark-mode .weather-widget:hover {
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
 .weather-widget-content {
     display: flex;
     align-items: center;
-    justify-self: center;
-    gap: 0.5rem;
-    color: #000;
-    font-size: 0.9rem;
-    opacity: 0.8;
-
+    justify-content: center;
+    gap: 0.4rem;
+    color: inherit;
+    font-size: 0.85rem;
 }
 
 .weather-widget img {
-    width: 32px;
-    height: 32px;
+    width: 24px;
+    height: 24px;
 }
 
 /* ===================================================================
@@ -884,7 +905,7 @@ body.dark-mode .sun-icon {
 
     .container {
         gap: 1.5rem;
-        margin: 6.8rem 0 1rem 0;
+        margin: 8.5rem 0 1rem 0;
         width: 100%;
     }
 

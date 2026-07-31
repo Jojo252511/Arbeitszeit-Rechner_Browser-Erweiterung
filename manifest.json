@@ -1,12 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Arbeitszeit-Rechner",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": "Joern Unverzagt",
-  "description": "Ein persönlicher Arbeitszeit-Rechner als Browser Side Panel.",
+  "description": "Ein persönlicher Arbeitszeit-Rechner als Browser Sidebar.",
   "permissions": [
     "storage",
-    "sidePanel",
     "notifications",
     "geolocation"
   ],
@@ -15,11 +14,18 @@
     "default_title": "Arbeitszeit-Rechner öffnen"
   },
   "background": {
-    "service_worker": "./dist/background.js",
-    "type": "module"
+    "scripts": ["./dist/background.js"]
   },
-  "side_panel": {
-    "default_path": "index.html"
+  "sidebar_action": {
+    "default_title": "Arbeitszeit-Rechner",
+    "default_panel": "index.html",
+    "default_icon": "icon48.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "arbeitszeit-rechner@joern-unverzagt.de",
+      "strict_min_version": "109.0"
+    }
   },
   "web_accessible_resources": [
     {
