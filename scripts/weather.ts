@@ -43,28 +43,22 @@ async function loadWeatherData() {
         userWeatherManualLocation: ''
     });
 
-    const mainContainer = document.getElementById('main-container');
-
     if (settings.userWeatherLocationMode && settings.userWeatherManualLocation.trim()) {
         // Manueller Modus
-        if (mainContainer) { mainContainer.style.marginTop = '10rem'; }
         await fetchWeatherByLocationName(settings.userWeatherManualLocation.trim());
         updateWeather(); // Startet Intervall für Updates
     } else if (!settings.userWeatherLocationMode && "geolocation" in navigator) {
         // Automatischer Modus (Geolocation)
-        if (mainContainer) { mainContainer.style.marginTop = '10rem'; }
         navigator.geolocation.getCurrentPosition(fetchWeatherByCoords, handleLocationError);
         updateWeather(); // Startet Intervall für Updates
     } else if (!settings.userWeatherLocationMode) {
         // Automatischer Modus, aber Geolocation nicht verfügbar
-        if (mainContainer) { mainContainer.style.marginTop = '6rem'; }
         console.warn("Geolocation wird von diesem Browser nicht unterstützt oder wurde abgelehnt.");
         showToast("Automatischer Standort nicht verfügbar.", 'error');
         hideWeatherWidget();
     } else {
         // Manueller Modus, aber kein Ort eingegeben
-        if (mainContainer) { mainContainer.style.marginTop = '6rem'; }
-         showToast("Bitte gib einen Ort in den Wetter-Einstellungen ein.", 'info');
+        showToast("Bitte gib einen Ort in den Wetter-Einstellungen ein.", 'info');
         hideWeatherWidget();
     }
 }
@@ -178,10 +172,6 @@ function hideWeatherWidget(): void {
     const widget = document.getElementById('weather-widget') as HTMLDivElement;
     if (widget) {
         widget.style.display = 'none';
-    }
-    const mainContainer = document.getElementById('main-container');
-    if (mainContainer && mainContainer.style.marginTop === '10rem') {
-         mainContainer.style.marginTop = '6rem'; // Margin zurücksetzen, falls es wegen Wetter gesetzt war
     }
 }
 

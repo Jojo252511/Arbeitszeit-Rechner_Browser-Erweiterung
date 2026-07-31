@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Joern Unverzagt">
+    <title>Info & FAQ - Arbeitszeit-Rechner</title>
+
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <script type="module" src="./dist/darkmode.js" defer></script>
+
+    <style>
+        .info-page-container {
+            max-width: 850px;
+            margin: 2rem auto;
+            padding: 1rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-background-color);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .nav-back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 1.2rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .nav-back-btn:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        .faq-card {
+            background-color: var(--card-background-color);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.2rem;
+        }
+
+        .faq-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .faq-item h3 {
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+            font-size: 1.15rem;
+        }
+
+        .faq-item p, .faq-item ul {
+            line-height: 1.6;
+            color: var(--text-color);
+        }
+
+        .faq-li {
+            margin-left: 1.2rem;
+            margin-top: 0.4rem;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="dark-mode-toggle" title="Dark Mode umschalten" type="button">
+        <i class="fa-solid fa-sun sun-icon"></i>
+        <i class="fa-solid fa-moon moon-icon"></i>
+    </button>
+
+    <div class="info-page-container">
+        <div class="filter-bar">
+            <a href="index.html" class="nav-back-btn">
+                <i class="fa-solid fa-arrow-left"></i> Zurück zum Rechner
+            </a>
+            <h2><i class="fa-solid fa-circle-info"></i> Info & FAQ</h2>
+        </div>
+
+        <div class="faq-card">
+            <div class="faq-item">
+                <h3>Wie funktioniert der Arbeitszeit-Rechner?</h3>
+                <p>Der Rechner ermittelt anhand deiner Ankunftszeit, der täglichen Soll-Arbeitszeit und deiner aktuellen
+                    Überstunden, wann du frühestens gehen kannst. Standardmäßig wird eine Pause von 45 Minuten
+                    berücksichtigt, die du anpassen kannst, wenn du minderjährig bist.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie trage ich Urlaub oder Krankheitstage ein?</h3>
+                <p>Um Urlaub oder Krankheit einzutragen, wähle die passende Option im ersten Rechner unter "Weitere Optionen" oder füge sie direkt im Logbuch hinzu.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie gebe ich meine aktuellen Überstunden ein?</h3>
+                <p>Gib deine aktuellen Überstunden als Dezimalzahl ein. Zum Beispiel: <code>1,5</code> für 1 Stunde und 30 Minuten
+                    oder <code>-2,25</code> für -2 Stunden und 15 Minuten. Wenn du keine Überstunden hast, lasse das Feld leer oder gib 0 ein.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie trage ich einen Überstundenabbautag ein?</h3>
+                <p>Um einen Tag an dem Überstundenabbau genutzt wurde einzutragen, wähle die entsprechende Option im ersten Rechner unter "Weitere Optionen". Achte darauf, dass deine Sollzeit korrekt gewählt ist.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Was passiert, wenn ich die Pause für Minderjährige aktiviere?</h3>
+                <p>Wenn du die Option "60 Minuten Pause (für Minderjährige)" aktivierst, wird die Standardpause von 45
+                    Minuten auf 60 Minuten erhöht. Dies ist relevant für minderjährige Arbeitnehmer, die längere Pausenregelungen haben.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie funktioniert der Plus/Minus-Rechner?</h3>
+                <p>Der Plus/Minus-Rechner nutzt die gleichen Einstellungen wie der erste Rechner (Soll-Arbeitszeit,
+                    Ankunftszeit, aktuelle Überstunden und Pausenregelung). Du gibst eine gewünschte Gehzeit ein, und
+                    der Rechner zeigt dir an, ob du zu diesem Zeitpunkt im Plus oder Minus bist.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie funktioniert der Überstunden-Planer?</h3>
+                <p>Der Überstunden-Planer bietet zwei Funktionen: Du kannst berechnen lassen, wie viel tägliches Plus du
+                    benötigst, um in einer bestimmten Anzahl von Tagen ein Stunden-Ziel zu erreichen. Alternativ kannst
+                    du auch berechnen lassen, wie viel Gesamtplus du erreichst, wenn du jeden Tag eine bestimmte Anzahl
+                    von Minuten zusätzlich arbeitest.</p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Was ist mit der Kernzeit?</h3>
+                <p>Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Standard-Gleitzeit beginnt um 06:45 Uhr. Die Kernzeit, in der Anwesenheitspflicht besteht, ist von 08:45 Uhr bis 15:30 Uhr (Freitags bis 15:00 Uhr). <a href="options.html" target="_blank">Kernzeiten anpassen</a></p>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie funktioniert der Countdown?</h3>
+                <p>Der Countdown-Timer hilft dir, die verbleibende Zeit bis zum Feierabend im Blick zu behalten. Es gibt drei Möglichkeiten, ihn zu starten:</p>
+                <ul>
+                    <li class="faq-li"><b>Countdown bis Feierabend (+0):</b> Nutzt die berechnete Gehzeit aus dem ersten Rechner.</li>
+                    <li class="faq-li"><b>Countdown bis Wunsch-Gehzeit:</b> Nutzt die von dir im zweiten Rechner eingetragene Gehzeit.</li>
+                    <li class="faq-li"><b>Countdown bis Feierabend (Logbuch):</b> Nutzt die im heutigen Logbuch-Eintrag gespeicherte Gehzeit.</li>
+                </ul>
+            </div>
+
+            <div class="faq-item">
+                <h3>Wie funktioniert die Import/Export Funktion des Logbuches?</h3>
+                <p>Du kannst dein Logbuch als CSV-Datei oder JSON exportieren, um eine Sicherungskopie zu erstellen
+                    oder die Daten in anderen Anwendungen zu verwenden. Beim Import kannst du eine CSV-Datei oder JSON auswählen, um deine Logbuch-Einträge wiederherzustellen oder zu aktualisieren.</p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

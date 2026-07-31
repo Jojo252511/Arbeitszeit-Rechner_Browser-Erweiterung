@@ -1,11 +1,13 @@
 // scripts/background.ts
 
 /**
- * Hintergrundskript für die Chrome-Erweiterung.
- * Öffnet das Side Panel, wenn auf das Erweiterungssymbol geklickt wird.
+ * Hintergrundskript für den Arbeitszeit-Rechner.
+ * Öffnet das Side Panel, wenn auf das Icon in Chrome/Edge geklickt wird.
  */
-chrome.action.onClicked.addListener((tab: chrome.tabs.Tab) => {
-  if (tab.windowId) {
-    chrome.sidePanel.open({ windowId: tab.windowId });
-  }
-});
+if (typeof chrome !== 'undefined' && chrome.action) {
+    chrome.action.onClicked.addListener((tab: chrome.tabs.Tab) => {
+        if (chrome.sidePanel && chrome.sidePanel.open && tab.windowId) {
+            chrome.sidePanel.open({ windowId: tab.windowId });
+        }
+    });
+}

@@ -71,7 +71,7 @@ body::-webkit-scrollbar-thumb:hover {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 2rem;
-    margin: 1.5rem;
+    margin: 7.5rem 1.5rem 1.5rem 1.5rem;
 }
 
 .faq-li {
@@ -223,6 +223,7 @@ button:disabled:hover {
     font-size: 0.8rem;
     width: auto;
     background-color: #6c757d;
+    margin-top: 5px;
 }
 
 .small-btn:hover {
@@ -271,13 +272,16 @@ button:disabled:hover {
     position: fixed;
     width: 100%;
     top: 0;
+    left: 0;
     z-index: 999;
-    padding: 1.5rem 0;
+    padding: 1rem 0;
+    pointer-events: none;
     -webkit-backdrop-filter: blur(15px);
     backdrop-filter: blur(15px);
 }
 
 .banner-content {
+    pointer-events: auto;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -285,13 +289,10 @@ button:disabled:hover {
     font-size: 0.95rem;
     background-color: var(--card-background-color);
     border-radius: 12px;
-    padding: 1rem 2rem;
+    padding: 0.8rem 5.5rem;
     margin: 0 1rem;
     box-shadow: 0 4px 15px var(--shadow-color);
     text-align: center;
-
-    align-items: flex-start;
-    display: flow-root;
 }
 
 .banner-content a {
@@ -306,7 +307,7 @@ button:disabled:hover {
 
 #menu-toggle {
     position: fixed;
-    top: 2rem;
+    top: 2.2rem;
     left: 1.75rem;
     width: 3rem;
     height: 3rem;
@@ -796,7 +797,7 @@ body.dark-mode .ergebnis.error {
 
 #dark-mode-toggle {
     position: fixed;
-    top: 2rem;
+    top: 2.2rem;
     right: 1.75rem;
     width: 3rem;
     height: 3rem;
@@ -836,6 +837,36 @@ body.dark-mode .sun-icon {
     display: block;
 }
 
+#open-in-tab-btn {
+    position: fixed;
+    top: 2.2rem;
+    right: 5.25rem;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--card-background-color);
+    color: var(--text-color);
+    box-shadow: 0 2px 8px var(--shadow-color);
+    cursor: pointer;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    padding: 0.6rem;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#open-in-tab-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px var(--shadow-color);
+    color: var(--primary-color);
+}
+
+#open-in-tab-btn i {
+    font-size: 1.2rem;
+}
+
 
 /* ===================================================================
    8. Responsive Design (Media Queries)
@@ -847,11 +878,14 @@ body.dark-mode .sun-icon {
         align-items: center;
     }
 
+    #open-in-tab-btn {
+        display: flex;
+    }
+
     .container {
         gap: 1.5rem;
-        margin: 1rem 0;
+        margin: 6.8rem 0 1rem 0;
         width: 100%;
-        margin-top: 6rem;
     }
 
     .card {

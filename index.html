@@ -62,11 +62,24 @@
         <i class="fa-solid fa-moon moon-icon"></i>
     </button>
 
+    <!------------------------- Im neuen Tab öffnen Button --------------------------->
+    <button id="open-in-tab-btn" title="Im neuen Tab öffnen" type="button">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    </button>
+
     <!------------------------- Einstellungen ------------------------------>
     <div class="settings-modal" id="settings-modal">
         <div class="settings-content">
             <span class="close-button" id="close-settings">&times;</span>
             <h2>Einstellungen</h2>
+            <div style="margin-bottom: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="statistics.html" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; background-color: var(--primary-color); color: white; border-radius: 8px; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fa-solid fa-chart-pie"></i> Statistik-Seite
+                </a>
+                <a href="info.html" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; padding: 0.5rem 1rem; background-color: #6c757d; color: white; border-radius: 8px; font-weight: 500; font-size: 0.9rem;">
+                    <i class="fa-solid fa-circle-info"></i> Info & FAQ
+                </a>
+            </div>
             <!---------------------- Sollzeit ---------------------->
             <div class="form-group">
                 <label for="standard-sollzeit">Standard Soll-Arbeitszeit:</label>
@@ -246,6 +259,9 @@
                 <button type="button" id="print-log-btn" class="small-btn" title="Logbuch drucken">
                     <i class="fa-solid fa-print"></i>
                 </button>
+                <button type="button" id="open-stats-btn" class="small-btn" title="Statistik-Seite öffnen">
+                    <i class="fa-solid fa-chart-pie"></i>
+                </button>
                 <button type="button" id="clear-logbook-btn" class="small-btn" title="Logbuch leeren">
                     <i class="fa-solid fa-trash"></i>
                 </button>
@@ -297,115 +313,10 @@
                 title="Taschenrechner"></iframe>
         </div>
 
-        <!------------------------------------- Info & FAQ ---------------------------------->
     </main>
-    <section class="container" id="faq-container">
-        <div class="card">
-            <h2>Info & FAQ</h2>
 
-            <div class="faq-item">
-                <h3>Wie funktioniert der Arbeitszeit-Rechner?</h3>
-                <p>Der Rechner ermittelt anhand deiner Ankunftszeit, der täglichen Soll-Arbeitszeit und deiner aktuellen
-                    Überstunden, wann du frühestens gehen kannst. Standardmäßig wird eine Pause von 45 Minuten
-                    berücksichtigt, die du anpassen kannst, wenn du minderjährig bist.</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Wie trage ich Urlaub oder Krankheitstage ein?</h3>
-                <p>Um Urlaub oder Krankheit einzutragen wähle die passende Option im ersten Rechner unter "Weitere Optionen".</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Wie gebe ich meine aktuellen Überstunden ein?</h3>
-                <p>Gib deine aktuellen Überstunden als Dezimalzahl ein. Zum Beispiel: 1,5 für 1 Stunde und 30 Minuten
-                    oder -2,25 für -2 Stunden und 15 Minuten. Wenn du keine Überstunden hast, lasse das Feld leer oder
-                    gib 0 ein.</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Wie trage ich einen Überstundenabbautag ein?</h3>
-                <p>Um einen Tag an dem Überstundenabbau genutzt wurde einzutragen wähle die ensprechende Option im ersten Rechner unter "Weitere Optionen".</p>
-                <i>Achte darauf das deine Sollzeit korrekt gewählt ist</i>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Was passiert, wenn ich die Pause für Minderjährige aktiviere?</h3>
-                <p>Wenn du die Option "60 Minuten Pause (für Minderjährige)" aktivierst, wird die Standardpause von 45
-                    Minuten auf 60 Minuten erhöht. Dies ist relevant für minderjährige Arbeitnehmer, die längere
-                    Pausenregelungen haben.</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Wie funktioniert der Plus/Minus-Rechner?</h3>
-                <p>Der Plus/Minus-Rechner nutzt die gleichen Einstellungen wie der erste Rechner (Soll-Arbeitszeit,
-                    Ankunftszeit, aktuelle Überstunden und Pausenregelung). Du gibst eine gewünschte Gehzeit ein, und
-                    der Rechner zeigt dir an, ob du zu diesem Zeitpunkt im Plus oder Minus bist.</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Wie funktioniert der Überstunden-Planer?</h3>
-                <p>Der Überstunden-Planer bietet zwei Funktionen: Du kannst berechnen lassen, wie viel tägliches Plus du
-                    benötigst, um in einer bestimmten Anzahl von Tagen ein Stunden-Ziel zu erreichen. Alternativ kannst
-                    du auch berechnen lassen, wie viel Gesamtplus du erreichst, wenn du jeden Tag eine bestimmte Anzahl
-                    von Minuten zusätzlich arbeitest.</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Warum sehe ich keine Ergebnisse?</h3>
-                <p>Stelle sicher, dass du alle erforderlichen Felder korrekt ausgefüllt hast. Überprüfe auch, ob deine
-                    Eingaben im richtigen Format sind (z.B. Zeitangaben im 24-Stunden-Format). Wenn das Problem
-                    weiterhin besteht, versuche die Seite neu zu laden.</p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Was ist mit der Kernzeit?</h3>
-                <p id="faq-kernzeit-text">Der Rechner achtet automatisch auf die Gleit- und Kernzeit. Die Gleitzeit (die
-                    Zeit, ab der Arbeitszeit gezählt wird) beginnt um
-                    <strong id="faq-gleitzeit-start">06:45</strong> Uhr. Die Kernzeit, in der Anwesenheitspflicht
-                    besteht, ist von
-                    <strong id="faq-kernzeit-start">08:45</strong> Uhr bis
-                    <strong id="faq-kernzeit-ende">15:30</strong> Uhr (Freitags bis
-                    <strong id="faq-kernzeit-ende-fr">15:00</strong> Uhr).
-
-                </p>
-            </div>
-            <p><a href="./options.html" target="_blank">Kernzeiten anpassen</a></p>
-            <br>
-            <div class="faq-item">
-                <h3>Wie funktioniert der Countdown?</h3>
-                <p>
-                    Der Countdown-Timer hilft dir, die verbleibende Zeit bis zum Feierabend im Blick zu behalten. Es
-                    gibt drei Möglichkeiten, ihn zu starten:
-                </p>
-                <ul>
-                    <li class="faq-li"><b>Countdown bis Feierabend (+0):</b> Nutzt die berechnete Gehzeit aus dem ersten
-                        Rechner.</li>
-                    <li class="faq-li"><b>Countdown bis Wunsch-Gehzeit:</b> Nutzt die von dir im zweiten Rechner
-                        eingetragene Gehzeit.</li>
-                    <li class="faq-li"><b>Countdown bis Feierabend (Logbuch):</b> Dieser Button erscheint automatisch,
-                        wenn für den heutigen Tag bereits ein Logbuch-Eintrag existiert. Er nutzt die dort gespeicherte
-                        Gehzeit.</li>
-                </ul>
-                <p>
-                    In den Einstellungen kannst du außerdem wählen, ob der Countdown in der Erweiterung oder in einem
-                    eigenen kleinen Fenster angezeigt werden soll.
-                </p>
-            </div>
-            <br>
-            <div class="faq-item">
-                <h3>Wie funktioniert die Import/Export Funktion des Logbuches?</h3>
-                <p>
-                    Du kannst dein Logbuch als CSV-Datei oder JSON exportieren, um eine Sicherungskopie zu erstellen
-                    oder die Daten
-                    in anderen Anwendungen zu verwenden. Beim Import kannst du eine CSV-Datei oder JSON auswählen, um
-                    deine
-                    Logbuch-Einträge wiederherzustellen oder zu aktualisieren. Achte darauf, dass die Datei das richtige
-                    Format hat.
-                </p>
-            </div>
-        </div>
-
-    </section>
+    <!--------------------------------------------------------------------->
+    <!--------------------------------------------------------------------->
 
     <!--------------------------------------------------------------------->
     <!--------------------------------------------------------------------->

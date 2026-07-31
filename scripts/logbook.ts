@@ -359,6 +359,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         fileInput.click();
     });
 
+    const openStatsBtn = document.getElementById('open-stats-btn');
+    openStatsBtn?.addEventListener('click', () => {
+        window.open('statistics.html', '_blank');
+    });
+
     logbookCard?.addEventListener('dragover', (event) => {
         event.preventDefault();
         event.stopPropagation();

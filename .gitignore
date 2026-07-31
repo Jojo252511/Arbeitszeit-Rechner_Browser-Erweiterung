@@ -3,5 +3,3 @@ dist
 node_modules
 ChangeLog
 .vscode
-# API-Schlüssel ignorieren
-scripts/config.ts
