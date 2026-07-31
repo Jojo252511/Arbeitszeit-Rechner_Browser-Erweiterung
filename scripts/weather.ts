@@ -37,7 +37,6 @@ export async function initializeWeather(): Promise<void> {
     // API Key Check
     if (!apiKey) {
         console.warn("Kein Wetter-API-Schlüssel eingetragen.");
-        showToast('Kein Wetter-API-Schlüssel eingetragen.', 'info');
         hideWeatherWidget();
         return;
     }
@@ -51,9 +50,15 @@ export async function initializeWeather(): Promise<void> {
  */
 async function loadWeatherData() {
     const settings = await chrome.storage.sync.get({
+        userWeatherEnabled: true,
         userWeatherLocationMode: false, // false = auto, true = manual
         userWeatherManualLocation: ''
     });
+
+    if (!settings.userWeatherEnabled) {
+        hideWeatherWidget();
+        return;
+    }
 
     if (settings.userWeatherLocationMode && settings.userWeatherManualLocation.trim()) {
         // Manueller Modus
@@ -66,11 +71,10 @@ async function loadWeatherData() {
     } else if (!settings.userWeatherLocationMode) {
         // Automatischer Modus, aber Geolocation nicht verfügbar
         console.warn("Geolocation wird von diesem Browser nicht unterstützt oder wurde abgelehnt.");
-        showToast("Automatischer Standort nicht verfügbar.", 'error');
         hideWeatherWidget();
     } else {
         // Manueller Modus, aber kein Ort eingegeben
-        showToast("Bitte gib einen Ort in den Wetter-Einstellungen ein.", 'info');
+        console.warn("Kein Ort in den Wetter-Einstellungen eingetragen.");
         hideWeatherWidget();
     }
 }
@@ -80,6 +84,12 @@ async function loadWeatherData() {
  * @param position GeolocationPosition Objekt.
  */
 async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void> {
+    const settings = await chrome.storage.sync.get({ userWeatherEnabled: true });
+    if (!settings.userWeatherEnabled) {
+        hideWeatherWidget();
+        return;
+    }
+
     const apiKey = await getEffectiveApiKey();
     if (!apiKey) return;
     const { latitude, longitude } = position.coords;
@@ -98,7 +108,6 @@ async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void
         updateWeatherUI(weatherData);
     } catch (error) {
         console.error(`Fehler beim Abrufen der Wetterdaten für Koordinaten ${latitude}|${longitude}:`, error);
-        showToast("Wetterdaten (Auto) konnten nicht geladen werden.", 'error');
         hideWeatherWidget(); // Widget ausblenden bei Fehler
     }
 }
@@ -108,6 +117,12 @@ async function fetchWeatherByCoords(position: GeolocationPosition): Promise<void
  * @param locationName Der Name des Ortes.
  */
 async function fetchWeatherByLocationName(locationName: string): Promise<void> {
+    const settings = await chrome.storage.sync.get({ userWeatherEnabled: true });
+    if (!settings.userWeatherEnabled) {
+        hideWeatherWidget();
+        return;
+    }
+
     const apiKey = await getEffectiveApiKey();
     if (!apiKey) return;
     const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(locationName)}&appid=${apiKey}&units=metric&lang=de`;
@@ -129,8 +144,6 @@ async function fetchWeatherByLocationName(locationName: string): Promise<void> {
         updateWeatherUI(weatherData);
     } catch (error) {
         console.error(`Fehler beim Abrufen der Wetterdaten für Ort "${locationName}":`, error);
-        const errorMsg = (error instanceof Error) ? error.message : "Wetterdaten (Manuell) konnten nicht geladen werden.";
-        showToast(errorMsg, 'error');
         hideWeatherWidget(); // Widget ausblenden bei Fehler
     }
 }
@@ -142,10 +155,7 @@ async function fetchWeatherByLocationName(locationName: string): Promise<void> {
  */
 function handleLocationError(error: GeolocationPositionError): void {
     console.warn(`Fehler bei der Standortermittlung: ${error.message}`);
-    showToast("Automatischer Standort konnte nicht ermittelt werden.", 'error');
     hideWeatherWidget();
-    const mainContainer = document.getElementById('main-container');
-    if (mainContainer) { mainContainer.style.marginTop = '6rem'; } // Margin zurücksetzen
 }
 
 /**
