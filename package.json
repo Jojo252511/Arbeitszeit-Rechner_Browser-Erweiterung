@@ -4,7 +4,9 @@
   "description": "Ein persönlicher Arbeitszeit-Rechner als Browser Side Panel.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "build:chrome": "tsc && node -e \"require('fs').copyFileSync('manifest.chrome.json', 'manifest.json')\"",
+    "build:firefox": "tsc && node -e \"require('fs').copyFileSync('manifest.firefox.json', 'manifest.json')\""
   },
   "keywords": [],
   "author": "",

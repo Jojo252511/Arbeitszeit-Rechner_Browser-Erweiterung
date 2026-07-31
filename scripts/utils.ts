@@ -92,6 +92,31 @@ export const formatMinutesToString = (totalMinutes: number): string => {
     return `${sign}${hours} Std. ${minutes} Min.`;
 };
 
+import { extApi } from './polyfill.js';
+
+/**
+ * Setzt HTML-Inhalte auf sichere Weise (verhindert XSS durch Entfernen von Skripten/Events).
+ */
+export function setSafeHTML(element: HTMLElement, htmlString: string): void {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    
+    const scripts = doc.querySelectorAll('script, iframe, object, embed');
+    scripts.forEach(s => s.remove());
+    
+    const allElements = doc.querySelectorAll('*');
+    allElements.forEach(el => {
+        const attributes = Array.from(el.attributes);
+        attributes.forEach(attr => {
+            if (attr.name.startsWith('on') || attr.value.trim().toLowerCase().startsWith('javascript:')) {
+                el.removeAttribute(attr.name);
+            }
+        });
+    });
+
+    element.replaceChildren(...Array.from(doc.body.childNodes));
+}
+
 /**
  * Zeigt eine formatierte Nachricht in einem Ergebnis-Container an.
  * @param {HTMLElement} element - Das DOM-Element für die Anzeige.
@@ -99,7 +124,7 @@ export const formatMinutesToString = (totalMinutes: number): string => {
  * @param {string} [type='success'] - Der Typ der Nachricht ('success' oder 'error').
  */
 export const showResult = (element: HTMLElement, message: string, type: string = 'success'): void => {
-    element.innerHTML = message;
+    setSafeHTML(element, message);
     element.className = 'ergebnis';
     element.classList.add(type);
     element.classList.add('show');
@@ -214,7 +239,7 @@ function showModal<T>(options: ModalOptions): Promise<T | null> {
         const modalInputs = options.inputs;
 
         titleEl.textContent = options.title;
-        messageEl.innerHTML = options.message;
+        setSafeHTML(messageEl, options.message);
         inputContainer.innerHTML = '';
         buttonContainer.innerHTML = '';
 
@@ -310,14 +335,30 @@ export function showRadioPrompt(title: string, message: string, choices: { value
     ];
     const inputs = { type: 'radio' as const, name: 'day-type', choices: choices.map(c => c.value) };
 
-    const originalShowModal = showModal;
-
-    const radioGroup = document.querySelector('.modal-radio-group');
-    if (radioGroup) {
-
-    }
-
     return showModal({ title, message, buttons, inputs });
+}
+
+export function setupTabOpenButton(): void {
+    const btn = document.getElementById('open-in-tab-btn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        if (extApi && extApi.tabs && extApi.tabs.create) {
+            extApi.tabs.create({ url: extApi.runtime.getURL('index.html') });
+        } else {
+            window.open('index.html', '_blank');
+        }
+        try {
+            window.close();
+        } catch (e) {
+            console.log('Side panel window could not be closed automatically.');
+        }
+    });
+}
+
+if (typeof document !== 'undefined') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setupTabOpenButton();
+    });
 }
 
 /**

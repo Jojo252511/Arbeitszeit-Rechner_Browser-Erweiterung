@@ -11,6 +11,7 @@
 
 import { timeStringToMinutes, showToast } from './utils.js';
 import { getTodayLogEntry } from './logbook-data.js';
+import { extApi } from './polyfill.js';
 
 // Mache TypeScript die globale Variable aus calculator1.ts bekannt
 declare global {
@@ -71,13 +72,15 @@ document.addEventListener('DOMContentLoaded', async () => {
                 countdownTimerEl.textContent = "00:00:00";
                 countdownTimerEl.style.color = 'var(--success-color)';
 
-                chrome.notifications.create({
-                    type: 'basic',
-                    iconUrl: '../icon128.png',
-                    title: 'Feierabend!',
-                    message: 'Dein Countdown ist abgelaufen. Zeit, die Arbeit zu beenden!',
-                    priority: 2
-                });
+                if (extApi && extApi.notifications && extApi.notifications.create) {
+                    extApi.notifications.create({
+                        type: 'basic',
+                        iconUrl: 'icon128.png',
+                        title: 'Feierabend!',
+                        message: 'Dein Countdown ist abgelaufen. Zeit, die Arbeit zu beenden!',
+                        priority: 2
+                    });
+                }
                 return;
             }
 

@@ -3,9 +3,9 @@
 import { type LogEntry } from './logbook-data.js';
 import { formatMinutesToString } from './utils.js';
 
-declare const Chart: any;
+declare var Chart: any;
 
-let logbookChart: Chart | null = null;
+let logbookChart: any = null;
 
 /**
  * Rendert das Balkendiagramm für die Tagessalden der letzten 7 Tage.

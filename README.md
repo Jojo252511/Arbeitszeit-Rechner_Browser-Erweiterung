@@ -19,32 +19,37 @@ Bevor du die Erweiterung im Browser installieren kannst, müssen die notwendigen
     ```
     *Wenn du die Kompilierte Version nutzt musst du nur den API-Schlüssel in die `dist/config.js` eintragen*
 
-4. TypeScript kompilieren
-    Dieser Befehl wandelt den TypeScript-Code (im scripts-Ordner) in JavaScript um, damit der Browser ihn ausführen kann. Die fertigen Dateien werden im dist-Ordner abgelegt.
+4. TypeScript & Browser Manifest kompilieren
+    Dieser Befehl wandelt den TypeScript-Code um und bereitet das passende `manifest.json` vor:
+    
+    Für **Google Chrome / Edge / Brave**:
     ```bash
-    npx tsc
+    npm run build:chrome
+    ```
+    
+    Für **Mozilla Firefox**:
+    ```bash
+    npm run build:firefox
     ```
 
-## Vorbereitung für Installation (Kompilierte Version)
-Diese Version kann nach dem entpacken der ZIP direkt in dem Browser eingefügt werden jedoch muss, damit das Wetter funktioniert der API-Key gesetzt werden.
-
-1. Weather API Konfiguration
-    Trage deinen [OpenWeatherMap-API-Schlüssel](https://openweathermap.org/) in die `dist/config.js` passend ein
-    ```js
-    export const WEATHER_API_KEY = 'DEIN_PERSÖNLICHER_API_SCHLÜSSEL_HIER'; 
-    ```
-  
 ---
 
 ## Installation als Browser-Erweiterung
-1.  Öffne Google Chrome und navigiere zur Seite `chrome://extensions`.  
-    Öffne Microsoft Edge und navigiere zur Seite `edge://extensions`.
-2.  Aktiviere oben rechts den **Entwicklermodus** (Developer mode).
-3.  Klicke auf den Button **"Entpackte Erweiterung laden"** (Load unpacked).
-4.  Wähle den **kompletten Hauptordner** dieses Projekts aus.
-5.  Die Erweiterung erscheint nun in deiner Liste und das Icon in der Browser-Leiste.
 
-Eine detaillierte Video-Anleitung findest du hier: [Video-Tutorial auf YouTube](https://www.youtube.com/watch?v=yNZqK4d9E_c&t=340s).
+### Google Chrome / Microsoft Edge / Brave
+1. Führe vorher `npm run build:chrome` aus.
+2. Öffne Google Chrome (`chrome://extensions`) oder Microsoft Edge (`edge://extensions`).
+3. Aktiviere oben rechts den **Entwicklermodus** (Developer mode).
+4. Klicke auf **"Entpackte Erweiterung laden"** (Load unpacked).
+5. Wähle den **Hauptordner** dieses Projekts aus.
+6. Die Erweiterung steht nun als **Side Panel** zur Verfügung.
+
+### Mozilla Firefox
+1. Führe vorher `npm run build:firefox` aus (oder wähle direkt `manifest.firefox.json` aus).
+2. Öffne Firefox und navigiere zu `about:debugging#/runtime/this-firefox`.
+3. Klicke auf **"Temporäres Add-on laden..."** (Load Temporary Add-on...).
+4. Wähle die Datei `manifest.firefox.json` (oder das aktualisierte `manifest.json`) aus diesem Ordner aus.
+5. Die Erweiterung wird in der Firefox-Sidebar geladen.
 
 ---
 
